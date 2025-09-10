@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="dFu-Uc-eII" customClass="PagingFocusView" customModule="PagingKit">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="34"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vej-Q1-V5P">
+                    <rect key="frame" x="0.0" y="32.666666666666664" width="393" height="1.3333333333333357"/>
+                    <color key="backgroundColor" red="0.0" green="0.11764705882352941" blue="0.38431372549019605" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1.5" id="25A-hA-hTv"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="z9N-Jo-BMv"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="Vej-Q1-V5P" secondAttribute="trailing" id="O70-Ga-TZf"/>
+                <constraint firstItem="Vej-Q1-V5P" firstAttribute="leading" secondItem="dFu-Uc-eII" secondAttribute="leading" id="PUy-5g-5LV"/>
+                <constraint firstAttribute="bottom" secondItem="Vej-Q1-V5P" secondAttribute="bottom" id="lBB-WK-OOh"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="75.572519083969468" y="-10.563380281690142"/>
+        </view>
+    </objects>
+</document>

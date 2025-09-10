@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Map view configurations" minToolsVersion="14.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="LogSpotCell" id="gTV-IL-0wX" customClass="LogSpotCell" customModule="DiveSync" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="209"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="209"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" scrollEnabled="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NJM-Mh-V0w">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="209"/>
+                        <standardMapConfiguration key="preferredConfiguration"/>
+                    </mapView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Coordinates: 4°06’55.4” N, 118°37’42.9” E" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hfe-Ww-qnU">
+                        <rect key="frame" x="0.0" y="131" width="320" height="18"/>
+                        <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+            </view>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <constraints>
+                <constraint firstItem="hfe-Ww-qnU" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="2VR-HR-3jQ"/>
+                <constraint firstAttribute="bottom" secondItem="NJM-Mh-V0w" secondAttribute="bottom" id="KVn-27-kwP"/>
+                <constraint firstAttribute="trailing" secondItem="hfe-Ww-qnU" secondAttribute="trailing" id="Zha-Yw-n5O"/>
+                <constraint firstAttribute="bottom" secondItem="hfe-Ww-qnU" secondAttribute="bottom" constant="60" id="bpV-AG-xJF"/>
+                <constraint firstItem="NJM-Mh-V0w" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="ecy-oz-uBh"/>
+                <constraint firstItem="NJM-Mh-V0w" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="hhP-ze-tJ4"/>
+                <constraint firstAttribute="trailing" secondItem="NJM-Mh-V0w" secondAttribute="trailing" id="nbV-6y-iUy"/>
+            </constraints>
+            <size key="customSize" width="320" height="209"/>
+            <connections>
+                <outlet property="coordinateLb" destination="hfe-Ww-qnU" id="xjU-i9-Z05"/>
+                <outlet property="mapView" destination="NJM-Mh-V0w" id="kdK-Tx-Xtz"/>
+            </connections>
+            <point key="canvasLocation" x="309.92366412213738" y="43.309859154929576"/>
+        </collectionViewCell>
+    </objects>
+</document>

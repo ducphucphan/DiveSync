@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22505"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CompartmentsView" customModule="Aqualung" customModuleProvider="target">
+            <connections>
+                <outlet property="barChartView" destination="KK9-oT-cW8" id="mIh-vp-ww0"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="214"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KK9-oT-cW8" customClass="BarChartView" customModule="DGCharts">
+                    <rect key="frame" x="0.0" y="0.0" width="393" height="214"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </view>
+            </subviews>
+            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="KK9-oT-cW8" secondAttribute="bottom" id="6pj-0T-aIg"/>
+                <constraint firstItem="KK9-oT-cW8" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="ZMm-xx-GiM"/>
+                <constraint firstAttribute="trailing" secondItem="KK9-oT-cW8" secondAttribute="trailing" id="eKh-70-yjz"/>
+                <constraint firstItem="KK9-oT-cW8" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="oJw-Iz-Ikn"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="87.786259541984734" y="-237.32394366197184"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

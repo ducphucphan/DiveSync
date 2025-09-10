@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SPECTER</key>
+	<array>
+		<string>ProAsia</string>
+		<string>DAVINCI</string>
+		<string>8369</string>
+	</array>
+	<key>VIR</key>
+	<array>
+		<string>ProAsia</string>
+		<string>DAVINCI</string>
+		<string>8682</string>
+	</array>
+	<key>DAV</key>
+	<array>
+		<string>ProAsia</string>
+		<string>DAVINCI</string>
+		<string>6886</string>
+	</array>
+	<key>DAVINCI</key>
+	<array>
+		<string>ProAsia</string>
+		<string>DAVINCI</string>
+		<string>6886</string>
+	</array>
+</dict>
+</plist>
