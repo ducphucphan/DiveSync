@@ -46,7 +46,13 @@ class LogViewController: BaseViewController {
     @IBOutlet weak var startEndGasStackView: UIStackView!
     @IBOutlet weak var conservatismStackView: UIStackView!
     
-    let fullVC = ChartFullScreenViewController()
+    //let fullVC = ChartFullScreenViewController()
+    
+    lazy var fullVC: ChartFullScreenViewController = {
+        let storyboard = UIStoryboard(name: "FullView", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "ChartFullScreenViewController") as! ChartFullScreenViewController
+        return vc
+    }()
     
     var numberOfPages = 3
     
@@ -111,7 +117,9 @@ class LogViewController: BaseViewController {
         // Clone chart view
         let clonedChart = cell.lineChartView.cloneChart()
         fullVC.chartView = clonedChart // Cần đảm bảo chartView trong ChartFullScreenViewController là `public`
-        
+        fullVC.chartEntries = cell.chartEntries
+        fullVC.diveProfile = diveProfile
+        fullVC.diveLog = diveLog
     }
     
     override func viewDidDisappear(_ animated: Bool) {

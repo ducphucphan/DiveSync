@@ -8,6 +8,7 @@
 import UIKit
 import GRDB
 import RxSwift
+import ProgressHUD
 
 class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate {
     @IBOutlet weak var tableView: UITableView!
@@ -433,6 +434,7 @@ extension LogsViewController: AddLogsPopupDelegate {
                     manager.readAllSettings2()
                     
                 }, onError: { error in
+                    ProgressHUD.dismiss()
                     PrintLog("❌ Connect error: \(error.localizedDescription)")
                     BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
                 }).disposed(by: self.disposeBag)

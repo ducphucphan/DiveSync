@@ -83,6 +83,7 @@ enum SyncAction {
     case kRegisterAndActive
     case kUnregister
     case kUploadDateTime
+    case kConnectOnly
 }
 
 var syncType: SyncAction = .kDownloadSetting

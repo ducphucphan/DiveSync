@@ -1087,6 +1087,97 @@
             </objects>
             <point key="canvasLocation" x="-2727" y="-56"/>
         </scene>
+        <!--Dialog View Controller-->
+        <scene sceneID="7Ep-OB-0af">
+            <objects>
+                <viewController storyboardIdentifier="DialogViewController" id="lU3-4O-m7J" customClass="DialogViewController" customModule="DiveSync" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="1ij-Qi-87c">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="shg-eU-9Tv">
+                                <rect key="frame" x="20" y="350.66666666666669" width="353" height="150.66666666666669"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Update Firmware" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7AM-YB-U8m">
+                                        <rect key="frame" x="16" y="15.999999999999998" width="321" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your current firmware is up to date." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Kl-nE-f32">
+                                        <rect key="frame" x="16" y="44.333333333333314" width="319" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="6Ag-xJ-ru4">
+                                        <rect key="frame" x="16" y="80.666666666666629" width="321" height="24"/>
+                                        <subviews>
+                                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="K1c-9b-B0d">
+                                                <rect key="frame" x="0.0" y="0.0" width="321" height="4"/>
+                                                <color key="tintColor" name="B2"/>
+                                            </progressView>
+                                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="Gp6-3d-3rf">
+                                                <rect key="frame" x="0.0" y="4" width="321" height="20"/>
+                                                <color key="color" name="B2"/>
+                                            </activityIndicatorView>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J9O-gv-p0G">
+                                        <rect key="frame" x="276" y="104.66666666666663" width="61" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="t7n-hW-IDl"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="CANCEL">
+                                            <color key="titleColor" name="B2"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="cancelTapped:" destination="lU3-4O-m7J" eventType="touchUpInside" id="eVu-uS-ZfH"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" name="B3Color"/>
+                                <constraints>
+                                    <constraint firstItem="7AM-YB-U8m" firstAttribute="top" secondItem="shg-eU-9Tv" secondAttribute="top" constant="16" id="6mh-9u-8Wq"/>
+                                    <constraint firstItem="J9O-gv-p0G" firstAttribute="top" secondItem="6Ag-xJ-ru4" secondAttribute="bottom" id="F2m-eZ-cvk"/>
+                                    <constraint firstItem="7AM-YB-U8m" firstAttribute="leading" secondItem="shg-eU-9Tv" secondAttribute="leading" constant="16" id="HQQ-Cm-29j"/>
+                                    <constraint firstItem="6Ag-xJ-ru4" firstAttribute="top" secondItem="9Kl-nE-f32" secondAttribute="bottom" constant="16" id="IS8-4d-PPQ"/>
+                                    <constraint firstAttribute="height" priority="250" constant="150" id="JSi-m5-t6O"/>
+                                    <constraint firstAttribute="trailing" secondItem="7AM-YB-U8m" secondAttribute="trailing" constant="16" id="Jpi-TV-7fn"/>
+                                    <constraint firstAttribute="trailing" secondItem="J9O-gv-p0G" secondAttribute="trailing" constant="16" id="Kr2-RY-q24"/>
+                                    <constraint firstItem="9Kl-nE-f32" firstAttribute="leading" secondItem="shg-eU-9Tv" secondAttribute="leading" constant="16" id="RUe-iP-s9E"/>
+                                    <constraint firstAttribute="trailing" secondItem="9Kl-nE-f32" secondAttribute="trailing" constant="18" id="Spy-sl-mC7"/>
+                                    <constraint firstAttribute="bottom" secondItem="J9O-gv-p0G" secondAttribute="bottom" constant="16" id="pdQ-1P-EuT"/>
+                                    <constraint firstItem="9Kl-nE-f32" firstAttribute="top" secondItem="7AM-YB-U8m" secondAttribute="bottom" constant="8" id="qLM-XN-Sbw"/>
+                                    <constraint firstAttribute="trailing" secondItem="6Ag-xJ-ru4" secondAttribute="trailing" constant="16" id="wST-4y-B2R"/>
+                                    <constraint firstItem="6Ag-xJ-ru4" firstAttribute="leading" secondItem="shg-eU-9Tv" secondAttribute="leading" constant="16" id="xVL-2K-ggp"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="gdF-5S-S8D"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="shg-eU-9Tv" firstAttribute="centerY" secondItem="1ij-Qi-87c" secondAttribute="centerY" id="GW2-gV-ItF"/>
+                            <constraint firstItem="gdF-5S-S8D" firstAttribute="trailing" secondItem="shg-eU-9Tv" secondAttribute="trailing" constant="20" id="TL4-Si-Ifg"/>
+                            <constraint firstItem="shg-eU-9Tv" firstAttribute="centerX" secondItem="1ij-Qi-87c" secondAttribute="centerX" id="Ybh-CV-bIr"/>
+                            <constraint firstItem="shg-eU-9Tv" firstAttribute="leading" secondItem="gdF-5S-S8D" secondAttribute="leading" constant="20" id="j6E-er-IcW"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="activityIndicator" destination="Gp6-3d-3rf" id="W5M-yM-fh8"/>
+                        <outlet property="cancelButton" destination="J9O-gv-p0G" id="XMY-mg-ukN"/>
+                        <outlet property="containerView" destination="shg-eU-9Tv" id="dIO-ZT-T38"/>
+                        <outlet property="messageLabel" destination="9Kl-nE-f32" id="GGt-fe-MwR"/>
+                        <outlet property="progressView" destination="K1c-9b-B0d" id="4X5-t5-7u9"/>
+                        <outlet property="titleLabel" destination="7AM-YB-U8m" id="nGT-dP-QuK"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="eyp-ze-4f2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="270.99236641221376" y="614.78873239436621"/>
+        </scene>
     </scenes>
     <resources>
         <image name="checked1" width="32" height="32"/>
@@ -1094,6 +1185,9 @@
         <image name="xmark" catalog="system" width="128" height="113"/>
         <namedColor name="B1">
             <color red="0.39215686274509803" green="0.70588235294117652" blue="0.82352941176470584" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="B2">
+            <color red="0.0" green="0.56862745098039214" blue="0.70588235294117652" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="B3Color">
             <color red="0.0" green="0.29411764705882354" blue="0.39215686274509803" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

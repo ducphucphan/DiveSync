@@ -13,6 +13,12 @@ class LogGraphCell: UICollectionViewCell {
     
     @IBOutlet var lineChartView: LineChartView!
     
+    @IBOutlet weak var depthLb: UILabel!
+    @IBOutlet weak var timeLb: UILabel!
+    @IBOutlet weak var tempLb: UILabel!
+    @IBOutlet weak var startTankLb: UILabel!
+    @IBOutlet weak var endTankLb: UILabel!
+    
     var chartEntries: [ChartDataEntry] = []
     var xAsisValueLabelArray: [Int] = []
     
@@ -291,11 +297,49 @@ extension LogGraphCell: ChartViewDelegate {
         if let index = chartEntries.firstIndex(where: { $0.x == entry.x && $0.y == entry.y }) {
             PrintLog("Selected data index: \(index)")
             let selectedRow = diveProfile[index]
+            
+            let unit = diveLog.stringValue(key: "Units").toInt()
+            let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10
+            if unit == FT {
+                depthLb.text = formatNumber(convertMeter2Feet(DepthFT), decimalIfNeeded: 0) + " " + "FT"
+            } else {
+                depthLb.text = formatNumber(DepthFT) + " " + "M"
+            }
+            
+            let DiveTime = selectedRow.stringValue(key: "DiveTime").toInt()
+            if DiveTime <= 3600 {
+                timeLb.text = String(format: "%02d:%02d", DiveTime / 60, DiveTime % 60)
+            } else {
+                timeLb.text = String(format: "%02d:%02d", DiveTime / 3600, (DiveTime % 3600) / 60)
+            }
+            
+            
+            let TemperatureF = selectedRow.stringValue(key: "TemperatureF").toDouble() / 10
+            if unit == FT {
+                tempLb.text = formatNumber(convertMeter2Feet(TemperatureF), decimalIfNeeded: 0) + " " + "°F"
+            } else {
+                tempLb.text = formatNumber(TemperatureF) + " " + "°C"
+            }
+            
+            let TankPSI = selectedRow.stringValue(key: "TankPSI").toInt()
+            if unit == FT {
+                startTankLb.text = String(format: "%d PSI", TankPSI)
+            } else {
+                startTankLb.text = String(format: "%d BAR", TankPSI)
+            }
+            
             didSelectedChartEntryPoint?(selectedRow)
         }
     }
     
     func chartValueNothingSelected(_ chartView: ChartViewBase) {
+        
+        depthLb.text = "---"
+        timeLb.text = "---"
+        tempLb.text = "---"
+        startTankLb.text = "---"
+        endTankLb.text = "---"
+        
     }
 }
 

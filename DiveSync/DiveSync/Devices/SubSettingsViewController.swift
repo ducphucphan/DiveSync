@@ -7,6 +7,7 @@
 
 import UIKit
 import RxSwift
+import ProgressHUD
 
 class SubSettingsViewController: UIViewController {
     
@@ -148,8 +149,12 @@ class SubSettingsViewController: UIViewController {
                     
                 }, onError: { [weak self] error in
                     guard let self = self else { return }
+                    
+                    ProgressHUD.dismiss()
+                    
                     PrintLog("❌ Connect error: \(error.localizedDescription)")
                     BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    
                 }).disposed(by: disposeBag)
         }
         
