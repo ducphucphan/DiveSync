@@ -122,6 +122,7 @@
 		48CE8DCD2DAD02B300A2DF33 /* DSGasCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48CE8DCB2DAD02B300A2DF33 /* DSGasCell.xib */; };
 		48CE8DD92DAD198000A2DF33 /* DSToggleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */; };
 		48CE8DDA2DAD198000A2DF33 /* DSToggleCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */; };
+		48CE9C212E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE9C202E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift */; };
 		48D195562D64462300B21E25 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D195542D64462300B21E25 /* BluetoothManager.swift */; };
 		48D195572D64462300B21E25 /* BLEConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D195552D64462300B21E25 /* BLEConstants.swift */; };
 		48D1955A2D64463A00B21E25 /* RxBluetoothKit2 in Frameworks */ = {isa = PBXBuildFile; productRef = 48D195592D64463A00B21E25 /* RxBluetoothKit2 */; };
@@ -332,6 +333,7 @@
 		48CE8DCB2DAD02B300A2DF33 /* DSGasCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSGasCell.xib; sourceTree = "<group>"; };
 		48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSToggleCell.swift; sourceTree = "<group>"; };
 		48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSToggleCell.xib; sourceTree = "<group>"; };
+		48CE9C202E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDiveSpotsResultsViewController.swift; sourceTree = "<group>"; };
 		48D195542D64462300B21E25 /* BluetoothManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		48D195552D64462300B21E25 /* BLEConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BLEConstants.swift; sourceTree = "<group>"; };
 		48D21DD72D0D3EBC004E8018 /* HelveticaNeueLTProHvIt.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HelveticaNeueLTProHvIt.otf; sourceTree = "<group>"; };
@@ -733,6 +735,7 @@
 				480778122DC5E36400ED56F8 /* cell */,
 				4887C3152DC522C600742DF3 /* DiveSpotsViewController.swift */,
 				482DE4F22DC60F0700F9FE54 /* DiveSpotViewController.swift */,
+				48CE9C202E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift */,
 			);
 			path = DiveSpots;
 			sourceTree = "<group>";
@@ -1223,6 +1226,7 @@
 				48E36CF12DCF349400F77367 /* GasDetailViewController.swift in Sources */,
 				487DFC062DCE60DB00C53D18 /* TankTypeAlert.swift in Sources */,
 				489DFFFF2DC76320005A1443 /* CertificationViewController.swift in Sources */,
+				48CE9C212E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift in Sources */,
 				48D195572D64462300B21E25 /* BLEConstants.swift in Sources */,
 				48CE8DC52DACB9C000A2DF33 /* BottomSheetPickerViewController.swift in Sources */,
 			);

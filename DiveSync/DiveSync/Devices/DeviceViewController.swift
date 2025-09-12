@@ -139,6 +139,7 @@ class DeviceViewController: BaseViewController {
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
+                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
                 return
             }
             
@@ -193,7 +194,7 @@ class DeviceViewController: BaseViewController {
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
-                showAlert(on: self, message: "Device not found!")
+                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
                 
                 return
             }

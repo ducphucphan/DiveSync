@@ -10,8 +10,8 @@ import MapKit
 import CoreLocation
 import GRDB
 
-class DiveSpotViewController: BaseViewController {
-
+class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISearchControllerDelegate {
+    
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var pinImageView: UIImageView!
     
@@ -21,6 +21,8 @@ class DiveSpotViewController: BaseViewController {
     @IBOutlet weak var spotNameValueLb: UILabel!
     @IBOutlet weak var countryValueLb: UILabel!
     
+    var searchController: UISearchController!
+    
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D(latitude: .zero, longitude: .zero)
     
@@ -29,7 +31,7 @@ class DiveSpotViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.navigationController?.setCustomTitle(for: self.navigationItem,
                                                   title: self.title ?? "Dive Spot",
                                                   pushBack: true,
@@ -38,6 +40,13 @@ class DiveSpotViewController: BaseViewController {
         
         mapView.delegate = self
         mapView.showsUserLocation = false  // Tắt chấm xanh mặc định
+        
+        // Setup SearchController
+        setupSearchBar()
+        
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        longPress.minimumPressDuration = 0.5 // giây
+        mapView.addGestureRecognizer(longPress)
         
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
@@ -57,6 +66,41 @@ class DiveSpotViewController: BaseViewController {
         
     }
     
+    private func setupSearchBar() {
+        let resultsController = SearchDiveSpotsResultsViewController()
+        resultsController.delegate = self
+        
+        searchController = UISearchController(searchResultsController: resultsController)
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search location"
+        searchController.delegate = self
+        searchController.searchBar.tintColor = .white
+        definesPresentationContext = true
+        
+        let searchBar = searchController.searchBar
+        searchBar.barStyle = .black // đảm bảo text white
+        
+        let textField = searchBar.searchTextField
+        
+        // Placeholder
+        textField.attributedPlaceholder = NSAttributedString(
+            string: "Search location",
+            attributes: [.foregroundColor: UIColor.white]
+        )
+        
+        // Text color
+        textField.textColor = .white
+        textField.tintColor = .white  // caret (con trỏ) màu trắng
+        
+        // Kính lúp
+        if let leftIconView = textField.leftView as? UIImageView {
+            leftIconView.tintColor = .white
+            leftIconView.image = leftIconView.image?.withRenderingMode(.alwaysTemplate)
+        }
+        
+    }
+    
     private func fillData(row: Row) {
         
         spotNameValueLb.text = row.stringValue(key: "spot_name")
@@ -69,8 +113,19 @@ class DiveSpotViewController: BaseViewController {
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
             let region = MKCoordinateRegion(center: coordinate,
                                             span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-
+            
             mapView.setRegion(region, animated: true)
+        }
+    }
+    
+    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began {
+            navigationItem.searchController = searchController
+            searchController?.isActive = true
+            
+            DispatchQueue.main.async {
+                self.searchController?.searchBar.becomeFirstResponder()
+            }
         }
     }
     
@@ -100,7 +155,7 @@ class DiveSpotViewController: BaseViewController {
     @IBAction func getLocationTapped(_ sender: Any) {
         if let location = locationManager.location {
             let span = mapView.region.span
-
+            
             let latMeters = span.latitudeDelta * 111_000
             let lonMeters = span.longitudeDelta * 111_000
             
@@ -184,6 +239,78 @@ class DiveSpotViewController: BaseViewController {
                 }
             }
         }
+    }
+    
+    // Search update
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let query = searchController.searchBar.text, !query.isEmpty else {
+            // Nếu query rỗng thì xóa kết quả
+            if let resultsVC = searchController.searchResultsController as? SearchDiveSpotsResultsViewController {
+                resultsVC.results = []
+                resultsVC.tableView.reloadData()
+            }
+            return
+        }
+        
+        // Gọi updateQuery trên resultsController
+        if let resultsVC = searchController.searchResultsController as? SearchDiveSpotsResultsViewController {
+            resultsVC.updateQuery(query)
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        // Ẩn searchController khỏi navigationItem
+        navigationItem.searchController = nil
+    }
+    
+    func willDismissSearchController(_ searchController: UISearchController) {
+        navigationItem.searchController = nil
+    }
+}
+
+extension DiveSpotViewController: SearchDiveSpotsResultsDelegate {
+    func didSelectSearchResult(_ result: MKLocalSearchCompletion) {
+        let placeName = result.title
+        
+        // Dùng MKLocalSearch để lấy MKMapItem
+        let searchRequest = MKLocalSearch.Request(completion: result)
+        let search = MKLocalSearch(request: searchRequest)
+        search.start { [weak self] response, error in
+            guard let self = self else { return }
+            guard let mapItem = response?.mapItems.first, error == nil else {
+                print("Không tìm thấy tọa độ")
+                return
+            }
+            
+            let coordinate = mapItem.placemark.coordinate
+            let latitude = coordinate.latitude
+            let longitude = coordinate.longitude
+            
+            // Dùng MKPlacemark để lấy country chính xác
+            let country = mapItem.placemark.country ?? "-"
+            
+            DispatchQueue.main.async {
+                // Cập nhật UI
+                self.spotNameValueLb.text = placeName
+                self.countryValueLb.text = country
+                self.latValueLb.text = Utilities.coordinateLatString(Float(latitude))
+                self.lngValueLb.text = Utilities.coordinateLongString(Float(longitude))
+                
+                // Di chuyển map và thêm annotation
+                let region = MKCoordinateRegion(center: coordinate,
+                                                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                self.mapView.setRegion(region, animated: true)
+                
+                self.mapView.removeAnnotations(self.mapView.annotations)
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = coordinate
+                annotation.title = placeName
+                self.mapView.addAnnotation(annotation)
+            }
+        }
+        
+        searchController.isActive = false
+        navigationItem.searchController = nil
     }
 }
 
