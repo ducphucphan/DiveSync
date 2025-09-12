@@ -278,7 +278,7 @@ extension DiveSpotViewController: SearchDiveSpotsResultsDelegate {
         search.start { [weak self] response, error in
             guard let self = self else { return }
             guard let mapItem = response?.mapItems.first, error == nil else {
-                print("Không tìm thấy tọa độ")
+                print("Can not found location")
                 return
             }
             
