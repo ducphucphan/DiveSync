@@ -258,7 +258,7 @@ extension OwnerInfoViewController: UIImagePickerControllerDelegate, UINavigation
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.originalImage] as? UIImage {
             
-            let (_, _) = Utilities.saveSelectedImage(image, createImageDate: nil, dir: USERINFO_DIR, name: "avatar.png")
+            let (_, _) = Utilities.saveOriginalSelectedImage(image, createImageDate: nil, dir: USERINFO_DIR, name: "avatar.png")
             self.userImv.image = image
             
         }

@@ -7,32 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "EC1294EE-0C7F-411B-A868-76C9446A6FB8"
+            uuid = "64079AB1-0BBD-4A5A-98EF-995805B63F9D"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/Bluetooth/BluetoothDataManager.swift"
+            filePath = "DiveSync/Devices/models/FirmwareAPI.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "108"
-            endingLineNumber = "108"
-            landmarkName = "discoverServicesAndCharacteristics(servicesUUID:writeCharUUID:readCharUUID:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "CC095F93-D90C-47AB-AB6E-78FB3582E718"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DiveSync/Bluetooth/BluetoothDataManager.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
-            landmarkName = "discoverServicesAndCharacteristics(servicesUUID:writeCharUUID:readCharUUID:)"
+            startingLineNumber = "12"
+            endingLineNumber = "12"
+            landmarkName = "fetchText(from:completion:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

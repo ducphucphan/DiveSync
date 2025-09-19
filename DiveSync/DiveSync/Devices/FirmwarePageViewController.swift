@@ -33,7 +33,13 @@ class FirmwarePageViewController: UIViewController {
     
     private func setupPages() {
         let iniVC = ContentViewController()
-        iniVC.text = iniContent
+        
+        if let range = iniContent.range(of: "\n\n") {
+            let iniString = iniContent[range.upperBound...]
+            iniVC.text = String(iniString)
+        } else {
+            iniVC.text = iniContent
+        }
         
         let readmeVC = ContentViewController()
         readmeVC.text = readmeContent

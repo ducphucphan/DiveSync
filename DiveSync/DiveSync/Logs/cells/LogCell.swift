@@ -61,7 +61,7 @@ class LogCell: UITableViewCell {
         
         let diveMode = row.stringValue(key: "DiveMode").toInt()
         if diveMode >= 100 { // Manual
-            deviceNameLb.text = deviceNameStr.isEmpty ? "---":deviceNameStr
+            deviceNameLb.text = deviceNameStr.isEmpty ? "N/A":deviceNameStr
         } else {
             deviceNameLb.text = String(format: "%@, SN: %05d", deviceNameStr, deviceSerialNo)
         }
@@ -74,6 +74,9 @@ class LogCell: UITableViewCell {
         
         diveDateLb.text = diveDate
         diveTimeLb.text = String(format: "#%@ %@", diveOfTheDay, diveTime)
+        if diveMode >= 100 { // Manual
+            diveTimeLb.text = String(format: "%@", diveTime)
+        }
         
         let unitOfDive = row.stringValue(key: "Units").toInt()
         let unitString = unitOfDive == M ? "M":"FT"

@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 import ProgressHUD
+import RxBluetoothKit
 
 class SubSettingsViewController: UIViewController {
     
@@ -152,8 +153,13 @@ class SubSettingsViewController: UIViewController {
                     
                     ProgressHUD.dismiss()
                     
-                    PrintLog("❌ Connect error: \(error.localizedDescription)")
-                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
+                        PrintLog("ℹ️ Peripheral disconnected (expected)")
+                        BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
+                    } else {
+                        PrintLog("❌ Connect error: \(error.localizedDescription)")
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    }
                     
                 }).disposed(by: disposeBag)
         }

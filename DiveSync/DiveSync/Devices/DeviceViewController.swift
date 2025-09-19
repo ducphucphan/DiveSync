@@ -53,6 +53,8 @@ class DeviceViewController: BaseViewController {
     }
     
     private func setupUI() {
+        deviceView.clipsToBounds = true
+        
         deviceImageView.image = UIImage(named: "\(device.modelId ?? 0)") ?? UIImage(named: "8682")
         deviceName.text = device.ModelName ?? ""
         serialNoLb.text = String(format: "%05d", device.SerialNo?.toInt() ?? 0)
@@ -119,6 +121,57 @@ class DeviceViewController: BaseViewController {
         self.navigationController?.popViewController(animated: true)
     }
     
+    func connectToDevice(completion: @escaping (Result<BluetoothDataManager, Error>) -> Void) {
+        // Tìm thiết bị trong relay
+        let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
+        guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            PrintLog("Device not found in scannedDevices yet")
+            showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
+            completion(.failure(NSError(domain: "DeviceNotFound", code: -1, userInfo: nil)))
+            return
+        }
+        
+        searchType = .kSetting
+        syncType = .kConnectOnly
+        
+        // Connect
+        BluetoothDeviceCoordinator.shared
+            .connect(to: matchedDevice.peripheral, discover: true)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] manager in
+                guard let self = self else { return }
+                
+                // Set ModelID nếu cần
+                if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                    manager.ModelID = dcInfo[2].toInt()
+                }
+                
+                manager.readAllSettings2() {
+                    self.updateDeviceStateUI()
+                    completion(.success(manager))
+                }
+                
+            }, onError: { error in
+                ProgressHUD.dismiss()
+                
+                if case BluetoothError.peripheralDisconnected = error {
+                    PrintLog("ℹ️ Peripheral disconnected (user requested)")
+                } else {
+                    if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
+                        PrintLog("ℹ️ Peripheral disconnected (expected)")
+                        BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
+                    } else {
+                        PrintLog("❌ Connect error: \(error.localizedDescription)")
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    }
+                }
+                
+                completion(.failure(error))
+            })
+            .disposed(by: disposeBag)
+    }
+    
     // MARK: - Actions
     @IBAction func connectTapped(_ sender: Any) {
         BluetoothDeviceCoordinator.shared.delegate = self
@@ -167,9 +220,9 @@ class DeviceViewController: BaseViewController {
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()
-                    
-                    if case BluetoothError.peripheralDisconnected = error {
-                        PrintLog("ℹ️ Peripheral disconnected (user requested)")
+                    if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
+                        PrintLog("ℹ️ Peripheral disconnected (expected)")
+                        BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
                         PrintLog("❌ Connect error: \(error.localizedDescription)")
                         BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
@@ -218,68 +271,84 @@ class DeviceViewController: BaseViewController {
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()
-                    PrintLog("❌ Connect error: \(error.localizedDescription)")
-                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
+                        PrintLog("ℹ️ Peripheral disconnected (expected)")
+                        BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
+                    } else {
+                        PrintLog("❌ Connect error: \(error.localizedDescription)")
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                    }
                 }).disposed(by: disposeBag)
         }
     }
     
     @IBAction func checkFirmwareTapped(_ sender: Any) {
         
-        guard let deviceConnected = BluetoothDeviceCoordinator.shared.activeDataManager else {
-            DialogViewController.showMessage(title: "Firmware Update", message: "Please connect to your dive computer")
-            return
-        }
-        
-        let currentFw = deviceConnected.firmwareRev
-        let msg = "Looking new firmware\nCurrent: v \(currentFw)"
-        DialogViewController.showLoading(title: "Firmware Update", message: msg, task:  {_ in
-            
-            let group = DispatchGroup()
-            var iniContent: String?
-            var readmeContent: String?
-            
-            // .ini
-            group.enter()
-            FirmwareAPI.fetchText(from: "https://www.pelagicservices.com/firmware/PADAV_EN_Released.ini") { text in
-                iniContent = text
-                group.leave()
-            }
-            
-            // .Readme
-            group.enter()
-            FirmwareAPI.fetchText(from: "https://www.pelagicservices.com/firmware/PADAV_EN_Released.Readme") { text in
-                readmeContent = text
-                group.leave()
-            }
-            
-            group.notify(queue: .main) {
-                // báo DialogViewController loading xong
-                
-                DialogViewController.dismissAlert() {
+        connectToDevice { result in
+            switch result {
+            case .success(let dataManager):
+                let currentFw = dataManager.firmwareRev
+                let msg = "Looking new firmware\nCurrent: v \(currentFw)"
+                DialogViewController.showLoading(title: "Firmware Update", message: msg, task:  {_ in
                     
-                    if let ini = iniContent, let readme = readmeContent {
-                        // Tách theo ký tự "|"
-                        let parts = ini.components(separatedBy: "|")
-                        if let latestVersion = parts.first {
-                            // So sánh với currentFw
-                            if latestVersion.compare(currentFw, options: .numeric) == .orderedDescending {
-                                let fwVC = FirmwarePageViewController()
-                                fwVC.iniContent = ini
-                                fwVC.readmeContent = readme
-                                fwVC.onAgree = { [self] in
-                                    downloadFirmwareProcess(latestVersion: latestVersion)
+                    let group = DispatchGroup()
+                    var iniContent: String?
+                    var readmeContent: String?
+                    
+                    // .ini
+                    group.enter()
+                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.iniFile()) { text in
+                        iniContent = text
+                        group.leave()
+                    }
+                    
+                    // .Readme
+                    group.enter()
+                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.readmeFile()) { text in
+                        readmeContent = text
+                        group.leave()
+                    }
+                    
+                    group.notify(queue: .main) {
+                        // báo DialogViewController loading xong
+                        
+                        DialogViewController.dismissAlert() {
+                            
+                            if let ini = iniContent, let readme = readmeContent {
+                                // Tách theo ký tự "|"
+                                let parts = ini.components(separatedBy: "|")
+                                if let latestVersion = parts.first {
+                                    // So sánh với currentFw
+                                    if latestVersion.compare(currentFw, options: .numeric) == .orderedDescending {
+                                        let fwVC = FirmwarePageViewController()
+                                        fwVC.iniContent = ini
+                                        fwVC.readmeContent = readme
+                                        fwVC.onAgree = { [self] in
+                                            downloadFirmwareProcess(latestVersion: latestVersion)
+                                        }
+                                        fwVC.onDisagree = {
+                                            BluetoothDeviceCoordinator.shared.disconnect()
+                                            self.updateDeviceStateUI()
+                                        }
+                                        self.present(fwVC, animated: true)
+                                    } else {
+                                        DialogViewController.showMessage(title: "Firmware Update", message: "Your dive computer firmware is up to date!")
+                                        
+                                        BluetoothDeviceCoordinator.shared.disconnect()
+                                        self.updateDeviceStateUI()
+                                    }
                                 }
-                                self.present(fwVC, animated: true)
-                            } else {
-                                DialogViewController.showMessage(title: "Firmware Update", message: "Your dive computer firmware is up to date!")
                             }
                         }
                     }
-                }
+                })
+            case .failure(let error):
+                print("❌ Error: \(error.localizedDescription)")
+                
+                BluetoothDeviceCoordinator.shared.disconnect()
+                self.updateDeviceStateUI()
             }
-            
-        })
+        }
     }
     
     @IBAction func gotoDeviceSettings(_ sender: Any) {
@@ -318,7 +387,6 @@ class DeviceViewController: BaseViewController {
     }
     
     @IBAction func autoSyncSwitched(_ sender: Any) {
-        
         guard let sw = sender as? UISwitch else { return }
         let isOn = sw.isOn
         if isOn {
@@ -334,18 +402,31 @@ class DeviceViewController: BaseViewController {
         } else {
             AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
         }
-        
     }
-    
 }
 
 extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
     func didConnectToDevice(message: String?) {
         if let msg = message {
             if syncType != .kConnectOnly {
-                showAlert(on: self, message: msg)
+                if  syncType == .kRedownloadSetting {
+                    showAlert(on: self, message: msg, okHandler: {
+                        
+                        guard let deviceIdentity = self.device.Identity else {return}
+                        
+                        guard let dv = DatabaseManager.shared.fetchDevices(nameKeys: [deviceIdentity])?.first else {return}
+                        
+                        self.device = dv
+                        
+                        self.setupUI()
+                    })
+                } else {
+                    showAlert(on: self, message: msg)
+                }
             }
         }
+        
+        updateDeviceStateUI()
     }
 }
 
@@ -356,7 +437,8 @@ extension DeviceViewController {
             message: "Downloading firmware v \(latestVersion)",
             task: { alertVC in
                 
-                guard let url = URL(string: "https://www.pelagicservices.com/firmware/PROASIA/PADAV.1_0_74.bin") else {
+                let ver = latestVersion.replacingOccurrences(of: ".", with: "_")
+                guard let url = URL(string: FirmwareURLBuilder.binFile(version: ver)) else {
                     DialogViewController.finish(success: false)
                     return
                 }
@@ -382,12 +464,12 @@ extension DeviceViewController {
                                     downloadTask: URLSessionDownloadTask,
                                     didFinishDownloadingTo location: URL) {
                         do {
+                            Utilities.removeAllBinFiles()
+                            
                             let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
                             let destination = docs.appendingPathComponent(downloadTask.originalRequest?.url?.lastPathComponent ?? "firmware.bin")
-                            if FileManager.default.fileExists(atPath: destination.path) {
-                                try FileManager.default.removeItem(at: destination)
-                            }
                             try FileManager.default.moveItem(at: location, to: destination)
+                            
                             DispatchQueue.main.async {
                                 self.onFinish?(true, destination)
                             }
@@ -411,6 +493,9 @@ extension DeviceViewController {
                     DialogViewController.dismissAlert {
                         if success {
                             PrintLog("✅ Saved firmware: \(fileURL?.path ?? "nil")")
+                            if let fileUrl = fileURL {
+                                self.doUpdateFirmware(fileUrl: fileUrl)
+                            }
                         } else {
                             DialogViewController.showMessage(title: "Firmware Update", message: "❌ Download failed")
                         }
@@ -422,9 +507,28 @@ extension DeviceViewController {
                 
                 // Cho phép Cancel
                 alertVC.cancelTask = {
+                    BluetoothDeviceCoordinator.shared.disconnect()
+                    self.updateDeviceStateUI()
                     task.cancel()
                 }
             }
         )
+    }
+    
+    private func doUpdateFirmware(fileUrl: URL) {
+        BluetoothDeviceCoordinator.shared.delegate = self
+        if let deviceConnected = BluetoothDeviceCoordinator.shared.activeDataManager {
+            
+            syncType = .kUpdateFirmware
+            
+            deviceConnected.updateFirmware()
+                .subscribe(onNext: { success in
+                    print("✅ Reboot command sent: \(success)")
+                    
+                }, onError: { error in
+                    print("❌ Failed: \(error)")
+                })
+                .disposed(by: disposeBag)
+        }
     }
 }

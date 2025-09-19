@@ -78,6 +78,7 @@ enum SyncAction {
     case kDownloadSetting
     case kUploadSetting
     case kUpdateFirmware
+    case kRedownloadSetting
     case kRestoreDiveProfileOnly // Use in case update firmware failed and need to resore dive profile when back to My Devices screen.
     case kDownloadAllDataDebug
     case kRegisterAndActive
@@ -102,6 +103,10 @@ struct BLEConstants {
         static let list = [
             CBUUID(string: "03d97288-001f-11ee-be56-0242ac120002")
         ]
+        
+        static let otaServices = [
+            CBUUID(string: "0000FE20-CC7A-482A-984A-7F2ED5B3E58F") //SPP_OTA_SERVICE_UUID
+        ]
     }
     
     struct RWChar {
@@ -109,7 +114,10 @@ struct BLEConstants {
         static let write = CBUUID(string: "03d97c10-001f-11ee-be56-0242ac120002")
     }
     
-    struct RebootChar {
-        static let ota = CBUUID(string: "0000fe11-8e22-4541-9d4c-21edae82ed19")
+    struct OTA {
+        static let reboot = CBUUID(string: "0000fe11-8e22-4541-9d4c-21edae82ed19")          //SPP_OTA_REBOOT_UUID
+        static let controlAddress = CBUUID(string: "0000FE22-8E22-4541-9D4C-21EDAE82ED19")  //SPP_OTA_CONTROL_ADDRESS_UUID
+        static let notification = CBUUID(string: "0000FE23-8E22-4541-9D4C-21EDAE82ED19")    //SPP_OTA_NOTIFICATION_UUID
+        static let rawData = CBUUID(string: "0000FE24-8E22-4541-9D4C-21EDAE82ED19")         //SPP_OTA_RAW_DATA_UUID
     }
 }

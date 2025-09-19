@@ -28,3 +28,11 @@ extension CBPeripheral {
         return nil
     }
 }
+
+private var otaKey: UInt8 = 0
+extension Peripheral {
+    var isOta: Bool {
+        get { objc_getAssociatedObject(self, &otaKey) as? Bool ?? false }
+        set { objc_setAssociatedObject(self, &otaKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
+}

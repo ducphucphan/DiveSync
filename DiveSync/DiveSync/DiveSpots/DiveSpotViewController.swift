@@ -41,12 +41,18 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         mapView.delegate = self
         mapView.showsUserLocation = false  // Tắt chấm xanh mặc định
         
+        let searchButton = UIBarButtonItem(
+            barButtonSystemItem: .search,
+            target: self,
+            action: #selector(didTapSearchButton)
+        )
+        navigationItem.rightBarButtonItem = searchButton
+        
+        // Đặt màu cho tất cả UIBarButtonItem trong navigation bar
+        navigationController?.navigationBar.tintColor = .white
+        
         // Setup SearchController
         setupSearchBar()
-        
-        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        longPress.minimumPressDuration = 0.5 // giây
-        mapView.addGestureRecognizer(longPress)
         
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
@@ -118,14 +124,13 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         }
     }
     
-    @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        if gesture.state == .began {
-            navigationItem.searchController = searchController
-            searchController?.isActive = true
-            
-            DispatchQueue.main.async {
-                self.searchController?.searchBar.becomeFirstResponder()
-            }
+    @objc private func didTapSearchButton() {
+        navigationItem.searchController = searchController
+        searchController?.isActive = true
+        
+        // Gọi sau một nhịp runloop để đảm bảo searchBar đã attach vào view
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.searchController.searchBar.becomeFirstResponder()
         }
     }
     

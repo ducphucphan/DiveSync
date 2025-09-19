@@ -88,6 +88,11 @@ class BluetoothDataManager {
     
     private var writeCharacteristic: Characteristic?
     private var readCharacteristic: Characteristic?
+    private var otaCharacteristic: Characteristic?
+    
+    private var otaControlCharacteristic: Characteristic?
+    private var otaRawDataCharacteristic: Characteristic?
+    private var otaNotificationCharacteristic: Characteristic?
     
     var firmwareRev = ""
     
@@ -98,7 +103,7 @@ class BluetoothDataManager {
     
     var totalSampleCount = 0
     var completedSampleCount = 0
-    
+        
     init(peripheral: Peripheral) {
         self.peripheral = peripheral
     }
@@ -114,7 +119,11 @@ class BluetoothDataManager {
                 guard let service = services.first else {
                     return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
                 }
-                return service.discoverCharacteristics([writeCharUUID, readCharUUID]).asObservable()
+                return service.discoverCharacteristics([
+                    writeCharUUID,
+                    readCharUUID,
+                    BLEConstants.OTA.reboot
+                ]).asObservable()
             }
             .do(onNext: { [weak self] characteristics in
                 PrintLog("✅ Discovered characteristics:")
@@ -122,6 +131,44 @@ class BluetoothDataManager {
                 
                 self?.writeCharacteristic = characteristics.first { $0.uuid == writeCharUUID }
                 self?.readCharacteristic = characteristics.first { $0.uuid == readCharUUID }
+                self?.otaCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.reboot}
+                
+            })
+            .map { _ in ()} // Đảm bảo trả về Observable<Void>
+    }
+    
+    func discoverServicesAndCharacteristicsForOTA(servicesUUID: [CBUUID], characteristics:[CBUUID]) -> Observable<Void> {
+        return peripheral.discoverServices(servicesUUID)
+            .asObservable() // Chuyển đổi Single thành Observable
+            .flatMap { services -> Observable<[Characteristic]> in
+                PrintLog("🔍 Discovered services:")
+                services.forEach { PrintLog("→ \($0.uuid.uuidString)") }
+                
+                guard let service = services.first else {
+                    return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
+                }
+                return service.discoverCharacteristics(characteristics).asObservable()
+            }
+            .do(onNext: { [weak self] characteristics in
+                PrintLog("✅ Discovered characteristics:")
+                characteristics.forEach { PrintLog("→ \($0.uuid.uuidString)") }
+                
+                self?.otaControlCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.controlAddress }
+                self?.otaRawDataCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.rawData }
+                self?.otaNotificationCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.notification}
+                
+                if let notificationChar = self?.otaNotificationCharacteristic {
+                    notificationChar.observeValueUpdateAndSetNotification()
+                        .subscribe(onNext: { characteristic in
+                            if let value = characteristic.value {
+                                PrintLog("🔔 OTA Notify value: \(value.hexString)")
+                            }
+                        }, onError: { error in
+                            PrintLog("❌ Enable OTA notification failed: \(error)")
+                        })
+                        .disposed(by: self?.disposeBag ?? DisposeBag())
+                }
+                
             })
             .map { _ in ()} // Đảm bảo trả về Observable<Void>
     }
@@ -377,6 +424,186 @@ class BluetoothDataManager {
             }
     }
     
+    // MARK: - UPDATE FIRMWARE
+    func sendRebootOta(fileURL: URL) -> Observable<Bool> {
+        let sector = getSectorToDelete()
+        let nSector = getNSectorToDelete(fileURL: fileURL)
+        let data = [REBOOT_OTA_MODE, UInt8(sector & 0xFF), UInt8(nSector & 0xFF)]
+        
+        guard let characteristic = otaCharacteristic else {
+            return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write OTA characteristic not found"]))
+        }
+        
+        print("\(Data(data).hexString) - \(characteristic.uuid)")
+        
+        return peripheral.writeValue(Data(data),
+                                     for: characteristic,
+                                     type: .withoutResponse)
+        .asObservable()
+        .map { _ in true } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
+    }
+    
+    func sendFirmware(fileURL: URL, progress: @escaping (Double) -> Void) -> Observable<Bool> {
+        // 0. Kiểm tra characteristic
+        guard let controlChar = otaControlCharacteristic,
+              let dataChar = otaRawDataCharacteristic else {
+            return Observable.error(
+                NSError(domain: "Bluetooth",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "OTA characteristic not found"])
+            )
+        }
+        
+        // 1. Đọc file
+        guard let fileData = try? Data(contentsOf: fileURL) else {
+            return Observable.error(
+                NSError(domain: "Bluetooth",
+                        code: -2,
+                        userInfo: [NSLocalizedDescriptionKey: "Cannot read firmware file"])
+            )
+        }
+        
+        // bạn có thể set theo MTU: peripheral.maximumWriteValueLength(for: .withoutResponse)
+        let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
+        let fileSize = fileData.count
+        let chunkSize = mtu
+        let chunks: [Data] = stride(from: 0, to: fileSize, by: chunkSize).map {
+            fileData.subdata(in: $0 ..< min($0 + chunkSize, fileSize))
+        }
+        let totalChunks = chunks.count
+        
+        // nếu không có chunk (file rỗng) -> trả true luôn
+        if totalChunks == 0 {
+            return Observable.just(false)
+        }
+        
+        // 2. Tạo startCommand (theo code bạn có)
+        guard let startCommand = Data.startUpload(type: .application(board: .wb55),
+                                                  fileLength: fileSize) else {
+            return Observable.error(
+                NSError(domain: "Bluetooth",
+                        code: -3,
+                        userInfo: [NSLocalizedDescriptionKey: "Cannot create start command"])
+            )
+        }
+        
+        // 3. Tạo Observable thủ công, thực hiện start rồi gửi chunk tuần tự
+        return Observable.create { [weak self] observer in
+            guard let self = self else {
+                observer.onError(NSError(domain: "Bluetooth", code: -999, userInfo: nil))
+                return Disposables.create()
+            }
+            
+            let composite = CompositeDisposable()
+            
+            // 3.1 Gửi startCommand (Single)
+            let startDisp = self.peripheral
+                .writeValue(startCommand, for: controlChar, type: .withoutResponse)
+                .subscribe(onSuccess: { _ in
+                    // khi start thành công -> bắt đầu gửi chunk tuần tự
+                    func sendChunk(at index: Int) {
+                        // nếu đã dispose thì dừng
+                        if composite.isDisposed { return }
+                        
+                        if index >= totalChunks {
+                            // 🔚 Hết chunks -> gửi finishCommand
+                            let finishCommand = Data.uploadFinished()
+                            let d = self.peripheral
+                                .writeValue(finishCommand, for: controlChar, type: .withoutResponse)
+                                .subscribe(onSuccess: { _ in
+                                    observer.onNext(true)
+                                    observer.onCompleted()
+                                }, onFailure: { error in
+                                    observer.onError(error)
+                                    composite.dispose()
+                                })
+                            _ = composite.insert(d)
+                            return
+                        }
+                        
+                        // gửi chunk[index]
+                        let chunk = chunks[index]
+                        let d = self.peripheral
+                            .writeValue(chunk, for: dataChar, type: .withoutResponse)
+                            .subscribe(onSuccess: { _ in
+                                // update progress trên main thread
+                                let p = Double(index + 1) / Double(totalChunks)
+                                DispatchQueue.main.async {
+                                    progress(p)
+                                }
+                                // gửi tiếp
+                                sendChunk(at: index + 1)
+                            }, onFailure: { error in
+                                // nếu lỗi khi gửi chunk -> gửi lỗi ra observer và huỷ luôn
+                                observer.onError(error)
+                                composite.dispose()
+                            })
+                        
+                        // thêm disposable của writeValue vào composite để quản lý hủy
+                        _ = composite.insert(d)
+                    }
+                    
+                    // start gửi chunk từ 0
+                    sendChunk(at: 0)
+                    
+                }, onFailure: { error in
+                    // lỗi khi gửi start command
+                    observer.onError(error)
+                })
+            
+            // thêm start disposable vào composite
+            _ = composite.insert(startDisp)
+            
+            // khi outer subscriber dispose -> dispose composite (hủy mọi write)
+            return Disposables.create {
+                composite.dispose()
+            }
+        }
+    }
+    
+    func updateFirmware() -> Observable<Bool> {
+        guard let fwrUrl = Utilities.firstBinFile() else {
+            return Observable.just(false)
+        }
+        
+        let subject = PublishSubject<Bool>()
+        
+        if self.peripheral.isOta {
+            DialogViewController.showProcess(title: "Firmware Update", message: "Uploading firmware", hideCancel: true, task: {_ in
+                    self.sendFirmware(fileURL: fwrUrl) { progress in
+                        DialogViewController.updateProgress(Float(progress))
+                    }
+                    .subscribe(onNext: { success in
+                        subject.onNext(success)
+                        subject.onCompleted()
+                        //DialogViewController.finish(success: success)
+                    }, onError: { error in
+                        subject.onNext(false)
+                        subject.onCompleted()
+                        DialogViewController.finish(success: false)
+                    })
+                    .disposed(by: self.disposeBag)
+                }
+            );
+        } else {
+            DialogViewController.showLoading(title: "Firmware Update", message: "Uploading firmware", hideCancel: true, task:  {_ in
+                self.sendRebootOta(fileURL: fwrUrl)
+                    .subscribe(onNext: { success in
+                        subject.onNext(success)
+                        subject.onCompleted()
+                        //DialogViewController.finish(success: success)
+                    }, onError: { error in
+                        subject.onNext(false)
+                        subject.onCompleted()
+                        DialogViewController.finish(success: false)
+                    })
+                    .disposed(by: self.disposeBag)
+            });
+        }
+        
+        return subject.asObservable()
+    }
+    
     // MARK: - GET COMMANDS
     
     func sendGetDeviceSerial() -> Observable<Data?> {
@@ -467,7 +694,7 @@ class BluetoothDataManager {
             }
     }
     
-    func readAllSettings2() {
+    func readAllSettings2(completion: (() -> Void)? = nil) {
         
         if syncType == .kDownloadSetting {
             ProgressHUD.animate("Reading device settings...")
@@ -572,6 +799,8 @@ class BluetoothDataManager {
                         msg = "Logs from Dive Computer are downloaded"
                     } else if syncType == .kUploadDateTime {
                         msg = "You device’s Date/Time are updated"
+                    } else if syncType == .kRedownloadSetting {
+                        msg = "Firmware upgrade success"
                     }
                 }
                 
@@ -583,11 +812,17 @@ class BluetoothDataManager {
                     _ = DatabaseManager.shared.insertIntoTable(tableName: "devices", params: props)
                 }
                 
-                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg)
-                
+                if syncType == .kConnectOnly {
+                    completion?()
+                } else {
+                    BluetoothDeviceCoordinator.shared.disconnect()
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg)
+                }
             }, onError: { error in
                 ProgressHUD.dismiss()
+                
                 let msg = error.localizedDescription
+                BluetoothDeviceCoordinator.shared.disconnect()
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(msg)")
             })
             .disposed(by: disposeBag)

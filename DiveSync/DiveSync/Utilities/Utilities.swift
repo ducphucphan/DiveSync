@@ -258,6 +258,40 @@ class Utilities {
         return (pathOfPhoto, pathOfPhotoCache)
     }
     
+    static func saveOriginalSelectedImage(_ object: Any, createImageDate: Date?, dir: String, name: String) -> (String, String) {
+                
+        // Tạo thư mục chứa ảnh
+        let duidFolder = HomeDirectory().appendingFormat("%@", dir) // <-- Bạn cần cung cấp HomeDirectory()
+        try? FileManager.default.createDirectory(atPath: duidFolder, withIntermediateDirectories: true, attributes: nil)
+        
+        let pathOfPhoto = "\(duidFolder)\(name)"
+        let pathOfPhotoCache = "\(pathOfPhoto)_\(CACHE)" // CACHE là biến nào đó bạn định nghĩa
+        
+        // Chuyển object sang UIImage
+        var image: UIImage?
+        if let data = object as? Data {
+            image = UIImage(data: data)
+        } else if let img = object as? UIImage {
+            image = img
+        }
+        
+        guard let originalImage = image else {
+            PrintLog("Invalid image data")
+            return ("", "")
+        }
+        
+        // Ghi ảnh full size trong background
+        if let data = object as? Data {
+            try? data.write(to: URL(fileURLWithPath: pathOfPhoto))
+        } else {
+            if let fullImageData = originalImage.jpegData(compressionQuality: 1.0) {
+                try? fullImageData.write(to: URL(fileURLWithPath: pathOfPhoto))
+            }
+        }
+        
+        return (pathOfPhoto, pathOfPhotoCache)
+    }
+    
     static func convertRowToMap(_ row: Row) -> [String: String] {
         var result: [String: String] = [:]
         
@@ -353,5 +387,30 @@ class Utilities {
         }
 
         viewController.present(activityVC, animated: true, completion: nil)
+    }
+    
+    static func removeAllBinFiles() {
+        let fileManager = FileManager.default
+        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+
+        if let files = try? fileManager.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
+            for file in files where file.pathExtension == "bin" {
+                try? fileManager.removeItem(at: file)
+            }
+        }
+    }
+    
+    static func firstBinFile() -> URL? {
+        let fileManager = FileManager.default
+        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        
+        if let files = try? fileManager.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
+            // Lọc file có đuôi .bin
+            let binFiles = files.filter { $0.pathExtension == "bin" }
+            // Lấy file đầu tiên nếu có
+            return binFiles.first
+        }
+        
+        return nil
     }
 }
