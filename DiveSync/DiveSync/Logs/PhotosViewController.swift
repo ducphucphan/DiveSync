@@ -152,11 +152,10 @@ class PhotosViewController: BaseViewController {
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         
-        actionSheet.addAction(cameraAction)
-        actionSheet.addAction(albumsAction)
-        actionSheet.addAction(cancelAction)
-        
-        present(actionSheet, animated: true)
+        presentActionSheet(from: sender,
+                           title: nil,
+                           message: nil,
+                           actions: [cameraAction, albumsAction, cancelAction])
     }
     
     private func loadPhotos() {

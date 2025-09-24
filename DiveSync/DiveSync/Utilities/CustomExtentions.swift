@@ -125,6 +125,37 @@ extension UINavigationController {
     }
 }
 
+extension UIViewController {
+    func presentActionSheet(from sender: Any?,
+                            title: String? = nil,
+                            message: String? = nil,
+                            actions: [UIAlertAction]) {
+        
+        let actionSheet = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        
+        // Add actions
+        actions.forEach { actionSheet.addAction($0) }
+        
+        // ✅ Fix iPad: chỉ cần cấu hình nếu có popover
+        if let popover = actionSheet.popoverPresentationController {
+            if let sourceView = sender as? UIView {
+                popover.sourceView = sourceView
+                popover.sourceRect = sourceView.bounds
+            } else {
+                // fallback: hiện giữa màn hình
+                popover.sourceView = self.view
+                popover.sourceRect = CGRect(x: self.view.bounds.midX,
+                                            y: self.view.bounds.midY,
+                                            width: 0,
+                                            height: 0)
+            }
+            popover.permittedArrowDirections = [.up, .down]
+        }
+        
+        present(actionSheet, animated: true, completion: nil)
+    }
+}
+
 extension UIApplication {
     // MARK: - Helper to get topMost ViewController
     func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes

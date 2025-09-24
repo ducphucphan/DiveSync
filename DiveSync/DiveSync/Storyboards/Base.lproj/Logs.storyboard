@@ -2029,6 +2029,7 @@
                         <outlet property="endGasValueLb" destination="JgQ-Gz-2h4" id="KDs-01-2DO"/>
                         <outlet property="favoriteBtn" destination="Ekc-BI-tgt" id="ELR-UL-Xob"/>
                         <outlet property="gasDetailsView" destination="7QM-Cw-Hbf" id="SXQ-JZ-2mb"/>
+                        <outlet property="graphHeightContraints" destination="iSn-oS-J4D" id="sRt-zU-fYk"/>
                         <outlet property="ltbgValueLb" destination="8ry-z4-QK8" id="cq2-gh-SP7"/>
                         <outlet property="maxPo2ValueLb" destination="TYg-kw-hM8" id="afC-bx-AV8"/>
                         <outlet property="maxTempValueLb" destination="n4W-SK-s4L" id="tbI-cs-lt9"/>

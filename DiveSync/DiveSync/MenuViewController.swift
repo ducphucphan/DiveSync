@@ -104,45 +104,56 @@ extension MenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == data.count-1 {
             if !MFMailComposeViewController.canSendMail() {
-                    if let mailURL = URL(string: "message://"), UIApplication.shared.canOpenURL(mailURL) {
-                        if #available(iOS 10.0, *) {
-                            UIApplication.shared.open(mailURL, options: [:]) { success in
-                                if success {
-                                    PrintLog("Opened Mail app successfully.")
-                                } else {
-                                    PrintLog("Failed to open Mail app.")
-                                }
+                if let mailURL = URL(string: "message://"), UIApplication.shared.canOpenURL(mailURL) {
+                    if #available(iOS 10.0, *) {
+                        UIApplication.shared.open(mailURL, options: [:]) { success in
+                            if success {
+                                PrintLog("Opened Mail app successfully.")
+                            } else {
+                                PrintLog("Failed to open Mail app.")
                             }
-                        } else {
-                            UIApplication.shared.openURL(mailURL)
                         }
+                    } else {
+                        UIApplication.shared.openURL(mailURL)
                     }
-                    return
                 }
-
-                let alert = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
-
-                let attributedTitle = NSAttributedString(
-                    string: NSLocalizedString(title ?? "", comment: ""),
-                    attributes: [.font: UIFont(name: "HelveticaNeue-Medium", size: 17.0)!]
-                )
-                alert.setValue(attributedTitle, forKey: "attributedTitle")
-
-                let message = NSLocalizedString("Do you want to send us the data from the DIVESYNC app for analysis?", comment: "")
-                let attributedMessage = NSAttributedString(
-                    string: message,
-                    attributes: [.font: UIFont.systemFont(ofSize: 13)]
-                )
-                alert.setValue(attributedMessage, forKey: "attributedMessage")
-                let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { _ in
-                    self.sendMail()
-                }
-
-                let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
-
-                alert.addAction(yesAction)
-                alert.addAction(cancelAction)
-
+                return
+            }
+            
+            let style: UIAlertController.Style = UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
+            
+            let alert = UIAlertController(title: "", message: "", preferredStyle: style)
+            
+            let attributedTitle = NSAttributedString(
+                string: NSLocalizedString(title ?? "", comment: ""),
+                attributes: [.font: UIFont(name: "HelveticaNeue-Medium", size: 17.0)!]
+            )
+            alert.setValue(attributedTitle, forKey: "attributedTitle")
+            
+            let message = NSLocalizedString("Do you want to send us the data from the DIVESYNC app for analysis?", comment: "")
+            let attributedMessage = NSAttributedString(
+                string: message,
+                attributes: [.font: UIFont.systemFont(ofSize: 13)]
+            )
+            alert.setValue(attributedMessage, forKey: "attributedMessage")
+            let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { _ in
+                self.sendMail()
+            }
+            
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+            
+            alert.addAction(yesAction)
+            alert.addAction(cancelAction)
+            
+            if let popover = alert.popoverPresentationController, UIDevice.current.userInterfaceIdiom == .pad {
+                popover.sourceView = self.view
+                popover.sourceRect = CGRect(x: self.view.bounds.midX,
+                                            y: self.view.bounds.midY,
+                                            width: 0,
+                                            height: 0)
+                popover.permittedArrowDirections = []
+            }
+            
             self.present(alert, animated: true, completion: nil)
         } else {
             var viewcontroller: UIViewController

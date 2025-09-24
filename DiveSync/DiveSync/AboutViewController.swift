@@ -11,8 +11,20 @@ class AboutViewController: BaseViewController {
 
     @IBOutlet weak var tableView: UITableView!
     
+    let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.x"
+    
     let titleData = ["DiveSync", "Website", "Email", "Permissions", "Personal Data Protection", "Terms of Use"]
-    let subTitleData = ["version 1.0.0", "www.farallondive.com", "info@farallondive.com", "", "", ""]
+    private lazy var subTitleData: [String] = {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.x"
+        return [
+            "Version \(appVersion)",
+            "www.farallondive.com",
+            "info@farallondive.com",
+            "",
+            "",
+            ""
+        ]
+    }()
     let icons = ["", "", "", "permision", "protect", "terms"]
     
     override func viewDidLoad() {

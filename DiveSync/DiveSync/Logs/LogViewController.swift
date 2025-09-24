@@ -46,6 +46,8 @@ class LogViewController: BaseViewController {
     @IBOutlet weak var startEndGasStackView: UIStackView!
     @IBOutlet weak var conservatismStackView: UIStackView!
     
+    @IBOutlet weak var graphHeightContraints: NSLayoutConstraint!
+    
     //let fullVC = ChartFullScreenViewController()
     
     lazy var fullVC: ChartFullScreenViewController = {
@@ -75,6 +77,10 @@ class LogViewController: BaseViewController {
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
+        
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            graphHeightContraints.constant = (UIScreen.main.bounds.height / 2)
+        }
         
         pageControl.addTarget(self, action: #selector(pageControlTapped(_:)), for: .valueChanged)
                 

@@ -89,9 +89,7 @@ class OwnerInfoViewController: BaseViewController {
         }
     }
     
-    @IBAction func choosePhoto(_ sender: Any) {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
+    @IBAction func choosePhoto(_ sender: Any) {        
         let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 let cameraPicker = UIImagePickerController()
@@ -114,11 +112,10 @@ class OwnerInfoViewController: BaseViewController {
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         
-        actionSheet.addAction(cameraAction)
-        actionSheet.addAction(albumsAction)
-        actionSheet.addAction(cancelAction)
-        
-        present(actionSheet, animated: true, completion: nil)
+        presentActionSheet(from: sender,
+                               title: nil,
+                               message: nil,
+                               actions: [cameraAction, albumsAction, cancelAction])
     }
     
     @IBAction func shareTapped(_ sender: Any) {
