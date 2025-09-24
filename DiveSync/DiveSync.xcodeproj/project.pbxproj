@@ -219,6 +219,7 @@
 		48F1AE092CE5AF0100D617DD /* OwnTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F1AE082CE5AF0100D617DD /* OwnTableView.swift */; };
 		48F31E272CF105020064F6EE /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F31E262CF105020064F6EE /* Constants.swift */; };
 		48F49F7A2E5C9C47009703F4 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 48F49F792E5C9C47009703F4 /* ZIPFoundation */; };
+		48F4D2752E829A240003073D /* Lightbox in Frameworks */ = {isa = PBXBuildFile; productRef = 48F4D2742E829A240003073D /* Lightbox */; };
 		48F6A7F42DE849CE00CDFD05 /* SettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F6A7F32DE849CE00CDFD05 /* SettingsSection.swift */; };
 		48F6A7F92DE84C3800CDFD05 /* SE_device.json in Resources */ = {isa = PBXBuildFile; fileRef = 48F6A7F82DE84BCC00CDFD05 /* SE_device.json */; };
 		48F6A7FB2DE85FA700CDFD05 /* SubSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48F6A7FA2DE85FA700CDFD05 /* SubSettingsViewController.swift */; };
@@ -455,6 +456,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4874FD652CE1B97F0027C5F3 /* SwiftHEXColors in Frameworks */,
+				48F4D2752E829A240003073D /* Lightbox in Frameworks */,
 				4874FD292CE1B4B40027C5F3 /* SwiftEntryKit in Frameworks */,
 				4835FFF22D707A0000DEB4C3 /* ProgressHUD in Frameworks */,
 				48EE981A2DA5236300B3CFFB /* PagingKit in Frameworks */,
@@ -1002,6 +1004,7 @@
 				4835FFF12D707A0000DEB4C3 /* ProgressHUD */,
 				48EE98192DA5236300B3CFFB /* PagingKit */,
 				48F49F792E5C9C47009703F4 /* ZIPFoundation */,
+				48F4D2742E829A240003073D /* Lightbox */,
 			);
 			productName = Aqualung;
 			productReference = 484C44D22CE1B2EF0082039E /* DiveSync.app */;
@@ -1045,6 +1048,7 @@
 				485A45D12D7058020010E2F9 /* XCRemoteSwiftPackageReference "ProgressHUD" */,
 				484BD5002D9FE3F900DA598A /* XCRemoteSwiftPackageReference "PagingKit" */,
 				488F75AD2E5C97D7005BE406 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				48AD0F902E828E580046EDF9 /* XCRemoteSwiftPackageReference "Lightbox" */,
 			);
 			productRefGroup = 484C44D32CE1B2EF0082039E /* Products */;
 			projectDirPath = "";
@@ -1447,7 +1451,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 28;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1479,7 +1483,7 @@
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1489,7 +1493,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 28;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1521,7 +1525,7 @@
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -1637,6 +1641,14 @@
 				minimumVersion = 0.9.19;
 			};
 		};
+		48AD0F902E828E580046EDF9 /* XCRemoteSwiftPackageReference "Lightbox" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hyperoslo/Lightbox.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
 		48D195512D643AE700B21E25 /* XCRemoteSwiftPackageReference "RxBluetoothKit2" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ferdinandurban/RxBluetoothKit2";
@@ -1720,6 +1732,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 488F75AD2E5C97D7005BE406 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		48F4D2742E829A240003073D /* Lightbox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 48AD0F902E828E580046EDF9 /* XCRemoteSwiftPackageReference "Lightbox" */;
+			productName = Lightbox;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

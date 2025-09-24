@@ -11,6 +11,8 @@ import CoreBluetooth
 let C_SPECTER   = 8369
 let C_VIR       = 8682
 let C_DAV       = 6886
+let C_SKI       = 8375
+let C_SPI       = 8380
 
 let PKT_SIZE        = 135
 let PKT_SIZE_250    = 250
@@ -95,7 +97,9 @@ struct BLEConstants {
             "SPECTER",
             "VIR",
             "DAVINCI",
-            "DAV"
+            "DAV",
+            "SKI",
+            "SPI"
         ]
     }
     

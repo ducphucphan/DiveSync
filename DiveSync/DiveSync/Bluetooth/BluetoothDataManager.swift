@@ -465,6 +465,7 @@ class BluetoothDataManager {
         
         // bạn có thể set theo MTU: peripheral.maximumWriteValueLength(for: .withoutResponse)
         let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
+        print("MTU Size: %i", mtu)
         let fileSize = fileData.count
         let chunkSize = mtu
         let chunks: [Data] = stride(from: 0, to: fileSize, by: chunkSize).map {
@@ -716,7 +717,7 @@ class BluetoothDataManager {
                 return self.sendGetDeviceFwVersion()
             }
             .flatMap { fwData -> Observable<Data?> in
-                if let str = self.extractPayloadString(from: fwData) {
+                if let str = self.extractFirmwarePayloadString(from: fwData) {
                     PrintLog("Fw Revision: \(str)")
                     self.firmwareRev = str
                     result.firmwareRev = self.firmwareRev
@@ -1872,24 +1873,24 @@ class BluetoothDataManager {
     }
     
     func extractPayloadString(from response: Data?) -> String? {
-        /*
-         // Đảm bảo có đủ chiều dài tối thiểu
-         guard let response = response, response.count > 7 else { return nil }
-         
-         // Cắt payload: từ byte 5 đến trước CRC (loại 2 byte cuối)
-         let payloadRange = 5..<(response.count - 2)
-         let payloadData = response.subdata(in: payloadRange)
-         
-         // Chuyển thành chuỗi UTF-8 (hoặc đổi encoding nếu dùng khác)
-         let cleaned = payloadData.filter { $0 != 0 }
-         return String(bytes: cleaned, encoding: .utf8)
-         */
-        
         guard let response = response else { return nil }
         
         // Chuyển thành chuỗi UTF-8 (hoặc đổi encoding nếu dùng khác)
         let cleaned = response.filter { $0 != 0 }
         return String(bytes: cleaned, encoding: .utf8)
+    }
+    
+    func extractFirmwarePayloadString(from response: Data?) -> String? {
+        guard let response = response else { return nil }
+        
+        // Tìm vị trí 0x00 đầu tiên
+        if let nullIndex = response.firstIndex(of: 0x00) {
+            let subData = response.prefix(upTo: nullIndex)
+            return String(data: subData, encoding: .utf8)
+        } else {
+            // Không có 0x00 thì decode cả chuỗi
+            return String(data: response, encoding: .utf8)
+        }
     }
     
     func trimmedData(from string: String, maxBytes: Int) -> Data {

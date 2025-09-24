@@ -21,7 +21,8 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     @IBOutlet weak var spotNameValueLb: UILabel!
     @IBOutlet weak var countryValueLb: UILabel!
     
-    var searchController: UISearchController!
+    private var searchController: UISearchController!
+    private var searchButton: UIBarButtonItem!
     
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D(latitude: .zero, longitude: .zero)
@@ -41,7 +42,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         mapView.delegate = self
         mapView.showsUserLocation = false  // Tắt chấm xanh mặc định
         
-        let searchButton = UIBarButtonItem(
+        searchButton = UIBarButtonItem (
             barButtonSystemItem: .search,
             target: self,
             action: #selector(didTapSearchButton)
@@ -127,6 +128,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     @objc private func didTapSearchButton() {
         navigationItem.searchController = searchController
         searchController?.isActive = true
+        navigationItem.rightBarButtonItem = nil // ẩn nút search khi đang search
         
         // Gọi sau một nhịp runloop để đảm bảo searchBar đã attach vào view
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
@@ -266,10 +268,12 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         // Ẩn searchController khỏi navigationItem
         navigationItem.searchController = nil
+        navigationItem.rightBarButtonItem = searchButton
     }
     
     func willDismissSearchController(_ searchController: UISearchController) {
         navigationItem.searchController = nil
+        navigationItem.rightBarButtonItem = searchButton
     }
 }
 

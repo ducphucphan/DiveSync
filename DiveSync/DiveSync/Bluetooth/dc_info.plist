@@ -26,5 +26,17 @@
 		<string>DAVINCI</string>
 		<string>6886</string>
 	</array>
+	<key>SKI</key>
+	<array>
+		<string>ProAsia</string>
+		<string>SKIFF</string>
+		<string>8375</string>
+	</array>
+	<key>SPI</key>
+	<array>
+		<string>ProAsia</string>
+		<string>SPIRIT</string>
+		<string>8380</string>
+	</array>
 </dict>
 </plist>

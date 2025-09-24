@@ -31,6 +31,28 @@ extension AdvertisementData {
         let deviceId = vendorData[1 + offset].nodeId
         return AdvertisementInfo.getNodeType(deviceId: deviceId, protocolVersion: protocolVersion)
     }
+    
+    var deviceAddress: String? {
+        
+        guard let vendorData = manufacturerData else { return "" }
+        
+        let vendorDataCount = vendorData.count
+        var offset = 0
+        
+        var address: String?
+        if vendorDataCount != 6 {
+            address = String(format: "%02X:%02X:%02X:%02X:%02X:%02X",
+                             vendorData[6 + offset],
+                             vendorData[7 + offset],
+                             vendorData[8 + offset],
+                             vendorData[9 + offset],
+                             vendorData[10 + offset],
+                             vendorData[11 + offset])
+        }
+        
+        return address
+    }
+    
 }
 
 struct AdvertisementInfo {

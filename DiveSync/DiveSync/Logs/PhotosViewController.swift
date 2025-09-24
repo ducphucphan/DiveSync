@@ -7,28 +7,26 @@
 
 import UIKit
 import GRDB
+import Lightbox   // NEW >>> Thêm Lightbox
 
 class PhotosViewController: BaseViewController {
+    
     @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var noPhotosLabel: UILabel!
     
     @IBOutlet weak var addView: UIView!
+    @IBOutlet weak var shareView: UIView!
     @IBOutlet weak var deleteView: UIView!
-    @IBOutlet weak var cancelView: UIView!
     
     var selectedIndexes = Set<Int>()
     var isDeleteMode = false
-    
     var photoColumnNumber = 3
     
     var photos: [URL] = []
+    var lightboxImages: [LightboxImage] = []   // NEW >>> Dùng cho Lightbox
     
-    var diveLog: Row! {
-        didSet {
-        }
-    }
-    
+    var diveLog: Row!
     var onUpdated: (() -> Void)?
     
     override func viewDidLoad() {
@@ -45,14 +43,12 @@ class PhotosViewController: BaseViewController {
         }
         
         configCollectionView()
-        
+        addLongPressGesture()   // NEW >>> Thêm gesture long press
         loadPhotos()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
-        // Kiểm tra nếu là pop (trở lại màn hình trước) mới gọi onUpdated
         if self.isMovingFromParent {
             onUpdated?()
         }
@@ -69,30 +65,62 @@ class PhotosViewController: BaseViewController {
         collectionView.collectionViewLayout = layout
     }
     
-    @IBAction private func removeTapped(_ sender: UIButton) {
-        PrivacyAlert.showMessage(message: "Are you sure to want to delete selected photos?", allowTitle: "DELETE", denyTitle: "CANCEL") { action in
-            var errors: [Error] = []
-            
-            for index in self.selectedIndexes {
-                let fileName = self.photos[index].lastPathComponent
-                do {
-                    try DivePhotoManager.shared.deletePhoto(
-                        fileName: fileName,
-                        diveID: self.diveLog.intValue(key: "DiveID"),
-                        modelID: self.diveLog.stringValue(key: "ModelID"),
-                        serialNo: self.diveLog.stringValue(key: "SerialNo")
-                    )
-                } catch {
-                    errors.append(error)
-                }
+    private func addLongPressGesture() {   // NEW >>> Thêm long press
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        collectionView.addGestureRecognizer(longPress)
+    }
+    
+    private func prepareLightboxImages() {   // NEW >>> Tạo Lightbox data
+        lightboxImages = photos.compactMap { url in
+            if let image = UIImage(contentsOfFile: url.path) {
+                return LightboxImage(image: image)
             }
-            
-            self.selectedIndexes.removeAll()
-            self.loadPhotos()
-            
-            if !errors.isEmpty {
-                // Optional: hiển thị lỗi nếu cần
-                print("Có lỗi khi xoá một số ảnh:", errors)
+            return nil
+        }
+    }
+    
+    @IBAction private func shareTapped(_ sender: UIButton) {
+        // Lấy tất cả ảnh được chọn
+        let images = selectedIndexes.compactMap { index in
+            UIImage(contentsOfFile: photos[index].path)
+        }
+        
+        guard !images.isEmpty else { return }
+        
+        // Gọi tiện ích share có sẵn
+        Utilities.share(items: images, from: self, sourceView: sender)
+    }
+    
+    @IBAction private func removeTapped(_ sender: UIButton) {
+        PrivacyAlert.showMessage(message: "Are you sure to want to delete selected photos?",
+                                 allowTitle: "DELETE",
+                                 denyTitle: "CANCEL") { action in
+            switch action {
+            case .allow:
+                var errors: [Error] = []
+                
+                for index in self.selectedIndexes {
+                    let fileName = self.photos[index].lastPathComponent
+                    do {
+                        try DivePhotoManager.shared.deletePhoto(
+                            fileName: fileName,
+                            diveID: self.diveLog.intValue(key: "DiveID"),
+                            modelID: self.diveLog.stringValue(key: "ModelID"),
+                            serialNo: self.diveLog.stringValue(key: "SerialNo")
+                        )
+                    } catch {
+                        errors.append(error)
+                    }
+                }
+                
+                self.exitDeleteMode()   // NEW >>> Sau khi xoá thì reset state
+                self.loadPhotos()
+                
+                if !errors.isEmpty {
+                    print("Có lỗi khi xoá một số ảnh:", errors)
+                }
+            case .deny:
+                break
             }
         }
     }
@@ -105,11 +133,13 @@ class PhotosViewController: BaseViewController {
                 let cameraPicker = UIImagePickerController()
                 cameraPicker.sourceType = .camera
                 cameraPicker.delegate = self
-                self.present(cameraPicker, animated: true, completion: nil)
+                self.present(cameraPicker, animated: true)
             } else {
-                let alert = UIAlertController(title: nil, message: "Camera could not available for this device!", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
+                let alert = UIAlertController(title: nil,
+                                              message: "Camera not available on this device!",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(alert, animated: true)
             }
         }
         
@@ -117,7 +147,7 @@ class PhotosViewController: BaseViewController {
             let albumPicker = UIImagePickerController()
             albumPicker.sourceType = .photoLibrary
             albumPicker.delegate = self
-            self.present(albumPicker, animated: true, completion: nil)
+            self.present(albumPicker, animated: true)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -126,26 +156,51 @@ class PhotosViewController: BaseViewController {
         actionSheet.addAction(albumsAction)
         actionSheet.addAction(cancelAction)
         
-        present(actionSheet, animated: true, completion: nil)
+        present(actionSheet, animated: true)
     }
     
     private func loadPhotos() {
-        
         do {
-            let urls = try DivePhotoManager.shared.loadPhotoPaths(forDiveID: diveLog.intValue(key: "DiveID"),
-                                                                  modelID: diveLog.stringValue(key: "ModelID"),
-                                                                  serialNo: diveLog.stringValue(key: "SerialNo"))
-            photos = urls
-        } catch {}
-        
-        noPhotosLabel.isHidden = !(photos.count == 0)
-        
-        if photos.count == 0 {
-            deleteView.isHidden = true
-            cancelView.isHidden = true
+            photos = try DivePhotoManager.shared.loadPhotoPaths(
+                forDiveID: diveLog.intValue(key: "DiveID"),
+                modelID: diveLog.stringValue(key: "ModelID"),
+                serialNo: diveLog.stringValue(key: "SerialNo")
+            )
+        } catch {
+            photos = []
         }
         
+        noPhotosLabel.isHidden = !photos.isEmpty
+        //if photos.isEmpty {
+            deleteView.isHidden = true
+            shareView.isHidden = true
+        //}
+        
+        prepareLightboxImages()   // NEW >>> Refresh lightbox data
         collectionView.reloadData()
+    }
+    
+    private func exitDeleteMode() {   // NEW >>> Thoát chế độ delete
+        isDeleteMode = false
+        selectedIndexes.removeAll()
+        deleteView.isHidden = true
+        shareView.isHidden = true
+        collectionView.reloadData()
+    }
+    
+    // MARK: - Gesture
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        let point = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: point) else { return }
+        
+        if gesture.state == .began {
+            // Long press = chọn luôn và vào delete mode
+            isDeleteMode = true
+            selectedIndexes = [indexPath.item]
+            deleteView.isHidden = false
+            shareView.isHidden = false
+            collectionView.reloadData()
+        }
     }
 }
 
@@ -156,7 +211,7 @@ extension PhotosViewController: UICollectionViewDelegateFlowLayout, UICollection
         let numberOfColumns: CGFloat = CGFloat(photoColumnNumber)
         let spacing: CGFloat = 8
         let totalSpacing = spacing * (numberOfColumns - 1)
-        let totalInsets: CGFloat = spacing * 2  // 8pt padding trái/phải
+        let totalInsets: CGFloat = spacing * 2
         let availableWidth = collectionView.bounds.width - totalSpacing - totalInsets
         let itemWidth = floor(availableWidth / numberOfColumns)
         return CGSize(width: itemWidth, height: itemWidth)
@@ -176,61 +231,54 @@ extension PhotosViewController: UICollectionViewDelegateFlowLayout, UICollection
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCell
         cell.mainImageView.image = UIImage(contentsOfFile: photos[indexPath.item].path)
-        cell.isChecked = selectedIndexes.contains(indexPath.item) // Reset lại trạng thái check đúng
+        cell.isChecked = selectedIndexes.contains(indexPath.item)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? PhotoCell else { return }
-        cell.isChecked.toggle()
-        
-        
-        if selectedIndexes.contains(indexPath.row) {
-            selectedIndexes.remove(indexPath.row)
+        if isDeleteMode {
+            if selectedIndexes.contains(indexPath.item) {
+                selectedIndexes.remove(indexPath.item)
+            } else {
+                selectedIndexes.insert(indexPath.item)
+            }
+            collectionView.reloadItems(at: [indexPath])
+            
+            // Nếu không còn ảnh nào được chọn thì thoát delete mode
+            if selectedIndexes.isEmpty {
+                exitDeleteMode()
+            } else {
+                deleteView.isHidden = false
+                shareView.isHidden = false
+            }
         } else {
-            selectedIndexes.insert(indexPath.row)
+            // Bình thường = mở Lightbox
+            let controller = LightboxController(images: lightboxImages, startIndex: indexPath.item)
+            controller.dynamicBackground = true
+            present(controller, animated: true)
         }
-        
-        if selectedIndexes.count > 0 {
-            deleteView.isHidden = false
-        } else {
-            deleteView.isHidden = true
-        }
-        
     }
 }
 
 extension PhotosViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[.originalImage] as? UIImage {
-            
-            /*
-             var imageName = "default_name.jpg" // fallback name
-             
-             if let imageURL = info[.imageURL] as? URL {
-             imageName = imageURL.lastPathComponent
-             }
-             
-             _ = Utilities.saveSelectedImage(image, createImageDate: Date(), dir: PHOTOS_DIR, name: imageName)
-             
-             //photos.append(imageName)
-             
-             loadPhotos()
-             */
             do {
-                try DivePhotoManager.shared.addPhoto(image,
-                                                     diveID: diveLog.intValue(key: "DiveID"),
-                                                     modelID: diveLog.stringValue(key: "ModelID"),
-                                                     serialNo: diveLog.stringValue(key: "SerialNo"))
+                try DivePhotoManager.shared.addPhoto(
+                    image,
+                    diveID: diveLog.intValue(key: "DiveID"),
+                    modelID: diveLog.stringValue(key: "ModelID"),
+                    serialNo: diveLog.stringValue(key: "SerialNo")
+                )
             } catch {}
             
             loadPhotos()
         }
-        picker.dismiss(animated: true, completion: nil)
+        picker.dismiss(animated: true)
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion: nil)
+        picker.dismiss(animated: true)
     }
 }
-

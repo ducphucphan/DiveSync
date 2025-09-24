@@ -46,12 +46,12 @@ final class BluetoothDeviceCoordinator {
     private var didAutoSyncOnce = false
     private var isManualSyncing = false
     
-    private var deviceName: String? //DAVINCI-00000
+    private var deviceOtaAddress: String? //00:80:E1:27:5B:6D
     
     let scannedDevices = BehaviorRelay<[ScannedPeripheral]>(value: [])
     
     var isExpectedDisconnect = false
-    
+        
     // MARK: - Observe BLE state
     private func observeCentralState() {
         central.observeState()
@@ -112,6 +112,16 @@ final class BluetoothDeviceCoordinator {
                 if syncType == .kRedownloadSetting {
                     self.tryReconnectAfterUpdatingDevice(from: devices)
                 } else {
+                    // Trường hợp app restart trong khi đang OTA
+                    if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }) {
+                        if Utilities.firstBinFile() != nil {
+                            otaDevice.peripheral.isOta = true
+                            self.connectToUpdateFirmware(from: otaDevice)
+                            return
+                        }
+                    }
+                    
+                    // Nếu không phải OTA thì auto connect bình thường
                     self.tryAutoConnectKnown(from: devices)
                 }
             })
@@ -139,7 +149,7 @@ final class BluetoothDeviceCoordinator {
     
     private func connectToUpdateFirmware(from device: ScannedPeripheral) {
         connect2OtaDevice(
-            to: device.peripheral,
+            to: device,
             discover: true,
             characteristics: [BLEConstants.OTA.notification, BLEConstants.OTA.controlAddress, BLEConstants.OTA.rawData]
         )
@@ -203,10 +213,17 @@ final class BluetoothDeviceCoordinator {
     }
     
     private func tryReconnectAfterUpdatingDevice(from devices: [ScannedPeripheral]) {
-        guard syncType == .kRedownloadSetting, let deviceName = deviceName else { return }
+        guard syncType == .kRedownloadSetting else { return }
+        guard let deviceOtaAddress = deviceOtaAddress else { return }
         
-        // tìm trong list chứ không chỉ lấy first
-        guard let target = devices.first(where: { $0.peripheral.name == deviceName }) else { return }
+        guard let target = devices.first(where: { device in
+            if let currentAddress = device.advertisementData.deviceAddress {
+                print("currentAddress = \(currentAddress)")
+                print("deviceOtaAddress = \(deviceOtaAddress)")
+                return isOtaAddress(normal: currentAddress, ota: deviceOtaAddress)
+            }
+            return false
+        }) else { return }
         
         PrintLog("📥 Re-download setting for: \(target.peripheral.name ?? "")")
         
@@ -217,7 +234,7 @@ final class BluetoothDeviceCoordinator {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] manager in
                 manager.readAllSettings2()
-                self?.deviceName = nil
+                self?.deviceOtaAddress = nil
             })
     }
     
@@ -245,7 +262,6 @@ final class BluetoothDeviceCoordinator {
                 guard let self = self else { return .error(NSError(domain: "BLE", code: -99)) }
                 
                 self.connectedPeripheral = connected
-                self.deviceName = connected.peripheral.name
                 
                 let manager = BluetoothDataManager(peripheral: connected)
                 self.activeDataManager = manager
@@ -268,7 +284,7 @@ final class BluetoothDeviceCoordinator {
         return connectObs
     }
     
-    func connect2OtaDevice(to peripheral: Peripheral,
+    func connect2OtaDevice(to device: ScannedPeripheral,
                  discover: Bool = true,
                  services: [CBUUID] = BLEConstants.SERVICES.otaServices,
                  characteristics:[CBUUID]) -> Observable<BluetoothDataManager> {
@@ -280,7 +296,7 @@ final class BluetoothDeviceCoordinator {
         connectionDisposable?.dispose()
         connectionDisposable = nil
         
-        let connectObs = central.establishConnection(peripheral)
+        let connectObs = central.establishConnection(device.peripheral)
             .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
                 onDispose: {
                 PrintLog("🔌 Disconnected")
@@ -292,6 +308,8 @@ final class BluetoothDeviceCoordinator {
                 self.connectedPeripheral = connected
                 let manager = BluetoothDataManager(peripheral: connected)
                 self.activeDataManager = manager
+                
+                self.deviceOtaAddress = device.advertisementData.deviceAddress
                 
                 guard discover else {
                     //ProgressHUD.dismiss()
@@ -327,5 +345,24 @@ final class BluetoothDeviceCoordinator {
         activeDataManager = nil
         PrintLog("♻️ Disposed connection & reset state")
         // Scan vẫn tiếp tục ngầm
+    }
+    
+    // MARK: - UTILITIES
+    func isOtaAddress(normal: String, ota: String) -> Bool {
+        let normalParts = normal.split(separator: ":")
+        let otaParts = ota.split(separator: ":")
+        guard normalParts.count == 6, otaParts.count == 6 else { return false }
+        
+        // So sánh 5 byte đầu
+        let prefixNormal = normalParts.prefix(5).joined(separator: ":")
+        let prefixOta = otaParts.prefix(5).joined(separator: ":")
+        guard prefixNormal == prefixOta else { return false }
+        
+        // So sánh byte cuối
+        if let lastNormal = UInt8(normalParts[5], radix: 16),
+           let lastOta = UInt8(otaParts[5], radix: 16) {
+            return lastOta == lastNormal &+ 1
+        }
+        return false
     }
 }

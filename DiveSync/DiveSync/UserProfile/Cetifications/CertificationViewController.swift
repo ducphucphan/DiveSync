@@ -164,6 +164,16 @@ class CertificationViewController: BaseViewController {
         }
     }
     
+    @IBAction func shareTapped(_ sender: UIButton) {
+        
+        // Lấy tất cả ảnh được chọn
+        guard let im = imv.image else { return }
+        
+        // Gọi tiện ích share có sẵn
+        Utilities.share(items: [im], from: self, sourceView: sender)
+        
+    }
+    
     @IBAction func cancelTapped(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
     }
