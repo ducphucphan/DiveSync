@@ -13,13 +13,13 @@ class AboutViewController: BaseViewController {
     
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.x"
     
-    let titleData = ["DiveSync", "Website", "Email", "Permissions", "Personal Data Protection", "Terms of Use"]
+    let titleData = ["DiveSync", "Website", "Email", "Permissions", "Privacy policy", "Terms of use"]
     private lazy var subTitleData: [String] = {
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.x"
         return [
             "Version \(appVersion)",
-            "www.farallondive.com",
-            "info@farallondive.com",
+            "DiveSync.io",
+            "support@DiveSync.io",
             "",
             "",
             ""
@@ -73,22 +73,32 @@ extension AboutViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 1:
-            if let url = URL(string: "www.farallondive.com") {
+            if let url = URL(string: "DiveSync.io") {
                 UIApplication.shared.open(url)
             }
         case 2:
-            if let url = URL(string: "mailto:info@farallondive.com") {
+            if let url = URL(string: "mailto:support@DiveSync.io") {
                 UIApplication.shared.open(url)
             }
         case 3:
+            /*
             if let url = URL(string: UIApplication.openSettingsURLString),
                UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             }
+            */
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let vc = storyboard.instantiateViewController(withIdentifier: "PermissionViewController") as! PermissionViewController
+            vc.title = titleData[indexPath.row]
+            self.navigationController?.pushViewController(vc, animated: true)
+            
         case 4, 5: // Personal Data Protection & Terms
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "TermsViewController") as! TermsViewController
             vc.title = titleData[indexPath.row]
+            if indexPath.row == 4 {
+                vc.type = .privacyPolicy
+            }
             self.navigationController?.pushViewController(vc, animated: true)
         default:
             break

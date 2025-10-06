@@ -125,9 +125,7 @@ class PhotosViewController: BaseViewController {
         }
     }
     
-    @IBAction func addImageTapped(_ sender: Any) {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
+    @IBAction func addImageTapped(_ sender: Any) {        
         let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 let cameraPicker = UIImagePickerController()
@@ -160,11 +158,32 @@ class PhotosViewController: BaseViewController {
     
     private func loadPhotos() {
         do {
-            photos = try DivePhotoManager.shared.loadPhotoPaths(
+            let loadedPhotos = try DivePhotoManager.shared.loadPhotoPaths(
                 forDiveID: diveLog.intValue(key: "DiveID"),
                 modelID: diveLog.stringValue(key: "ModelID"),
                 serialNo: diveLog.stringValue(key: "SerialNo")
             )
+            
+            // Lọc chỉ giữ lại URL trỏ tới file ảnh hợp lệ
+            var validPhotos: [URL] = []
+            
+            for url in loadedPhotos {
+                if FileManager.default.fileExists(atPath: url.path) {
+                    validPhotos.append(url)
+                } else {
+                    // Xoá record trong DB nếu file không còn
+                    let fileName = url.lastPathComponent
+                    do {
+                        try DivePhotoManager.shared.deletePhoto(
+                            fileName: fileName,
+                            diveID: self.diveLog.intValue(key: "DiveID"),
+                            modelID: self.diveLog.stringValue(key: "ModelID"),
+                            serialNo: self.diveLog.stringValue(key: "SerialNo")
+                        )
+                    } catch {}
+                }
+            }
+            photos = validPhotos
         } catch {
             photos = []
         }

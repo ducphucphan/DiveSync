@@ -10,6 +10,8 @@ import GRDB
 
 class LogViewController: BaseViewController {
     
+    @IBOutlet weak var scrollView: UIScrollView!
+    
     @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var pageControl: UIPageControl!
@@ -77,6 +79,12 @@ class LogViewController: BaseViewController {
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
+        
+        topView.layer.shadowColor = UIColor.black.cgColor
+        topView.layer.shadowOpacity = 0.3   // độ mờ (0 → 1)
+        topView.layer.shadowOffset = CGSize(width: 0, height: 2) // đổ bóng xuống dưới
+        topView.layer.shadowRadius = 4      // độ tán bóng
+        topView.layer.masksToBounds = false
         
         if UIDevice.current.userInterfaceIdiom == .pad {
             graphHeightContraints.constant = (UIScreen.main.bounds.height / 2)
@@ -172,14 +180,16 @@ class LogViewController: BaseViewController {
         
         let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
         let tlbg = diveLog.stringValue(key: "EndingTlbg").toInt()
-        ltbgValueLb.text = String(format: "%d/5", (tlbg == 0) ? 1:tlbg)
+        var maxTlbg = diveLog.stringValue(key: "MaxTLBG").toInt()
+        if maxTlbg == 0 { maxTlbg = 5 }
+        ltbgValueLb.text = String(format: "%d/%d", ((tlbg == 0) ? 1:tlbg), maxTlbg)
         if isDeco == 1 {
-            ltbgValueLb.text = "5/5"
+            ltbgValueLb.text = String(format: "%d/%d", maxTlbg, maxTlbg)
         }
         
         var mode = diveLog.stringValue(key: "DiveMode").toInt()
         if mode >= 100 { mode = mode % 100 }
-        if mode == 3 { // GAUGE
+        if mode == 3 || hasViolationMode() { // GAUGE
             ltbgValueLb.text = "---"
         }
         
@@ -433,7 +443,13 @@ class LogViewController: BaseViewController {
     
     @IBAction func shareTapped(_ sender: Any) {
         
-        Utilities.share(items: ["What do you want to share?"], from: self)
+        // Lấy tất cả ảnh được chọn
+        guard let image = scrollView.captureFullContent() else {
+            return
+        }
+        
+        // Gọi tiện ích share có sẵn
+        Utilities.share(items: [image], from: self, sourceView: sender as! UIButton)
         
     }
     

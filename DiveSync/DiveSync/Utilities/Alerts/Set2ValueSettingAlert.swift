@@ -31,9 +31,12 @@ final class Set2ValueSettingAlert: UIViewController {
     
     private var leftValue: String = ""
     private var rightValue: String = ""
+    
+    private var messageText: String? = nil
         
     // MARK: - Initializer
-    static func showMessage(leftValue: String,
+    static func showMessage(message: String? = "Safety Stop",
+                            leftValue: String,
                             rightValue: String,
                             leftOptions: [String],
                             rightOptions: [String],
@@ -46,6 +49,7 @@ final class Set2ValueSettingAlert: UIViewController {
             return
         }
         
+        alert.messageText = message
         alert.leftOptions = leftOptions
         alert.rightOptions = rightOptions
         alert.leftValue = leftValue
@@ -67,6 +71,8 @@ final class Set2ValueSettingAlert: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        
+        messageLabel.text = messageText
         
         // Picker
         pickerViewLeft.dataSource = self

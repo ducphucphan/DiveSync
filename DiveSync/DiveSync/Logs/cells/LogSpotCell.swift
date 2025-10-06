@@ -53,7 +53,7 @@ class LogSpotCell: UICollectionViewCell, UIGestureRecognizerDelegate {
                     let lngStr = Utilities.coordinateLatString(Float(lng))
                     
                     // Cập nhật giao diện như ở ví dụ trước
-                    coordinateLb.isHidden = false
+                    coordinateLb.isHidden = true
                     coordinateLb.setTextStroke(text: "\(latStr), \(lngStr)", textColor: .darkGray, strokeColor: .white, strokeWidth: -1)
                     
                     // Cập nhật bản đồ
@@ -65,7 +65,7 @@ class LogSpotCell: UICollectionViewCell, UIGestureRecognizerDelegate {
                     mapView.removeAnnotations(mapView.annotations)
                     let annotation = MKPointAnnotation()
                     annotation.coordinate = coordinate
-                    annotation.title = name
+                    annotation.title = String(format: "%@\n%@, %@", name, latStr, lngStr)
                     mapView.addAnnotation(annotation)
                     
                     pinCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)

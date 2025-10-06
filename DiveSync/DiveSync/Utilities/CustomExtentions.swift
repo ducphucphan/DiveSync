@@ -66,13 +66,11 @@ extension UINavigationController {
         if pushBack {
             let backButton = UIButton(type: .system)
             
-            // Sử dụng UIButtonConfiguration thay vì contentEdgeInsets
-            var config = UIButton.Configuration.plain()
-            config.image = UIImage(systemName: backImage ?? "") // Hoặc ảnh tùy chỉnh
-            config.imagePadding = 0 // Điều chỉnh khoảng cách của icon
-            config.baseForegroundColor = .white
-            backButton.configuration = config
+            let image = UIImage(systemName: backImage ?? "")?
+                .withRenderingMode(.alwaysTemplate) // cho phép tintColor áp dụng
             
+            backButton.setImage(image, for: .normal)
+            backButton.tintColor = .white   // hoặc .label, .systemBlue...
             backButton.addTarget(self, action: #selector(defaultBackAction), for: .touchUpInside)
             
             let backItem = UIBarButtonItem(customView: backButton)
@@ -153,6 +151,35 @@ extension UIViewController {
         }
         
         present(actionSheet, animated: true, completion: nil)
+    }
+}
+
+extension UIScrollView {
+    /// Capture toàn bộ nội dung scroll view thành 1 UIImage
+    func captureFullContent() -> UIImage? {
+        // Lưu trạng thái ban đầu
+        let savedFrame = self.frame
+        let savedOffset = self.contentOffset
+
+        // Tạo context với kích thước contentSize
+        UIGraphicsBeginImageContextWithOptions(self.contentSize, false, UIScreen.main.scale)
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+
+        // Chỉnh offset và frame để vẽ toàn bộ
+        self.contentOffset = .zero
+        self.frame = CGRect(origin: .zero, size: self.contentSize)
+
+        // Render layer
+        self.layer.render(in: context)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+
+        UIGraphicsEndImageContext()
+
+        // Khôi phục trạng thái
+        self.frame = savedFrame
+        self.contentOffset = savedOffset
+
+        return image
     }
 }
 

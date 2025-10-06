@@ -13,6 +13,9 @@ class GasDetailViewController: BaseViewController {
     
     @IBOutlet var lineChartView: LineChartView!
     
+    @IBOutlet weak var switchesView: UIView!
+    @IBOutlet weak var startDiveView: UIView!
+    
     @IBOutlet weak var gasNoLb: UILabel!
     
     @IBOutlet weak var tankCapacityValueLb: UILabel!
@@ -100,6 +103,8 @@ class GasDetailViewController: BaseViewController {
         configureChart(with: gasData)
         
         lineChartView.isHidden = true
+        switchesView.isHidden = true
+        startDiveView.isHidden = true
     }
     
     private func configGasInfo() {

@@ -331,7 +331,8 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             guard !leftOptionsToUse.isEmpty else { return }
             guard !rightOptionsToUse.isEmpty else { return }
             
-            Set2ValueSettingAlert.showMessage(leftValue: safetyStopDepthValue,
+            Set2ValueSettingAlert.showMessage(message: row.title,
+                                              leftValue: safetyStopDepthValue,
                                               rightValue: safetyStopTimeValue,
                                               leftOptions: leftOptionsToUse,
                                               rightOptions: rightOptionsToUse) { [weak self] action, selectedValue in

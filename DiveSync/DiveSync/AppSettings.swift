@@ -35,5 +35,7 @@ final class AppSettings {
 extension AppSettings {
     enum Keys {
         static let autosyncDeviceIdentify = "autosyncDeviceIdentify"
+        
+        static let permissionIdentify = "permissionIdentify"
     }
 }

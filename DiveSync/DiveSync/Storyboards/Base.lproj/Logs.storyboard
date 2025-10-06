@@ -1865,6 +1865,7 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
+                                                <color key="backgroundColor" name="BGColor"/>
                                                 <constraints>
                                                     <constraint firstItem="Ekc-BI-tgt" firstAttribute="centerY" secondItem="wDA-t7-VEN" secondAttribute="centerY" id="5yi-9Y-e8o"/>
                                                     <constraint firstItem="37t-lt-fBC" firstAttribute="centerY" secondItem="wDA-t7-VEN" secondAttribute="centerY" id="6ZK-tv-NpU"/>
@@ -2038,6 +2039,7 @@
                         <outlet property="modeLb" destination="WiN-Cz-pOp" id="2LJ-Lo-CFN"/>
                         <outlet property="oxtoxValueLb" destination="2Sl-7s-Ohi" id="cFx-5w-MyF"/>
                         <outlet property="pageControl" destination="0AC-3V-lKY" id="myf-4X-UAQ"/>
+                        <outlet property="scrollView" destination="EGX-YG-XFk" id="kXg-wV-deZ"/>
                         <outlet property="sdvaLueLb" destination="PYp-zp-Uc1" id="GJx-ag-Nbk"/>
                         <outlet property="settingsUsedView" destination="1ty-RP-0tL" id="gbM-CS-EZF"/>
                         <outlet property="siValueLb" destination="iCe-RF-syV" id="Ssd-TY-RVL"/>
@@ -3321,7 +3323,9 @@
                         <outlet property="minDepthValueLb" destination="vbI-O9-lMl" id="Phm-cr-2pM"/>
                         <outlet property="rmvValueLb" destination="i7A-tB-3mO" id="V1l-Fh-JlW"/>
                         <outlet property="sacValueLb" destination="2cq-S0-8cj" id="1Wg-Ci-IKW"/>
+                        <outlet property="startDiveView" destination="Gtt-3K-e4l" id="akP-Qe-l0E"/>
                         <outlet property="startPsiValueLb" destination="KCB-mt-DVM" id="9A2-KU-QmJ"/>
+                        <outlet property="switchesView" destination="e60-no-1UF" id="OIH-TC-XMk"/>
                         <outlet property="tankCapacityValueLb" destination="Sy9-9k-Jts" id="xBZ-JU-cvK"/>
                         <outlet property="tankTypeValueLb" destination="YJI-oo-62F" id="ix0-da-Egc"/>
                     </connections>

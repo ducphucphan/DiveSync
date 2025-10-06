@@ -8,18 +8,55 @@
 import Foundation
 
 struct FirmwareURLBuilder {
-    static let base = "https://www.pelagicservices.com/firmware"
+    static let base = "https://www.divesync.io"
     
-    static func iniFile() -> String {
-        return "\(base)/PADAV_EN_Released.ini"
+    static func iniFile(modelId: Int) -> String {
+        var fileName = "CREDAV"
+        switch modelId {
+        case C_SKI:
+            fileName = "XSCSKI"
+        case C_SPI:
+            fileName = "OCESPI"
+        default:
+            fileName = "CREDAV"
+        }
+        
+        return "\(base)/verifyfw.php?file=\(fileName)_EN_Released.ini"
     }
     
-    static func readmeFile() -> String {
-        return "\(base)/PADAV_EN_Released.Readme"
+    static func readmeFile(modelId: Int) -> String {
+        var fileName = "CREDAV"
+        switch modelId {
+        case C_SKI:
+            fileName = "XSCSKI"
+        case C_SPI:
+            fileName = "OCESPI"
+        default:
+            fileName = "CREDAV"
+        }
+        
+        return "\(base)/verifyfw.php?file=\(fileName)_EN_Released.Readme"
     }
     
-    static func binFile(version: String) -> String {
+    static func binFile(modelId: Int, version: String) -> String {
+        
+        var companyName = ""
+        var fileName = ""
+        switch modelId {
+        case C_SKI:
+            companyName = "XS_SCUBA"
+            fileName = "XSCSKI.\(version)"
+        case C_SPI:
+            companyName = "OCEANPRO"
+            fileName = "OCESPI.\(version)"
+        default:
+            companyName = "CRESSI"
+            fileName = "CREDAV.\(version)"
+        }
+        
         // version: "1_0_74"
-        return "\(base)/PROASIA/PADAV.\(version).bin"
+        
+        ///getfile.php?file=COMPANY_NAME/filename.bin
+        return "\(base)/getfile.php?file=\(companyName)/\(fileName).bin"
     }
 }

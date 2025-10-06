@@ -6,10 +6,27 @@
 //
 
 import UIKit
+import WebKit
+
+enum TermsType {
+    case terms
+    case privacyPolicy
+    
+    var urlString: String {
+        switch self {
+        case .terms:
+            return "http://divesync.io/openfile.php?id=2025001"
+        case .privacyPolicy:
+            return "http://divesync.io/openfile.php?id=2025002"
+        }
+    }
+}
 
 class TermsViewController: BaseViewController {
-
-    @IBOutlet weak var contentTv: UITextView!
+    
+    @IBOutlet weak var webView: WKWebView!
+    
+    var type: TermsType = .terms   // default
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,7 +39,10 @@ class TermsViewController: BaseViewController {
                                                   backImage: "chevron.backward")
         self.title = nil
         
+        if let url = URL(string: type.urlString) {
+            let request = URLRequest(url: url)
+            webView.load(request)
+        }
+        
     }
-    
-
 }

@@ -297,14 +297,14 @@ class DeviceViewController: BaseViewController {
                     
                     // .ini
                     group.enter()
-                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.iniFile()) { text in
+                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.iniFile(modelId: Int(self.device.modelId ?? 0))) { text in
                         iniContent = text
                         group.leave()
                     }
                     
                     // .Readme
                     group.enter()
-                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.readmeFile()) { text in
+                    FirmwareAPI.fetchText(from: FirmwareURLBuilder.readmeFile(modelId: Int(self.device.modelId ?? 0))) { text in
                         readmeContent = text
                         group.leave()
                     }
@@ -438,7 +438,7 @@ extension DeviceViewController {
             task: { alertVC in
                 
                 let ver = latestVersion.replacingOccurrences(of: ".", with: "_")
-                guard let url = URL(string: FirmwareURLBuilder.binFile(version: ver)) else {
+                guard let url = URL(string: FirmwareURLBuilder.binFile(modelId: Int(self.device.modelId ?? 0), version: ver)) else {
                     DialogViewController.finish(success: false)
                     return
                 }
@@ -467,11 +467,23 @@ extension DeviceViewController {
                             Utilities.removeAllBinFiles()
                             
                             let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                            let destination = docs.appendingPathComponent(downloadTask.originalRequest?.url?.lastPathComponent ?? "firmware.bin")
-                            try FileManager.default.moveItem(at: location, to: destination)
                             
-                            DispatchQueue.main.async {
-                                self.onFinish?(true, destination)
+                            if let url = downloadTask.originalRequest?.url,
+                               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                               let fileParam = components.queryItems?.first(where: { $0.name == "file" })?.value {
+                                
+                                let filename = (fileParam as NSString).lastPathComponent // "CREDAV.1_0_92.bin"
+                                let destination = docs.appendingPathComponent(filename)
+                                
+                                try FileManager.default.moveItem(at: location, to: destination)
+                                
+                                DispatchQueue.main.async {
+                                    self.onFinish?(true, destination)
+                                }
+                            } else {
+                                DispatchQueue.main.async {
+                                    self.onFinish?(false, nil)
+                                }
                             }
                         } catch {
                             DispatchQueue.main.async {
@@ -480,6 +492,8 @@ extension DeviceViewController {
                         }
                     }
                 }
+                
+                PrintLog("✅ URL firmware from server: \(url)")
                 
                 let delegate = DownloadDelegate()
                 let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
@@ -497,7 +511,10 @@ extension DeviceViewController {
                                 self.doUpdateFirmware(fileUrl: fileUrl)
                             }
                         } else {
-                            DialogViewController.showMessage(title: "Firmware Update", message: "❌ Download failed")
+                            DialogViewController.showMessage(title: "Firmware Update", message: "❌ Download failed") {
+                                BluetoothDeviceCoordinator.shared.disconnect()
+                                self.updateDeviceStateUI()
+                            }
                         }
                     }
                 }

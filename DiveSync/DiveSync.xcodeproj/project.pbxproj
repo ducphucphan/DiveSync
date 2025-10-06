@@ -52,6 +52,7 @@
 		484E72962E6838CE008CC744 /* DeviceCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484E72952E6838CE008CC744 /* DeviceCollectionViewCell.swift */; };
 		48537A842CFFF66500AB116F /* CustomLineChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */; };
 		485718F52E6E818700ADAA25 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485718F42E6E818700ADAA25 /* AppSettings.swift */; };
+		485A87562E8CD6E800741E77 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485A87552E8CD6E800741E77 /* PermissionViewController.swift */; };
 		485CE1672E79726800F2D61E /* Data+STM32WBControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1652E79726800F2D61E /* Data+STM32WBControl.swift */; };
 		485CE1682E79726800F2D61E /* Data+STM32WBUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1662E79726800F2D61E /* Data+STM32WBUpload.swift */; };
 		485CE16A2E7972C900F2D61E /* MemoryLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1692E7972C900F2D61E /* MemoryLayout.swift */; };
@@ -279,6 +280,7 @@
 		484E72952E6838CE008CC744 /* DeviceCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCollectionViewCell.swift; sourceTree = "<group>"; };
 		48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLineChartRenderer.swift; sourceTree = "<group>"; };
 		485718F42E6E818700ADAA25 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		485A87552E8CD6E800741E77 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
 		485CE1652E79726800F2D61E /* Data+STM32WBControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+STM32WBControl.swift"; sourceTree = "<group>"; };
 		485CE1662E79726800F2D61E /* Data+STM32WBUpload.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+STM32WBUpload.swift"; sourceTree = "<group>"; };
 		485CE1692E7972C900F2D61E /* MemoryLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryLayout.swift; sourceTree = "<group>"; };
@@ -588,6 +590,7 @@
 				4874FD542CE1B9420027C5F3 /* MenuViewController.swift */,
 				489459DF2DBC8CBF00D1A03D /* AboutViewController.swift */,
 				483CCA762DBE4E7200E8138A /* TermsViewController.swift */,
+				485A87552E8CD6E800741E77 /* PermissionViewController.swift */,
 				483CCA782DBE523A00E8138A /* StatisticsViewController.swift */,
 				48D7E7B22DD38FC8000716FA /* ChartFullScreenViewController.swift */,
 				485718F42E6E818700ADAA25 /* AppSettings.swift */,
@@ -1213,6 +1216,7 @@
 				489311792DCBB0C600FF3219 /* PhotoCell.swift in Sources */,
 				48F31E272CF105020064F6EE /* Constants.swift in Sources */,
 				48DD82362E618E8700557367 /* CBPeripheral+Extension.swift in Sources */,
+				485A87562E8CD6E800741E77 /* PermissionViewController.swift in Sources */,
 				481226E42DD84CA30094DE24 /* MenuCell.swift in Sources */,
 				48E66E472D0C19C6005ACECE /* DropDown.swift in Sources */,
 				48970C402E3776EC00BBAC9E /* DivePhotoManager.swift in Sources */,
@@ -1451,7 +1455,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1493,7 +1497,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

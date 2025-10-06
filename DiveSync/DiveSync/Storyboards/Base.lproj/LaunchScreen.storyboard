@@ -21,7 +21,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Tdd-Mk-pmx">
-                                <rect key="frame" x="0.0" y="819" width="393" height="17"/>
+                                <rect key="frame" x="0.0" y="776" width="393" height="17"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Version" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="89X-MT-kbo">
                                         <rect key="frame" x="0.0" y="0.0" width="192.66666666666666" height="17"/>
@@ -37,18 +37,27 @@
                                     </label>
                                 </subviews>
                             </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Copyright © 2025 ProAsia Design Co. Ltd" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k5M-jU-9Ci">
+                                <rect key="frame" x="0.0" y="801" width="393" height="17"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="B3Color"/>
                         <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="k5M-jU-9Ci" secondAttribute="trailing" id="1ru-Ji-8t3"/>
                             <constraint firstItem="zEb-Dc-Tv0" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="OGw-Bf-JFL"/>
                             <constraint firstItem="zEb-Dc-Tv0" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="RsU-W1-r6r"/>
                             <constraint firstAttribute="bottom" secondItem="zEb-Dc-Tv0" secondAttribute="bottom" id="SVh-hU-fxJ"/>
+                            <constraint firstItem="k5M-jU-9Ci" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Ykr-da-tgO"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="zEb-Dc-Tv0" secondAttribute="trailing" id="cbb-uq-7XA"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Tdd-Mk-pmx" secondAttribute="trailing" id="cvB-rg-5nU"/>
-                            <constraint firstAttribute="bottom" secondItem="Tdd-Mk-pmx" secondAttribute="bottom" constant="16" id="gmm-ZJ-iZe"/>
                             <constraint firstItem="Tdd-Mk-pmx" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="ngu-KG-CTX"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="k5M-jU-9Ci" secondAttribute="bottom" id="yJ1-9W-39s"/>
                             <constraint firstItem="Tdd-Mk-pmx" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="ytc-OP-q1Y"/>
+                            <constraint firstItem="k5M-jU-9Ci" firstAttribute="top" secondItem="Tdd-Mk-pmx" secondAttribute="bottom" constant="8" id="zfU-fv-y2S"/>
                         </constraints>
                     </view>
                 </viewController>

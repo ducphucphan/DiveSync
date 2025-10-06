@@ -82,16 +82,29 @@ class StatisticsViewController: BaseViewController {
         
         for location in divespots {
             let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: location.latitude.toDouble(),
-                                                           longitude: location.longitude.toDouble())
-            annotation.title = location.spotName
+            annotation.coordinate = CLLocationCoordinate2D(
+                latitude: location.latitude.toDouble(),
+                longitude: location.longitude.toDouble()
+            )
+            annotation.title = location.spot_name
             annotations.append(annotation)
         }
         
         mapview.addAnnotations(annotations)
         mapview.showAnnotations(annotations, animated: true)
+        
+        // 🔥 Move camera đến Most Visited Dive Spot
+        let targetAnnotation = annotations.first { $0.title == stats?.mostVisitedDiveSpot } ?? annotations.first
+        if let target = targetAnnotation {
+            let region = MKCoordinateRegion(
+                center: target.coordinate,
+                latitudinalMeters: 1500,
+                longitudinalMeters: 1500
+            )
+            mapview.setRegion(region, animated: true)
+            mapview.selectAnnotation(target, animated: true)
+        }
     }
-
 }
 
 extension StatisticsViewController: UITableViewDataSource, UITableViewDelegate {

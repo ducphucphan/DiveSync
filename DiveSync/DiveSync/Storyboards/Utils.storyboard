@@ -928,6 +928,7 @@
                     </view>
                     <connections>
                         <outlet property="containerView" destination="z3O-Nm-BkL" id="cql-8g-Jei"/>
+                        <outlet property="messageLabel" destination="qrk-hL-nO2" id="lPG-SX-4q8"/>
                         <outlet property="pickerViewLeft" destination="S93-lH-Ffb" id="jgb-RD-Vc6"/>
                         <outlet property="pickerViewRight" destination="dYG-rV-t49" id="bn6-6o-Mub"/>
                     </connections>

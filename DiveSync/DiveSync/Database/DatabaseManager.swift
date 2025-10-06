@@ -22,7 +22,7 @@ struct DiveStatistics {
 
 struct DiveSpot: Codable, FetchableRecord, PersistableRecord {
     let id: Int?
-    let spotName: String?
+    let spot_name: String?
     let country: String?
     let latitude: String
     let longitude: String
