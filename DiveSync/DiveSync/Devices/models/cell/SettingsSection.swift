@@ -21,6 +21,8 @@ class SettingsRow: Codable {
     let options_ft: [String]?
     let safetyStopDepth_m: [String]?
     let safetyStopDepth_ft: [String]?
+    let left_options: [String]?
+    let right_options: [String]?
     let safetyStopTime: [String]?
     let icon: String?
     let destination: String? // nếu là dạng submenu thì dùng file json khác

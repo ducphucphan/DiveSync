@@ -25,6 +25,7 @@
 		4815F9C12DD8E79000AF04B4 /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4815F9C02DD8E79000AF04B4 /* SettingCell.swift */; };
 		481F49F62D07EA6900EB677F /* ShadowTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 481F49F52D07EA6900EB677F /* ShadowTableViewCell.swift */; };
 		48221AA62E77CFDC006D6324 /* FwrConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48221AA52E77CFDC006D6324 /* FwrConstants.swift */; };
+		4826021D2E938A2B00BB887E /* Set2ValueSettingAlert2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4826021C2E938A2B00BB887E /* Set2ValueSettingAlert2.swift */; };
 		482675A42DCA49560037E40C /* LogGraphCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482675A22DCA49560037E40C /* LogGraphCell.swift */; };
 		482675A52DCA49560037E40C /* LogGraphCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 482675A32DCA49560037E40C /* LogGraphCell.xib */; };
 		482675A82DCA497C0037E40C /* LogSpotCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482675A62DCA497C0037E40C /* LogSpotCell.swift */; };
@@ -253,6 +254,7 @@
 		4815F9C02DD8E79000AF04B4 /* SettingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
 		481F49F52D07EA6900EB677F /* ShadowTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowTableViewCell.swift; sourceTree = "<group>"; };
 		48221AA52E77CFDC006D6324 /* FwrConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FwrConstants.swift; sourceTree = "<group>"; };
+		4826021C2E938A2B00BB887E /* Set2ValueSettingAlert2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Set2ValueSettingAlert2.swift; sourceTree = "<group>"; };
 		482675A22DCA49560037E40C /* LogGraphCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogGraphCell.swift; sourceTree = "<group>"; };
 		482675A32DCA49560037E40C /* LogGraphCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LogGraphCell.xib; sourceTree = "<group>"; };
 		482675A62DCA497C0037E40C /* LogSpotCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSpotCell.swift; sourceTree = "<group>"; };
@@ -746,6 +748,7 @@
 				489DE34C2E49D7A4005CF407 /* MDepthInputAlert.swift */,
 				48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */,
 				480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */,
+				4826021C2E938A2B00BB887E /* Set2ValueSettingAlert2.swift */,
 				487DDF542E16A27900ABE9CA /* AlertHelper.swift */,
 				482F666B2E729020002E72EA /* DialogViewController.swift */,
 			);
@@ -1248,6 +1251,7 @@
 				48FD10BB2CEC3F7D00A1B01E /* CompartmentsView.swift in Sources */,
 				48E36CEF2DCF31CC00F77367 /* LogGasCell.swift in Sources */,
 				48A591302CE3741D00CDA352 /* DatabaseManager.swift in Sources */,
+				4826021D2E938A2B00BB887E /* Set2ValueSettingAlert2.swift in Sources */,
 				487DFC012DCE551D00C53D18 /* InputAlert.swift in Sources */,
 				48D195562D64462300B21E25 /* BluetoothManager.swift in Sources */,
 				483CCA792DBE523A00E8138A /* StatisticsViewController.swift in Sources */,
@@ -1455,7 +1459,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1497,7 +1501,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

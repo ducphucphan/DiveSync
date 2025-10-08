@@ -64,17 +64,34 @@ extension UINavigationController {
         var leftBarButtonItems: [UIBarButtonItem] = []
         
         if pushBack {
-            let backButton = UIButton(type: .system)
-            
             let image = UIImage(systemName: backImage ?? "")?
                 .withRenderingMode(.alwaysTemplate) // cho phép tintColor áp dụng
             
-            backButton.setImage(image, for: .normal)
-            backButton.tintColor = .white   // hoặc .label, .systemBlue...
-            backButton.addTarget(self, action: #selector(defaultBackAction), for: .touchUpInside)
+            var config = UIButton.Configuration.plain()
+            config.image = image
+            config.baseForegroundColor = .white
+            config.imagePadding = 0   // Khoảng cách giữa icon và text (nếu có)
+            config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 16)
             
+            let backButton = UIButton(configuration: config)
+            backButton.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+            backButton.addTarget(self, action: #selector(defaultBackAction), for: .touchUpInside)
             let backItem = UIBarButtonItem(customView: backButton)
             leftBarButtonItems.append(backItem)
+            
+            /*
+             let backButton = UIButton(type: .system)
+             
+             let image = UIImage(systemName: backImage ?? "")?
+             .withRenderingMode(.alwaysTemplate) // cho phép tintColor áp dụng
+             
+             backButton.setImage(image, for: .normal)
+             backButton.tintColor = .white   // hoặc .label, .systemBlue...
+             backButton.addTarget(self, action: #selector(defaultBackAction), for: .touchUpInside)
+             
+             let backItem = UIBarButtonItem(customView: backButton)
+             leftBarButtonItems.append(backItem)
+             */
         }
         
         // 3. Thêm title vào leftBarButtonItems
@@ -450,6 +467,16 @@ extension String {
             return String(self.dropFirst().dropLast())
         }
         return self
+    }
+    
+    var toSeconds: Int {
+        let components = self.split(separator: ":")
+        guard components.count == 2,
+              let minutes = Int(components[0]),
+              let seconds = Int(components[1]) else {
+            return 0
+        }
+        return minutes * 60 + seconds
     }
     
     /// Format device name: Prefix + số → Prefix-000xx

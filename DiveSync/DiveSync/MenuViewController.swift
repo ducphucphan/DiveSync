@@ -82,7 +82,7 @@ class MenuViewController: BaseViewController {
         let mail = MFMailComposeViewController()
         mail.mailComposeDelegate = self
         mail.setSubject("Send to tech support")
-        mail.setToRecipients(["phucpd@vtm-vn.com"])
+        mail.setToRecipients(["support@divesync.io"])
         mail.setMessageBody("", isHTML: false)
         
         // 5. Đính kèm zip

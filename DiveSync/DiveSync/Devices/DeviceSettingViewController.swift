@@ -64,7 +64,22 @@ class DeviceSettingViewController: BaseViewController {
     
     func applyValues() {
         if let sections = loadSettingsSections(from: "SE_device"), sections.count > 0 {
-            settings = sections[0].rows
+            //settings = sections[0].rows
+            
+            var excludedIDsForModel: [String] = []
+            switch Int(device.modelId ?? 0) {
+            case C_SKI, C_SPI:
+                excludedIDsForModel = ["set_brightness", "set_autoDim"]
+            default: // DAV
+                excludedIDsForModel = ["set_backlight_duration"]
+                break
+            }
+            
+            let rows = sections[0].rows
+            let filtered = rows.filter { row in
+                !excludedIDsForModel.contains(row.id ?? "")
+            }
+            settings = filtered
             
             var dbSettings: [String:String] = [:]
             do {
@@ -303,7 +318,24 @@ class DeviceSettingViewController: BaseViewController {
                         if let brightness = dbSettings["BacklightLevel"]?.toInt() {
                             row.value = String(format: "%d%%", brightness)
                         }
-                        
+                    case "set_autoDim":
+                        if let timeToDim = dbSettings["BacklightDimTime"]?.toInt(),
+                           let backLightDimLev = dbSettings["BacklightDimLevel"]?.toInt() {
+                            if timeToDim == 0 {
+                                row.value = String(format: "%@ - %d%%", OFF, backLightDimLev)
+                            } else {
+                                let timeToDimFormated = String(format: "%d:%02d", timeToDim / 60, timeToDim % 60)
+                                row.value = String(format: "%@ - %d%%", timeToDimFormated, backLightDimLev)
+                            }
+                        }
+                    case "set_backlight_duration":
+                        if let backlightDimTime = dbSettings["BacklightDimTime"]?.toInt() {
+                            if backlightDimTime == 0 {
+                                row.value = OFF
+                            } else {
+                                row.value = String(format: "%d SEC", backlightDimTime)
+                            }
+                        }
                     case "sound":
                         if let sound = dbSettings["BuzzerMode"]?.toInt() {
                             row.value = options?[sound]
@@ -484,6 +516,15 @@ class DeviceSettingViewController: BaseViewController {
                     dcSettings["Units"] = index
                 case "set_brightness":
                     dcSettings["BacklightLevel"] = value.toInt()
+                case "set_autoDim":
+                    let values = value.components(separatedBy: "-").map { $0.trimmingCharacters(in: .whitespaces) }
+                    let timeToDim = values[0].toSeconds
+                    let dimToBrightness = values[1].toInt()
+                    
+                    dcSettings["BacklightDimTime"] = timeToDim
+                    dcSettings["BacklightDimLevel"] = dimToBrightness
+                case "set_backlight_duration":
+                    dcSettings["BacklightDimTime"] = value.toInt()
                 case "sound":
                     dcSettings["BuzzerMode"] = index
                 default:
@@ -658,32 +699,75 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
         } else {
             // Xử lý các loại settings khác tại đây nếu cần
             
-            guard let options = row.options, options.count > 0 else {
-                return
-            }
-            
-            ItemSelectionAlert.showMessage(
-                message: row.title,
-                options: options,
-                selectedValue: row.value
-            ) { [weak self] action, value, index in
-                guard let self = self else { return }
+            switch row.type {
+            case .twoValueSelector:
                 
-                if action == .allow, let value = value {
-                    if let id = row.id, id == "units" {
-                        DeviceSettings.shared.unit = (value == "M - °C") ? 0 : 1
-                        
-                        let defaultValues: [String: String] = [
-                            "mdepth": "OFF",
-                            "safety_stop": "OFF",
-                        ]
-                        resetSettings(in: &self.settings, with: defaultValues)
+                guard let currentValue = row.value else {
+                    return
+                }
+                
+                var timeToDimValue = ""
+                var dimToBrightnessValue = ""
+
+                if currentValue == OFF {
+                    timeToDimValue = OFF
+                    timeToDimValue = "10%"
+                } else {
+                    let components = currentValue.components(separatedBy: " - ")
+                    if components.count == 2 {
+                        timeToDimValue = components[0]
+                        dimToBrightnessValue = components[1]
                     }
+                }
+                
+                let leftOptionsToUse: [String] = row.left_options ?? []
+                let rightOptionsToUse: [String] = row.right_options ?? []
+                
+                // Nếu optionsToUse rỗng thì return
+                guard !leftOptionsToUse.isEmpty else { return }
+                guard !rightOptionsToUse.isEmpty else { return }
+                
+                Set2ValueSettingAlert2.showMessage(message: row.title,
+                                                  leftValue: timeToDimValue,
+                                                  rightValue: dimToBrightnessValue,
+                                                  leftOptions: leftOptionsToUse,
+                                                  rightOptions: rightOptionsToUse) { [weak self] action, selectedValue in
+                    guard let self = self else { return }
                     
-                    self.settings[indexPath.row].value = value
-                    self.tableview.reloadRows(at: [indexPath], with: .automatic)
+                    if let selectedValue = selectedValue, action == .allow {
+                        self.settings[indexPath.row].value = selectedValue
+                        self.tableview.reloadRows(at: [indexPath], with: .automatic)
+                    }
+                }
+                
+            default:
+                guard let options = row.options, options.count > 0 else {
+                    return
+                }
+                
+                ItemSelectionAlert.showMessage(
+                    message: row.title,
+                    options: options,
+                    selectedValue: row.value
+                ) { [weak self] action, value, index in
+                    guard let self = self else { return }
                     
-                    PrintLog("Save to backend: \(value)")
+                    if action == .allow, let value = value {
+                        if let id = row.id, id == "units" {
+                            DeviceSettings.shared.unit = (value == "M - °C") ? 0 : 1
+                            
+                            let defaultValues: [String: String] = [
+                                "mdepth": "OFF",
+                                "safety_stop": "OFF",
+                            ]
+                            resetSettings(in: &self.settings, with: defaultValues)
+                        }
+                        
+                        self.settings[indexPath.row].value = value
+                        self.tableview.reloadRows(at: [indexPath], with: .automatic)
+                        
+                        PrintLog("Save to backend: \(value)")
+                    }
                 }
             }
         }

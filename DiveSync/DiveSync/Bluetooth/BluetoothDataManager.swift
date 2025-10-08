@@ -1393,6 +1393,8 @@ class BluetoothDataManager {
             systemSettings.units = row.uint8Value(key: "Units")
             systemSettings.waterDensity = row.uint8Value(key: "WaterDensity")
             systemSettings.backlightLevel = row.uint8Value(key: "BacklightLevel")
+            systemSettings.backlightDimTime_s = row.uint8Value(key: "BacklightDimTime")
+            systemSettings.backlightDimLevel = row.uint8Value(key: "BacklightDimLevel")
             systemSettings.buzzerMode = row.uint8Value(key: "BuzzerMode")
             systemSettings.diveLogSamplingTime_s = row.uint8Value(key: "DiveLogSamplingTime")
             
