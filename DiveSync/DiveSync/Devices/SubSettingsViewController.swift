@@ -121,7 +121,7 @@ class SubSettingsViewController: UIViewController {
         BluetoothDeviceCoordinator.shared.delegate = self
         if let deviceConnected = BluetoothDeviceCoordinator.shared.activeDataManager {
             // Da ket noi thi doc ngay
-            deviceConnected.readAllSettings2()
+            deviceConnected.readAllSettings()
         } else {
             // Chua ket noi thi thuc hien ket noi
             
@@ -146,7 +146,7 @@ class SubSettingsViewController: UIViewController {
                         manager.ModelID = dcInfo[2].toInt()
                     }
                     
-                    manager.readAllSettings2()
+                    manager.readAllSettings()
                     
                 }, onError: { [weak self] error in
                     guard let self = self else { return }

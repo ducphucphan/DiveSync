@@ -164,7 +164,7 @@ extension MenuViewController: UITableViewDelegate {
                 viewcontroller = storyboard.instantiateViewController(withIdentifier: "LogsViewController") as! LogsViewController
             case 1:
                 let storyboard = UIStoryboard(name: "Device", bundle: nil)
-                viewcontroller = storyboard.instantiateViewController(withIdentifier: "DeviceListViewController") as! DeviceListViewController
+                viewcontroller = storyboard.instantiateViewController(withIdentifier: "DeviceViewController") as! DeviceViewController
             case 2:
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 viewcontroller = storyboard.instantiateViewController(withIdentifier: "OwnerInfoViewController") as! OwnerInfoViewController

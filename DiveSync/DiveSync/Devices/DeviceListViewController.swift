@@ -59,7 +59,7 @@ extension DeviceListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let storyboard = UIStoryboard(name: "Device", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "DeviceViewController") as! DeviceViewController
-        vc.device = deviceList![indexPath.row]
+        //vc.device = deviceList![indexPath.row]
         self.navigationController?.pushViewController(vc, animated: true)
     }
 }

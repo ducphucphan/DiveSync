@@ -206,7 +206,7 @@ final class BluetoothDeviceCoordinator {
                 searchType = .kAddDive
                 syncType = .kDownloadDiveData
                 
-                manager.readAllSettings2()
+                manager.readAllSettings()
                 
                 self?.didAutoSyncOnce = true
             }, onError: { _ in ProgressHUD.dismiss() })
@@ -233,7 +233,7 @@ final class BluetoothDeviceCoordinator {
         _ = connect(to: target.peripheral, discover: true)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] manager in
-                manager.readAllSettings2()
+                manager.readAllSettings()
                 self?.deviceOtaAddress = nil
             })
     }

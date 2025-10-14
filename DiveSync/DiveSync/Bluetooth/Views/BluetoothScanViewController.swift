@@ -172,7 +172,7 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
                 }
                 
                 // Kết nối xong thì đọc settings luôn
-                manager.readAllSettings2()
+                manager.readAllSettings()
             }, onError: { error in
                 ProgressHUD.dismiss()
                 PrintLog("❌ Error: \(error.localizedDescription)")

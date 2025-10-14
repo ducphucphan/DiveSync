@@ -14,6 +14,16 @@ struct Devices: Codable, FetchableRecord, PersistableRecord {
     var AddressID: String?
     var Manufacture: String?
     
+    var StatsLastLogId: String?
+    var StatsLogTotalDives: String?
+    var StatsTotalDiveSecond: String?
+    var StatsMaxDepthFT: String?
+    var StatsAvgDepthFT: String?
+    var StatsMinTemperatureF: String?
+    var StatsMaxAltitudeLevel: String?
+    
+    var Units: String?
+    
     static let databaseTableName = "DEVICES"
 }
 

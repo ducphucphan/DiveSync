@@ -405,7 +405,7 @@ extension LogsViewController: AddLogsPopupDelegate {
                 // Kiểm tra SerialNo hoặc Identity có match không
                 if deviceConnected.peripheral.name == device.Identity {
                     // Đúng device đang kết nối → đọc luôn
-                    deviceConnected.readAllSettings2()
+                    deviceConnected.readAllSettings()
                     return
                 } else {
                     // Khác device → ngắt kết nối cũ trước khi connect mới
@@ -432,7 +432,7 @@ extension LogsViewController: AddLogsPopupDelegate {
                         manager.ModelID = dcInfo[2].toInt()
                     }
                     
-                    manager.readAllSettings2()
+                    manager.readAllSettings()
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()

@@ -71,6 +71,7 @@ struct DeviceDataSettings {
     var userInfo: String?
     var systemSettings: SystemSettings?
     var scubaSettings: ScubaSettings?
+    var statisticsData: Data?
 }
 
 struct DiveRecord {
@@ -695,7 +696,7 @@ class BluetoothDataManager {
             }
     }
     
-    func readAllSettings2(completion: (() -> Void)? = nil) {
+    func readAllSettings(completion: (() -> Void)? = nil) {
         
         if syncType == .kDownloadSetting {
             ProgressHUD.animate("Reading device settings...")
@@ -705,14 +706,14 @@ class BluetoothDataManager {
             ProgressHUD.animate("Downloading dives...")
         }
         
-        var result = DeviceDataSettings()
+        var settingsResult = DeviceDataSettings()
         
         sendGetDeviceSerial()
             .flatMap { serialData -> Observable<Data?> in
                 if let str = self.extractPayloadString(from: serialData) {
                     PrintLog("SerialNo: \(str)")
                     self.SerialNo = str.toInt()
-                    result.serialNo = self.SerialNo
+                    settingsResult.serialNo = self.SerialNo
                 }
                 return self.sendGetDeviceFwVersion()
             }
@@ -720,34 +721,39 @@ class BluetoothDataManager {
                 if let str = self.extractFirmwarePayloadString(from: fwData) {
                     PrintLog("Fw Revision: \(str)")
                     self.firmwareRev = str
-                    result.firmwareRev = self.firmwareRev
+                    settingsResult.firmwareRev = self.firmwareRev
                 }
                 return self.sendGetDeviceBleName()
             }
             .flatMap { bleNameData -> Observable<String> in
                 if let str = self.extractPayloadString(from: bleNameData) {
                     PrintLog("Device Name: \(str)")
-                    result.bleName = str
+                    settingsResult.bleName = str
                 }
                 return self.sendGetUserInfo()
             }
-            .flatMap { userInfo -> Observable<SystemSettings?> in
+            .flatMap { userInfo -> Observable<Data?> in
                 PrintLog("UserInfo: \(userInfo)")
-                result.userInfo = userInfo
+                settingsResult.userInfo = userInfo
+                return self.sendGetLogStatistics()
+            }
+            .flatMap { logStatistics -> Observable<SystemSettings?> in
+                PrintLog("Log Statistics: \(String(describing: logStatistics?.hexString))")
+                settingsResult.statisticsData = logStatistics
                 return self.sendGetSystemSettings()
             }
             .flatMap { systemSetting -> Observable<ScubaSettings?> in
                 PrintLog("System Settings: \(String(describing: systemSetting))")
-                result.systemSettings = systemSetting
+                settingsResult.systemSettings = systemSetting
                 return self.sendGetScubaSettings()
             }
             .flatMap { scubaSetting -> Observable<DeviceReadResult> in
                 PrintLog("Scuba Settings: \(String(describing: scubaSetting))")
-                result.scubaSettings = scubaSetting
+                settingsResult.scubaSettings = scubaSetting
                 
                 switch syncType {
                 case .kUploadSetting:
-                    return self.U_WriteSetting(settings: result)
+                    return self.U_WriteSetting(settings: settingsResult)
                         .catch { error in
                             PrintLog("⚠️ Failed to upload settings: \(error.localizedDescription)")
                             return .just(.failure(error: error.localizedDescription))
@@ -758,12 +764,12 @@ class BluetoothDataManager {
                                 .map { _ in writeResult }
                         }
                 case .kUploadDateTime:
-                    return self.U_SetDateTime(settings: result)
+                    return self.U_SetDateTime(settings: settingsResult)
                 default:
-                    return self.U_SaveSetting(settings: result)
+                    return self.U_SaveSetting(settings: settingsResult)
                         .flatMap { saveSuccess -> Observable<DeviceReadResult> in
                             if syncType == .kDownloadDiveData && saveSuccess == .success {
-                                return self.U_DownloadDives(settings: result)
+                                return self.U_DownloadDives(settings: settingsResult)
                             } else {
                                 return .just(saveSuccess)
                             }
@@ -787,6 +793,38 @@ class BluetoothDataManager {
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                     props["Manufacture"] = dcInfo[0]
                     props["ModelName"]   = dcInfo[1]
+                }
+                
+                if let logStatistics = settingsResult.statisticsData, let sysSettings = settingsResult.systemSettings {
+                    // Last saved Log Id
+                    let LastLogId = self.dataDecrypt(data: logStatistics, startIndex: 0, len: 4)
+                    props["StatsLastLogId"] = LastLogId
+                    
+                    // Total number of dives in Scuba/Gauge.
+                    let StatsLogTotalDives = self.dataDecrypt(data: logStatistics, startIndex: 4, len: 4)
+                    props["StatsLogTotalDives"] = StatsLogTotalDives
+                    
+                    // Total seconds of all dives
+                    let StatsTotalDiveSecond = self.dataDecrypt(data: logStatistics, startIndex: 8, len: 4)
+                    props["StatsTotalDiveSecond"] = StatsTotalDiveSecond
+                    
+                    // Max Depth of all dives in feets
+                    let StatsMaxDepthFT = self.dataDecryptFloat(data: logStatistics, startIndex: 12)
+                    props["StatsMaxDepthFT"] = StatsMaxDepthFT
+                    
+                    // Avg Depth of all dives in feets
+                    let StatsAvgDepthFT = self.dataDecryptFloat(data: logStatistics, startIndex: 16)
+                    props["StatsAvgDepthFT"] = StatsAvgDepthFT
+                    
+                    // Minimum temperature of all dives in Fahrenheit
+                    let StatsMinTemperatureF = self.dataDecryptFloat(data: logStatistics, startIndex: 20)
+                    props["StatsMinTemperatureF"] = StatsMinTemperatureF
+                    
+                    // Maximum Altitude level of all dives
+                    let StatsMaxAltitudeLevel = logStatistics[24]
+                    props["StatsMaxAltitudeLevel"] = StatsMaxAltitudeLevel
+                    
+                    props["Units"] = sysSettings.units.decimalString
                 }
                 
                 var msg = "Your device’s setting are downloaded"
@@ -827,90 +865,6 @@ class BluetoothDataManager {
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(msg)")
             })
             .disposed(by: disposeBag)
-    }
-
-    
-    func readAllSettings() -> Observable<DeviceReadResult> {
-        if syncType == .kDownloadSetting {
-            ProgressHUD.animate("Reading device settings...")
-        } else if syncType == .kUploadSetting {
-            ProgressHUD.animate("Writing device settings...")
-        } else if syncType == .kDownloadDiveData {
-            ProgressHUD.animate("Dowloading dives...")
-        }
-        
-        
-        var result = DeviceDataSettings()
-        
-        return sendGetDeviceSerial()
-            .flatMap { serialData -> Observable<Data?> in
-                if let str = self.extractPayloadString(from: serialData) {
-                    PrintLog("SerialNo: \(str)\n")
-                    self.SerialNo = str.toInt()
-                    result.serialNo = self.SerialNo
-                }
-                return self.sendGetDeviceFwVersion()
-            }
-            .flatMap { fwData -> Observable<Data?> in
-                if let str = self.extractPayloadString(from: fwData) {
-                    PrintLog("Fwr Revision: \(str)\n")
-                    self.firmwareRev = str
-                    result.firmwareRev = self.firmwareRev
-                }
-                return self.sendGetDeviceBleName()
-            }
-            .flatMap { bleNameData -> Observable<String> in
-                if let str = self.extractPayloadString(from: bleNameData) {
-                    PrintLog("Device Name: \(str)\n")
-                    result.bleName = str
-                }
-                return self.sendGetUserInfo()
-            }
-            .flatMap{ userInfo -> Observable<SystemSettings?> in
-                PrintLog("")
-                PrintLog("UserInfo: \(userInfo)")
-                result.userInfo = userInfo
-                return self.sendGetSystemSettings()
-            }
-            .flatMap{ systemSetting -> Observable<ScubaSettings?> in
-                PrintLog("")
-                PrintLog("System Settings: \(String(describing: systemSetting))")
-                result.systemSettings = systemSetting
-                return self.sendGetScubaSettings()
-            }
-            .flatMap{ scubaSetting in
-                PrintLog("")
-                PrintLog("Scuba Settings: \(String(describing: scubaSetting))")
-                result.scubaSettings = scubaSetting
-                
-                if syncType == .kUploadSetting {
-                    return self.U_WriteSetting(settings: result)
-                        .catch { error in
-                            PrintLog("⚠️ Failed to upload settings: \(error.localizedDescription)")
-                            return Observable.just(.failure(error: error.localizedDescription))
-                        }
-                        .flatMap { writeResult in
-                            // Gọi đọc lại settings sau khi ghi xong
-                            return self.readAllSettingsAndSave()
-                                .map { _ in writeResult } // Trả lại kết quả ghi ban đầu sau khi đọc xong
-                        }
-                } else if syncType == .kUploadDateTime {
-                    return self.U_SetDateTime(settings: result)
-                } else {
-                    return self.U_SaveSetting(settings: result)
-                        .flatMap { saveSuccess -> Observable<DeviceReadResult> in
-                            if syncType == .kDownloadDiveData && saveSuccess == .success {
-                                return self.U_DownloadDives(settings: result)
-                            } else {
-                                return .just(saveSuccess)
-                            }
-                        }
-                }
-            }
-            .catch { error in
-                PrintLog("❌ Error while reading device settings: \(error.localizedDescription)")
-                return Observable.just(.failure(error: error.localizedDescription)) // ❌ lỗi → trả false
-            }
     }
     
     private func readAllSettingsAndSave() -> Observable<DeviceReadResult> {
@@ -991,21 +945,7 @@ class BluetoothDataManager {
         return sendCommandWithResponse(data)
     }
     
-    func sendGetLog(logId: Int) -> Observable<Data?> {
-        var pkbuf: [UInt8] = [0, 0, 0x0, 0xA, 0, 0, 0, 0, 0, 0]
-        pkbuf[0] = UInt8((cmd.GetLog >> 8) & 0xFF)
-        pkbuf[1] = UInt8(cmd.GetLog & 0xFF)
-        
-        pkbuf[7] = UInt8(logId & 0xFF)
-        pkbuf[6] = UInt8((logId >> 8) & 0xFF)
-        pkbuf[5] = UInt8((logId >> 16) & 0xFF)
-        pkbuf[4] = UInt8((logId >> 24) & 0xFF)
-        
-        let data = Data(pkbuf)
-        return sendCommandWithResponse(data)
-    }
-    
-    func sendGetLog2(logId: Int, onSampleDownloaded: (() -> Void)? = nil) -> Observable<DiveRecord?> {
+    func sendGetLog(logId: Int, onSampleDownloaded: (() -> Void)? = nil) -> Observable<DiveRecord?> {
         var pkbuf: [UInt8] = [0, 0, 0x0, 0xA, 0, 0, 0, 0, 0, 0]
         pkbuf[0] = UInt8((cmd.GetLog >> 8) & 0xFF)
         pkbuf[1] = UInt8(cmd.GetLog & 0xFF)
@@ -1539,7 +1479,7 @@ class BluetoothDataManager {
                 
                 let observables = (1...Int(self.lastLogID)).map { logId in
                     PrintLog("GetLog - ID: \(logId)")
-                    return self.sendGetLog2(logId: logId) {
+                    return self.sendGetLog(logId: logId) {
                         let percent = Int((Double(self.completedSampleCount) / Double(max(self.totalSampleCount, 1))) * 100)
                         ProgressHUD.animate("Downloading dive \(logId)/\(self.lastLogID) (\(percent)%)")
                     }
