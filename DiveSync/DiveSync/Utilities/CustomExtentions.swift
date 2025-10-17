@@ -291,6 +291,40 @@ extension Row {
         }
         return 0
     }
+    
+    /// Chuyển Row -> [String: Any], có thể loại bỏ một số key nhất định
+    func toDictionary(excluding excludedKeys: [String] = []) -> [String: Any] {
+        var dict: [String: Any] = [:]
+        
+        for columnName in columnNames {
+            // Nếu cột nằm trong danh sách exclude thì bỏ qua
+            if excludedKeys.contains(columnName) { continue }
+            
+            let dbValue = self[columnName] as DatabaseValue
+            if dbValue.isNull {
+                dict[columnName] = ""
+                continue
+            }
+            
+            let dv = dbValue.databaseValue
+            
+            if let intVal = Int.fromDatabaseValue(dv) {
+                dict[columnName] = intVal
+            } else if let doubleVal = Double.fromDatabaseValue(dv) {
+                dict[columnName] = doubleVal
+            } else if let boolVal = Bool.fromDatabaseValue(dv) {
+                dict[columnName] = boolVal
+            } else if let stringVal = String.fromDatabaseValue(dv) {
+                dict[columnName] = stringVal
+            } else if let dateVal = Date.fromDatabaseValue(dv) {
+                dict[columnName] = dateVal
+            } else {
+                dict[columnName] = dv.description
+            }
+        }
+        
+        return dict
+    }
 }
 
 extension Optional where Wrapped == String {

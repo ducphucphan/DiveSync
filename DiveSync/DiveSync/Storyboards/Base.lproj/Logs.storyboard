@@ -3314,19 +3314,29 @@
                     </view>
                     <size key="freeformSize" width="403" height="1216"/>
                     <connections>
+                        <outlet property="avgDepthLb" destination="W4D-uD-Cq1" id="b6L-RQ-rni"/>
                         <outlet property="avgDepthValueLb" destination="GMG-Vr-SOp" id="naB-wV-nrE"/>
+                        <outlet property="breathingTimeLb" destination="VXy-40-Vji" id="Rrs-Lq-KWY"/>
                         <outlet property="breathingTimeValueLb" destination="MmD-Cs-FYf" id="45C-8z-wtT"/>
+                        <outlet property="endPsiLb" destination="Jhs-7K-boM" id="hKX-fx-GbA"/>
                         <outlet property="endPsiValueLb" destination="h4H-t9-txq" id="ueU-kB-XYb"/>
                         <outlet property="gasNoLb" destination="6wS-qP-6CI" id="CAz-j6-y9u"/>
                         <outlet property="lineChartView" destination="SOV-lt-ysc" id="1Zk-ss-CQj"/>
+                        <outlet property="mdepthLb" destination="nkz-Sz-L0g" id="hbA-Z4-LyN"/>
                         <outlet property="mdepthValueLb" destination="s7y-zP-vs0" id="WmN-Rr-YOA"/>
+                        <outlet property="minDepthLb" destination="hYE-kf-G9q" id="mnJ-cl-sss"/>
                         <outlet property="minDepthValueLb" destination="vbI-O9-lMl" id="Phm-cr-2pM"/>
+                        <outlet property="rmvLb" destination="RVh-b6-21h" id="Tk9-zC-TRK"/>
                         <outlet property="rmvValueLb" destination="i7A-tB-3mO" id="V1l-Fh-JlW"/>
+                        <outlet property="sacLb" destination="qBw-Lj-xfV" id="3w7-Pu-g2H"/>
                         <outlet property="sacValueLb" destination="2cq-S0-8cj" id="1Wg-Ci-IKW"/>
                         <outlet property="startDiveView" destination="Gtt-3K-e4l" id="akP-Qe-l0E"/>
+                        <outlet property="startPsiLb" destination="Oi2-Nk-CY9" id="izS-AR-539"/>
                         <outlet property="startPsiValueLb" destination="KCB-mt-DVM" id="9A2-KU-QmJ"/>
                         <outlet property="switchesView" destination="e60-no-1UF" id="OIH-TC-XMk"/>
+                        <outlet property="tankCapacityLb" destination="dX8-Dd-LCg" id="wOY-fd-9bc"/>
                         <outlet property="tankCapacityValueLb" destination="Sy9-9k-Jts" id="xBZ-JU-cvK"/>
+                        <outlet property="tankTypeLb" destination="qIU-KU-uUi" id="tUL-Gg-HaP"/>
                         <outlet property="tankTypeValueLb" destination="YJI-oo-62F" id="ix0-da-Egc"/>
                     </connections>
                 </viewController>

@@ -71,9 +71,50 @@ class DatabaseManager {
         }
         
         let dbQueue = try DatabaseQueue(path: databaseURL.path)
+        
+        // ✅ Thêm bước migration tại đây
+        try performMigrations(on: dbQueue)
+        
         return dbQueue
     }
     
+    private func performMigrations(on dbQueue: DatabaseQueue) throws {
+        var migrator = DatabaseMigrator()
+        
+        // ⚙️ Trong quá trình phát triển có thể dùng:
+        // migrator.eraseDatabaseOnSchemaChange = true
+        // nhưng đừng bật trong production vì sẽ xóa toàn bộ dữ liệu
+        
+        /*
+        // 🔹 Migration 1: thêm cột mới
+        migrator.registerMigration("v1_add_column_to_DiveLog") { db in
+            // Ví dụ: thêm cột DiveRating nếu chưa có
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "DiveRating" }) {
+                try db.alter(table: "DiveLog") { t in
+                    t.add(column: "DiveRating", .integer).defaults(to: 0)
+                }
+            }
+        }
+
+        // 🔹 Migration 2: thêm bảng mới
+        migrator.registerMigration("v2_create_table_SyncHistory") { db in
+            if try !db.tableExists("SyncHistory") {
+                try db.create(table: "SyncHistory") { t in
+                    t.autoIncrementedPrimaryKey("id")
+                    t.column("DeviceID", .integer).notNull()
+                    t.column("SyncTime", .datetime).notNull()
+                    t.column("Status", .text)
+                }
+            }
+        }
+        
+        // 🔹 Migration 3: thay đổi kiểu dữ liệu hoặc thêm index
+        migrator.registerMigration("v3_add_index_to_DiveLog") { db in
+            try db.create(index: "idx_DiveLog_SerialNo_ModelID", on: "DiveLog", columns: ["SerialNo", "ModelID"])
+        }
+        */
+        try migrator.migrate(dbQueue)
+    }
     
     // Public accessor to the database queue
     func getDatabaseQueue() -> DatabaseQueue {
@@ -635,6 +676,92 @@ extension DatabaseManager {
                 FROM divespot ds
                 JOIN DiveLog dl ON dl.DiveSiteID = ds.id
             """)
+        }
+    }
+    
+    /// Lấy ra record trong TankData theo TankNo và DiveID.
+    /// Nếu chưa tồn tại, tạo mới rồi trả về record đó.
+    func fetchOrCreateTankData(tankNo: Int, diveId: Int) -> Row? {
+        let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+        var resultRow: Row? = nil
+        
+        do {
+            try dbQueue.write { db in
+                // 1️⃣ Kiểm tra record có tồn tại chưa
+                resultRow = try Row.fetchOne(
+                    db,
+                    sql: "SELECT * FROM TankData WHERE TankNo = ? AND DiveID = ? LIMIT 1",
+                    arguments: [tankNo, diveId]
+                )
+                
+                // 2️⃣ Nếu chưa có → thêm mới
+                if resultRow == nil {
+                    try db.execute(
+                        sql: "INSERT INTO TankData (TankNo, DiveID) VALUES (?, ?)",
+                        arguments: [tankNo, diveId]
+                    )
+                    
+                    // 3️⃣ Lấy lại record vừa tạo
+                    resultRow = try Row.fetchOne(
+                        db,
+                        sql: "SELECT * FROM TankData WHERE TankNo = ? AND DiveID = ? LIMIT 1",
+                        arguments: [tankNo, diveId]
+                    )
+                }
+            }
+        } catch {
+            PrintLog("❌ fetchOrCreateTankData failed: \(error)")
+        }
+        
+        return resultRow
+    }
+}
+
+extension DatabaseManager {
+    func exportDiveDataDictionary(diveID: Int) -> [String: Any]? {
+        let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+        
+        do {
+            return try dbQueue.read { db -> [String: Any]? in
+                // 1️⃣ Lấy DiveLog
+                guard let diveLogRow = try Row.fetchOne(
+                    db,
+                    sql: "SELECT * FROM DiveLog WHERE DiveID = ?",
+                    arguments: [diveID]
+                ) else {
+                    PrintLog("❌ Không tìm thấy DiveLog với DiveID = \(diveID)")
+                    return nil
+                }
+                
+                let excludeDiveLog = ["DiveID", "DiveNo", "IsFavorite", "Water", "Sound", "Light", "Language"]
+                let diveLogDict = diveLogRow.toDictionary(excluding: excludeDiveLog)
+                
+                // 2️⃣ Lấy danh sách DiveProfile
+                let diveProfiles = try Row.fetchAll(
+                    db,
+                    sql: "SELECT * FROM DiveProfile WHERE DiveID = ? ORDER BY RowID ASC",
+                    arguments: [diveID]
+                ).map { $0.toDictionary() }
+                
+                // 3️⃣ Lấy danh sách TankData
+                let tankData = try Row.fetchAll(
+                    db,
+                    sql: "SELECT * FROM TankData WHERE DiveID = ? ORDER BY TankID ASC",
+                    arguments: [diveID]
+                ).map { $0.toDictionary() }
+                
+                // 4️⃣ Gom lại thành dictionary
+                let jsonBody: [String: Any] = [
+                    "DiveLog": diveLogDict,
+                    "DiveProfile": diveProfiles,
+                    "TankData": tankData
+                ]
+                
+                return jsonBody
+            }
+        } catch {
+            PrintLog("❌ exportDiveDataDictionary failed: \(error)")
+            return nil
         }
     }
 }

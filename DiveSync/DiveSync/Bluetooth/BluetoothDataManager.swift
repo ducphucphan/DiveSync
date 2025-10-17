@@ -28,6 +28,8 @@ struct cmd {
     static let GetDeviceFw: UInt16          = 0x0014
     static let GetDeviceBleName: UInt16     = 0x0016
     
+    static let GetFirmwareLCD: UInt16       = 0x0018
+    
     static let GetUserName: UInt16          = 0x0300
     static let GetUserSurName: UInt16       = 0x0302
     static let GetUserPhone: UInt16         = 0x0304
@@ -67,6 +69,7 @@ struct cmd {
 struct DeviceDataSettings {
     var serialNo: Int?
     var firmwareRev: String?
+    var firmwareRevLCD: String?
     var bleName: String?
     var userInfo: String?
     var systemSettings: SystemSettings?
@@ -276,6 +279,8 @@ class BluetoothDataManager {
                     cmdString = "GetDeviceFw \(String(format: "0x%04X", cmdValue))"
                 case cmd.GetDeviceBleName:
                     cmdString = "GetDeviceBleName \(String(format: "0x%04X", cmdValue))"
+                case cmd.GetFirmwareLCD:
+                    cmdString = "GetFirmwareLCD \(String(format: "0x%04X", cmdValue))"
                 case cmd.GetUserName:
                     cmdString = "GetUserName \(String(format: "0x%04X", cmdValue))"
                 case cmd.GetSystemSettings:
@@ -635,6 +640,15 @@ class BluetoothDataManager {
         return sendCommandWithResponse(data)
     }
     
+    func sendGetFirmwareLCD() -> Observable<Data?> {
+        var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
+        pkbuf[0] = UInt8((cmd.GetFirmwareLCD >> 8) & 0xFF)
+        pkbuf[1] = UInt8(cmd.GetFirmwareLCD & 0xFF)
+        
+        let data = Data(pkbuf)
+        return sendCommandWithResponse(data)
+    }
+    
     func sendGetUserInfo() -> Observable<String> {
         let commands: [UInt16] = [
             cmd.GetUserName,
@@ -730,7 +744,28 @@ class BluetoothDataManager {
                     PrintLog("Device Name: \(str)")
                     settingsResult.bleName = str
                 }
-                return self.sendGetUserInfo()
+                
+                if self.ModelID == 0 {
+                    if let (bleName, _) = self.peripheral.peripheral.splitDeviceName(),
+                       let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                        self.ModelID = dcInfo[2].toInt()
+                    }
+                }
+                if self.ModelID == C_SPI || self.ModelID == C_SKI {
+                    PrintLog("Reading LCD firmware info...")
+                    // Gọi thêm hàm sendGetFirmwareLCD, sau đó nối kết quả về sendGetUserInfo()
+                    return self.sendGetFirmwareLCD()
+                        .flatMap { lcdData -> Observable<String> in
+                            if let lcdStr = self.extractPayloadString(from: lcdData) {
+                                PrintLog("LCD Firmware: \(lcdStr)")
+                                settingsResult.firmwareRevLCD = lcdStr
+                            }
+                            // Sau khi đọc LCD xong, tiếp tục chuỗi bình thường
+                            return self.sendGetUserInfo()
+                        }
+                } else {
+                    return self.sendGetUserInfo()
+                }
             }
             .flatMap { userInfo -> Observable<Data?> in
                 PrintLog("UserInfo: \(userInfo)")
@@ -788,6 +823,12 @@ class BluetoothDataManager {
                 props["Identity"]  = m.peripheral.name ?? ""
                 props["LastSync"]  = Utilities.getLastSyncText(date: Date())
                 props["Firmware"]  = m.firmwareRev
+                
+                if let lcdFirmwareRev = settingsResult.firmwareRevLCD {
+                    props["LCDFirmware"]  = lcdFirmwareRev
+                } else {
+                    props["LCDFirmware"]  = ""
+                }
                 
                 if let (bleName, _) = self.peripheral.peripheral.splitDeviceName(),
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
@@ -893,7 +934,28 @@ class BluetoothDataManager {
                      PrintLog("Device Name: \(str)\n")
                      newResult.bleName = str
                  }
-                 return self.sendGetUserInfo()
+                 
+                 if self.ModelID == 0 {
+                     if let (bleName, _) = self.peripheral.peripheral.splitDeviceName(),
+                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                         self.ModelID = dcInfo[2].toInt()
+                     }
+                 }
+                 if self.ModelID == C_SPI || self.ModelID == C_SKI {
+                     PrintLog("Reading LCD firmware info...")
+                     // Gọi thêm hàm sendGetFirmwareLCD, sau đó nối kết quả về sendGetUserInfo()
+                     return self.sendGetFirmwareLCD()
+                         .flatMap { lcdData -> Observable<String> in
+                             if let lcdStr = self.extractPayloadString(from: lcdData) {
+                                 PrintLog("LCD Firmware: \(lcdStr)")
+                                 newResult.firmwareRevLCD = lcdStr
+                             }
+                             // Sau khi đọc LCD xong, tiếp tục chuỗi bình thường
+                             return self.sendGetUserInfo()
+                         }
+                 } else {
+                     return self.sendGetUserInfo()
+                 }
              }
              .flatMap{ userInfo -> Observable<SystemSettings?> in
                  PrintLog("")

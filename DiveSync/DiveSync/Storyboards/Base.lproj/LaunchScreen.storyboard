@@ -67,7 +67,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="launch_screen" width="611" height="964"/>
+        <image name="launch_screen" width="612" height="964"/>
         <namedColor name="B3Color">
             <color red="0.0" green="0.29411764705882354" blue="0.39215686274509803" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

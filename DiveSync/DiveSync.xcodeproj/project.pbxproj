@@ -12,6 +12,8 @@
 		20FAEC502CEF1E9E009B577F /* Cosmos in Frameworks */ = {isa = PBXBuildFile; productRef = 20FAEC4F2CEF1E9E009B577F /* Cosmos */; };
 		4801E0582D6C624A0076CDBA /* DeviceViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4801E0572D6C624A0076CDBA /* DeviceViewCell.swift */; };
 		480333432DFAE07800519AD0 /* Set2ValueSettingAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */; };
+		4805CC622E9F90840073BBFE /* BreathingTimeInputAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4805CC612E9F90840073BBFE /* BreathingTimeInputAlert.swift */; };
+		4805CC642E9F9F1A0073BBFE /* TankCapacityInputAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4805CC632E9F9F1A0073BBFE /* TankCapacityInputAlert.swift */; };
 		480778142DC5E37900ED56F8 /* DiveSpotCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480778132DC5E37900ED56F8 /* DiveSpotCell.swift */; };
 		4808428C2E68F63B007F5A11 /* BottomPopupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4808428B2E68F63B007F5A11 /* BottomPopupViewController.swift */; };
 		480C05252D9D2C3E0036D04E /* DeviceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480C05242D9D2C3E0036D04E /* DeviceSectionHeaderView.swift */; };
@@ -67,6 +69,10 @@
 		486427662DC905770001892E /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486427652DC905770001892E /* LogViewController.swift */; };
 		486882232E3098BA00C98C8E /* SortOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882222E3098BA00C98C8E /* SortOptions.swift */; };
 		486882252E3098DB00C98C8E /* SortPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882242E3098DB00C98C8E /* SortPreferences.swift */; };
+		486F23D72EA0E4BF00A655D9 /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23D62EA0E4BF00A655D9 /* APIError.swift */; };
+		486F23D92EA0E4F100A655D9 /* HTTPMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23D82EA0E4F100A655D9 /* HTTPMethod.swift */; };
+		486F23DB2EA0E50500A655D9 /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23DA2EA0E50500A655D9 /* APIRequest.swift */; };
+		486F23DD2EA0E51A00A655D9 /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23DC2EA0E51A00A655D9 /* APIManager.swift */; };
 		48746B592CF63E2800412319 /* Device.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 48746B582CF63E2800412319 /* Device.xcassets */; };
 		4874FD202CE1B4780027C5F3 /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = 4874FD1F2CE1B4780027C5F3 /* DGCharts */; };
 		4874FD232CE1B48A0027C5F3 /* M13Checkbox in Frameworks */ = {isa = PBXBuildFile; productRef = 4874FD222CE1B48A0027C5F3 /* M13Checkbox */; };
@@ -241,6 +247,8 @@
 		20AF12B92CF71A40006642A0 /* DeviceCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceCell.swift; sourceTree = "<group>"; };
 		4801E0572D6C624A0076CDBA /* DeviceViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceViewCell.swift; sourceTree = "<group>"; };
 		480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Set2ValueSettingAlert.swift; sourceTree = "<group>"; };
+		4805CC612E9F90840073BBFE /* BreathingTimeInputAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreathingTimeInputAlert.swift; sourceTree = "<group>"; };
+		4805CC632E9F9F1A0073BBFE /* TankCapacityInputAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TankCapacityInputAlert.swift; sourceTree = "<group>"; };
 		480778132DC5E37900ED56F8 /* DiveSpotCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiveSpotCell.swift; sourceTree = "<group>"; };
 		4808428B2E68F63B007F5A11 /* BottomPopupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomPopupViewController.swift; sourceTree = "<group>"; };
 		480C05242D9D2C3E0036D04E /* DeviceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSectionHeaderView.swift; sourceTree = "<group>"; };
@@ -296,6 +304,10 @@
 		486427652DC905770001892E /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		486882222E3098BA00C98C8E /* SortOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortOptions.swift; sourceTree = "<group>"; };
 		486882242E3098DB00C98C8E /* SortPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortPreferences.swift; sourceTree = "<group>"; };
+		486F23D62EA0E4BF00A655D9 /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		486F23D82EA0E4F100A655D9 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
+		486F23DA2EA0E50500A655D9 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
+		486F23DC2EA0E51A00A655D9 /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
 		48746B582CF63E2800412319 /* Device.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Device.xcassets; sourceTree = "<group>"; };
 		4874FD3A2CE1B8C50027C5F3 /* GradientView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		4874FD3B2CE1B8C50027C5F3 /* UIImageView+Extend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImageView+Extend.swift"; sourceTree = "<group>"; };
@@ -580,6 +592,7 @@
 				48D21DD62D0D3EBC004E8018 /* helvetica-neue-lt-pro-2-cufonfonts */,
 				48A5912B2CE373F900CDA352 /* Database */,
 				4874FD332CE1B8070027C5F3 /* Utilities */,
+				486F23D52EA0E48600A655D9 /* Networking */,
 				4874FD322CE1B7FB0027C5F3 /* Storyboards */,
 				4874FD312CE1B7F00027C5F3 /* Common */,
 				48E66E382D0C19C6005ACECE /* DropDown */,
@@ -657,6 +670,17 @@
 				486882242E3098DB00C98C8E /* SortPreferences.swift */,
 			);
 			path = sorts;
+			sourceTree = "<group>";
+		};
+		486F23D52EA0E48600A655D9 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				486F23D62EA0E4BF00A655D9 /* APIError.swift */,
+				486F23D82EA0E4F100A655D9 /* HTTPMethod.swift */,
+				486F23DA2EA0E50500A655D9 /* APIRequest.swift */,
+				486F23DC2EA0E51A00A655D9 /* APIManager.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 		4874FD302CE1B7D90027C5F3 /* CellViews */ = {
@@ -746,6 +770,8 @@
 				48A361192DD99C9000939860 /* SearchLogAlert.swift */,
 				48F6A7FC2DE864BA00CDFD05 /* ItemSelectionAlert.swift */,
 				489DE34C2E49D7A4005CF407 /* MDepthInputAlert.swift */,
+				4805CC612E9F90840073BBFE /* BreathingTimeInputAlert.swift */,
+				4805CC632E9F9F1A0073BBFE /* TankCapacityInputAlert.swift */,
 				48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */,
 				480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */,
 				4826021C2E938A2B00BB887E /* Set2ValueSettingAlert2.swift */,
@@ -1179,6 +1205,7 @@
 				48ECA6B32DF965C200AB2C47 /* DeviceSettings.swift in Sources */,
 				48221AA62E77CFDC006D6324 /* FwrConstants.swift in Sources */,
 				484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */,
+				486F23D92EA0E4F100A655D9 /* HTTPMethod.swift in Sources */,
 				20AF12B82CF71A02006642A0 /* Devices.swift in Sources */,
 				4887C30F2DC5110100742DF3 /* EditDatePickerViewController.swift in Sources */,
 				48E66E442D0C19C6005ACECE /* DPDKeyboardListener.swift in Sources */,
@@ -1208,6 +1235,7 @@
 				485718F52E6E818700ADAA25 /* AppSettings.swift in Sources */,
 				4874FD432CE1B8C60027C5F3 /* ShadowView.swift in Sources */,
 				48B7F04C2CF17AB000518172 /* ChartHighlightMarker.swift in Sources */,
+				486F23DB2EA0E50500A655D9 /* APIRequest.swift in Sources */,
 				481404FA2DC8F4D8000489A1 /* LogCell.swift in Sources */,
 				483D80F32D191ABB009041E2 /* CustomHighLightRenderer.swift in Sources */,
 				481F49F62D07EA6900EB677F /* ShadowTableViewCell.swift in Sources */,
@@ -1252,6 +1280,7 @@
 				48E36CEF2DCF31CC00F77367 /* LogGasCell.swift in Sources */,
 				48A591302CE3741D00CDA352 /* DatabaseManager.swift in Sources */,
 				4826021D2E938A2B00BB887E /* Set2ValueSettingAlert2.swift in Sources */,
+				486F23D72EA0E4BF00A655D9 /* APIError.swift in Sources */,
 				487DFC012DCE551D00C53D18 /* InputAlert.swift in Sources */,
 				48D195562D64462300B21E25 /* BluetoothManager.swift in Sources */,
 				483CCA792DBE523A00E8138A /* StatisticsViewController.swift in Sources */,
@@ -1280,12 +1309,15 @@
 				4874FD492CE1B8D10027C5F3 /* ThemeManager.swift in Sources */,
 				481404F72DC8F49B000489A1 /* LogsViewController.swift in Sources */,
 				48FB84982D66E8AF003FE36A /* BluetoothScanViewController.swift in Sources */,
+				4805CC622E9F90840073BBFE /* BreathingTimeInputAlert.swift in Sources */,
 				48E66E452D0C19C6005ACECE /* DPDConstants.swift in Sources */,
+				4805CC642E9F9F1A0073BBFE /* TankCapacityInputAlert.swift in Sources */,
 				48D7E7B52DD43946000716FA /* RootNavViewController.swift in Sources */,
 				48E66E462D0C19C6005ACECE /* DPDUIView+Extension.swift in Sources */,
 				480F4F882CEB36BA00B77401 /* ContentScrollView.swift in Sources */,
 				48750D612CF47B7F00455EE0 /* Utilities.swift in Sources */,
 				485EE45C2E794DB300EF25AC /* NodeFamily.swift in Sources */,
+				486F23DD2EA0E51A00A655D9 /* APIManager.swift in Sources */,
 				48E36CF12DCF349400F77367 /* GasDetailViewController.swift in Sources */,
 				485CE1672E79726800F2D61E /* Data+STM32WBControl.swift in Sources */,
 				487DFC062DCE60DB00C53D18 /* TankTypeAlert.swift in Sources */,
@@ -1459,7 +1491,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32;
+				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1501,7 +1533,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32;
+				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

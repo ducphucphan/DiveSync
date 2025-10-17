@@ -112,13 +112,19 @@ class DeviceViewController: BaseViewController {
         self.navigationController?.setCustomTitle(for: self.navigationItem, title: self.title ?? "", pushBack: true)
         self.title = nil
         
-        let addDeviceButton = UIBarButtonItem (
-            barButtonSystemItem: .add,
-            target: self,
-            action: #selector(addBarButtonTapped)
-        )
-        addDeviceButton.tintColor = .white
-        
+        var config = UIButton.Configuration.plain()
+        config.title = "Add"
+        config.image = UIImage(systemName: "plus")
+        config.imagePlacement = .trailing
+        config.imagePadding = 4
+        config.baseForegroundColor = .white
+
+        let button = UIButton(configuration: config)
+        button.addAction(UIAction { _ in
+            self.addBarButtonTapped()
+        }, for: .touchUpInside)
+
+        let addDeviceButton = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = addDeviceButton
         
         // paging setup
@@ -192,7 +198,13 @@ class DeviceViewController: BaseViewController {
         
         deviceName.text = device.ModelName ?? ""
         serialNoLb.text = String(format: "Serial Number: %05d", device.SerialNo?.toInt() ?? 0)
-        versionLb.text = "Firmware Version: \(device.Firmware ?? "")"
+        
+        var versionText = "Firmware Version: \(device.Firmware ?? "")"
+        if let lcd = device.LCDFirmware, !lcd.isEmpty {
+            versionText += ".\(lcd)"
+        }
+        versionLb.text = versionText
+        
         syncedLb.text = "Synced: " + (device.LastSync ?? "")
         
         if let deviceIdentify = device.Identity, let autosyncDeviceIdentify:String = AppSettings.shared.get(forKey: AppSettings.Keys.autosyncDeviceIdentify), deviceIdentify == autosyncDeviceIdentify {

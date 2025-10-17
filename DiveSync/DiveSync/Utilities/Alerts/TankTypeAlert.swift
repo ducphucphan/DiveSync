@@ -1,8 +1,11 @@
 import UIKit
 
+let alunium = "Aluminum"
+let steel = "Steel"
+
 enum TankTypeAlertAction {
     case cancel
-    case save(index: Int, text: String?)
+    case save(text: String?)
 }
 
 final class TankTypeAlert: UIViewController {
@@ -28,12 +31,17 @@ final class TankTypeAlert: UIViewController {
     private var selectedIndex: Int = 0
 
     // MARK: - Init
-    init(title: String, completion: @escaping (TankTypeAlertAction) -> Void) {
+    init(title: String,
+         selectedIndex: Int = 0,
+         otherText: String? = nil, completion: @escaping (TankTypeAlertAction) -> Void) {
         super.init(nibName: nil, bundle: nil)
         self.completion = completion
+        self.selectedIndex = selectedIndex
         setupViews(title: title)
         modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
+        self.otherTextField.text = otherText
+        updateSelection(index: selectedIndex)
     }
 
     required init?(coder: NSCoder) {
@@ -73,9 +81,11 @@ final class TankTypeAlert: UIViewController {
     }
 
     // MARK: - Static Show Method
-    static func show(title: String, completion: @escaping (TankTypeAlertAction) -> Void) {
+    static func show(title: String,
+                     selectedIndex: Int = 0,
+                     otherText: String? = nil, completion: @escaping (TankTypeAlertAction) -> Void) {
         guard let topVC = UIApplication.shared.topMostViewController() else { return }
-        let alert = TankTypeAlert(title: title, completion: completion)
+        let alert = TankTypeAlert(title: title, selectedIndex: selectedIndex, otherText: otherText, completion: completion)
         topVC.present(alert, animated: true)
     }
 
@@ -83,7 +93,7 @@ final class TankTypeAlert: UIViewController {
     private func setupViews(title: String) {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
 
-        containerView.backgroundColor = UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1.0)
+        containerView.backgroundColor = .B_3
         containerView.layer.cornerRadius = 16
         containerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(containerView)
@@ -95,12 +105,12 @@ final class TankTypeAlert: UIViewController {
         containerView.addSubview(titleLabel)
 
         setupRadioButton(radioButton1, selected: true)
-        radioLabel1.text = "Aluminum"
+        radioLabel1.text = alunium
         radioLabel1.textColor = .white
         radioLabel1.translatesAutoresizingMaskIntoConstraints = false
 
         setupRadioButton(radioButton2)
-        radioLabel2.text = "Steel"
+        radioLabel2.text = steel
         radioLabel2.textColor = .white
         radioLabel2.translatesAutoresizingMaskIntoConstraints = false
 
@@ -124,14 +134,14 @@ final class TankTypeAlert: UIViewController {
         containerView.addSubview(otherTextField)
 
         cancelButton.setTitle("CANCEL", for: .normal)
-        cancelButton.setTitleColor(.systemOrange, for: .normal)
+        cancelButton.setTitleColor(.B_1, for: .normal)
         cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(cancelButton)
 
-        saveButton.setTitle("SAVE", for: .normal)
-        saveButton.setTitleColor(.systemOrange, for: .normal)
+        saveButton.setTitle("SET", for: .normal)
+        saveButton.setTitleColor(.B_1, for: .normal)
         saveButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
@@ -147,7 +157,7 @@ final class TankTypeAlert: UIViewController {
             containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             containerView.widthAnchor.constraint(equalToConstant: 320),
-
+            
             titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 20),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
 
@@ -195,7 +205,7 @@ final class TankTypeAlert: UIViewController {
         let config = UIImage.SymbolConfiguration(scale: .medium)
         let image = UIImage(systemName: selected ? "largecircle.fill.circle" : "circle", withConfiguration: config)
         button.setImage(image, for: .normal)
-        button.tintColor = .systemOrange
+        button.tintColor = .white
         button.translatesAutoresizingMaskIntoConstraints = false
     }
 
@@ -235,9 +245,15 @@ final class TankTypeAlert: UIViewController {
     }
 
     @objc private func saveTapped() {
-        dismiss(animated: true) { [self] in
-            let text = selectedIndex == 2 ? otherTextField.text : nil
-            self.completion?(.save(index: self.selectedIndex, text: text))
+        dismiss(animated: true) {
+            var selectedType = ""
+            switch self.selectedIndex {
+            case 0: selectedType = alunium
+            case 1: selectedType = steel
+            case 2: selectedType = self.otherTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            default: break
+            }
+            self.completion?(.save(text: selectedType))
         }
     }
 }

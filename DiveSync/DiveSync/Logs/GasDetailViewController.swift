@@ -18,6 +18,17 @@ class GasDetailViewController: BaseViewController {
     
     @IBOutlet weak var gasNoLb: UILabel!
     
+    @IBOutlet weak var tankCapacityLb: UILabel!
+    @IBOutlet weak var tankTypeLb: UILabel!
+    @IBOutlet weak var startPsiLb: UILabel!
+    @IBOutlet weak var endPsiLb: UILabel!
+    @IBOutlet weak var breathingTimeLb: UILabel!
+    @IBOutlet weak var mdepthLb: UILabel!
+    @IBOutlet weak var minDepthLb: UILabel!
+    @IBOutlet weak var avgDepthLb: UILabel!
+    @IBOutlet weak var sacLb: UILabel!
+    @IBOutlet weak var rmvLb: UILabel!
+    
     @IBOutlet weak var tankCapacityValueLb: UILabel!
     @IBOutlet weak var tankTypeValueLb: UILabel!
     @IBOutlet weak var startPsiValueLb: UILabel!
@@ -44,6 +55,11 @@ class GasDetailViewController: BaseViewController {
     var maxGas = 0.0
     
     var unitOfDive = M
+    
+    var tankId = 0
+    
+    var cylinderUnit = "L"
+    var workingUnit = "BAR"
     
     let gasData: [(time: Double, gas: Double)] = [
         (0, 200),
@@ -76,6 +92,11 @@ class GasDetailViewController: BaseViewController {
         
         unitOfDive = diveLog.stringValue(key: "Units").toInt()
         
+        if unitOfDive == FT {
+            cylinderUnit = "CUFT"
+            workingUnit = "PSI"
+        }
+        
         tankCapacityValueLb.text = "0 L, 0 BAR"
         if unitOfDive == FT {
             tankCapacityValueLb.text = "0 CUFT, 0 PSI"
@@ -95,6 +116,7 @@ class GasDetailViewController: BaseViewController {
             rmvValueLb.text = "0 CUFT/MIN"
         }
         
+        configTankInfo()
         configGasInfo()
         
         maxTime = gasData.map { $0.time }.max() ?? 0
@@ -105,6 +127,138 @@ class GasDetailViewController: BaseViewController {
         lineChartView.isHidden = true
         switchesView.isHidden = true
         startDiveView.isHidden = true
+    }
+    
+    private func configTankInfo() {
+        if let tankRow = DatabaseManager.shared.fetchOrCreateTankData(tankNo: gasNo, diveId: diveLog.intValue(key: "DiveID")) {
+            tankId = tankRow.intValue(key: "TankID")
+            
+            let tankNo = tankRow.stringValue(key: "TankNo").toInt()
+            let TankUnit = tankRow.stringValue(key: "TankUnit").toInt()
+            let DiveID = tankRow.stringValue(key: "DiveID").toInt()
+            
+            var CylinderSize = tankRow.stringValue(key: "CylinderSize")
+            var WorkingPressure = tankRow.stringValue(key: "WorkingPressure")
+            if unitOfDive == M {
+                CylinderSize = formatNumber(convertCUFT2L(CylinderSize.toDouble()))
+                WorkingPressure = formatNumber(convertPSI2BAR(WorkingPressure.toDouble()))
+            } else {
+                CylinderSize = formatNumber(CylinderSize.toDouble(), decimalIfNeeded: 0)
+                WorkingPressure = formatNumber(WorkingPressure.toDouble(), decimalIfNeeded: 0)
+            }
+            self.tankCapacityValueLb.text = String(format: "%@ %@, %@ %@", CylinderSize, cylinderUnit, WorkingPressure, workingUnit)
+            
+            var TankType = tankRow.stringValue(key: "TankType")
+            if TankType == "" {TankType = "---"}
+            tankTypeValueLb.text = TankType
+            
+            // Start PSI
+            var startPressureStr = tankRow.stringValue(key: "StartPressure")
+            
+            // End PSI
+            var endPressureStr = tankRow.stringValue(key: "EndPressure")
+            
+            if unitOfDive == M {
+                startPressureStr = formatNumber(convertPSI2BAR(startPressureStr.toDouble()))
+                endPressureStr = formatNumber(convertPSI2BAR(endPressureStr.toDouble()))
+            } else {
+                startPressureStr = formatNumber(startPressureStr.toDouble(), decimalIfNeeded: 0)
+                endPressureStr = formatNumber(endPressureStr.toDouble(), decimalIfNeeded: 0)
+            }
+            
+            startPsiValueLb.text = String(format: "%@ %@", startPressureStr, unitOfDive == M ? "BAR":"PSI")
+            endPsiValueLb.text = String(format: "%@ %@", endPressureStr, unitOfDive == M ? "BAR":"PSI")
+            
+            let BreathingMinutes = tankRow.stringValue(key: "BreathingMinutes").toInt()
+            let BreathingSeconds = tankRow.stringValue(key: "BreathingSeconds").toInt()
+            breathingTimeValueLb.text = String(format: "%02d:%02d", BreathingMinutes, BreathingSeconds)
+            
+            var maxDepthFT = tankRow.stringValue(key: "MaxDepth")
+            var minDepthFT = tankRow.stringValue(key: "MinDepth")
+            var avgDepthFT = tankRow.stringValue(key: "AvgDepth")
+            
+            if unitOfDive == M {
+                maxDepthFT = formatNumber(converFeet2Meter(maxDepthFT.toDouble()))
+                minDepthFT = formatNumber(converFeet2Meter(minDepthFT.toDouble()))
+                avgDepthFT = formatNumber(converFeet2Meter(avgDepthFT.toDouble()))
+            } else {
+                maxDepthFT = formatNumber(maxDepthFT.toDouble(), decimalIfNeeded: 0)
+                minDepthFT = formatNumber(minDepthFT.toDouble(), decimalIfNeeded: 0)
+                avgDepthFT = formatNumber(avgDepthFT.toDouble(), decimalIfNeeded: 0)
+            }
+            mdepthValueLb.text = String(format: "%@ %@", maxDepthFT, unitOfDive == M ? "M":"FT")
+            avgDepthValueLb.text = String(format: "%@ %@", avgDepthFT, unitOfDive == M ? "M":"FT")
+            minDepthValueLb.text = String(format: "%@ %@", minDepthFT, unitOfDive == M ? "M":"FT")
+            
+            // SAC
+            func calculateSacRate() -> Double {
+                var btime = BreathingMinutes * 60 + BreathingSeconds
+                
+                if btime < 60 {
+                    btime = 0
+                } else {
+                    btime /= 60
+                }
+                                
+                var result = calculateSAC(
+                    diveUnit: unitOfDive,
+                    startPressure: startPressureStr.toDouble(),
+                    endPressure: endPressureStr.toDouble(),
+                    cylinderSize: CylinderSize.toDouble(),
+                    time: Double(btime),
+                    avgDepth: avgDepthFT.toDouble(),
+                    workingPressure: WorkingPressure.toDouble()
+                )
+                
+                if result.isNaN || result.isInfinite {
+                    result = 0
+                }
+                return result
+            }
+            
+            var sacValueStr = ""
+            if unitOfDive == M {
+                sacValueStr = formatNumber(calculateSacRate())
+            } else {
+                sacValueStr = formatNumber(calculateSacRate(), decimalIfNeeded: 0)
+            }
+            sacValueLb.text = String(format: "%@ %@", sacValueStr, unitOfDive == M ? "BAR/MIN":"PSI/MIN")
+            
+            // RMV
+            func calculateRmvRate() -> Double {
+                var btime = BreathingMinutes * 60 + BreathingSeconds
+                
+                if btime < 60 {
+                    btime = 0
+                } else {
+                    btime /= 60
+                }
+                                
+                var result = calculateRMV(
+                    diveUnit: unitOfDive,
+                    startPressure: startPressureStr.toDouble(),
+                    endPressure: endPressureStr.toDouble(),
+                    cylinderSize: CylinderSize.toDouble(),
+                    time: Double(btime),
+                    avgDepth: avgDepthFT.toDouble(),
+                    workingPressure: WorkingPressure.toDouble()
+                )
+                
+                if result.isNaN || result.isInfinite {
+                    result = 0
+                }
+                return result
+            }
+            
+            var rmvValueStr = ""
+            if unitOfDive == M {
+                rmvValueStr = formatNumber(calculateRmvRate())
+            } else {
+                rmvValueStr = formatNumber(calculateRmvRate(), decimalIfNeeded: 0)
+            }
+            rmvValueLb.text = String(format: "%@ %@", rmvValueStr, unitOfDive == M ? "L/MIN":"CUFT/MIN")
+            
+        }
     }
     
     private func configGasInfo() {
@@ -313,8 +467,194 @@ class GasDetailViewController: BaseViewController {
     }
     
     @IBAction func buttonTapped(_ sender: Any) {
+        if let button = sender as? UIButton {
+            let buttonTag = button.tag
+            switch buttonTag {
+            case 0: // Tank Capacity
+                
+                // Tách theo dấu phẩy
+                let parts = tankCapacityValueLb.text?.components(separatedBy: ",")
+
+                if parts?.count == 2 {
+                    // Lấy phần đầu: "0 CUFT"
+                    let cuftString = parts?[0].trimmingCharacters(in: .whitespaces)
+                        .components(separatedBy: " ").first ?? "0"
+                    // Lấy phần sau: "0 PSI"
+                    let psiString = parts?[1].trimmingCharacters(in: .whitespaces)
+                        .components(separatedBy: " ").first ?? "0"
+                    
+                    // Convert sang số
+                    let size = Double(cuftString) ?? 0
+                    let pressure = Double(psiString) ?? 0
+                 
+                    TankCapacityInputAlert.showMessage(
+                        message: "Tank Capacity",
+                        cylinderSize: size,
+                        workingPressure: pressure,
+                        unitOfDive: unitOfDive
+                    ) { [self] action in
+                        switch action {
+                        case .set(let cylinderSize, let workingPressure):
+                            self.tankCapacityValueLb.text = String(format: "%d %@, %d %@", cylinderSize, cylinderUnit, workingPressure, workingUnit)
+                            
+                            var sizeValueDouble = Double(cylinderSize)
+                            var workingValueDouble = Double(workingPressure)
+                            if unitOfDive == M {
+                                sizeValueDouble = convertL2CUFT(sizeValueDouble)
+                                workingValueDouble = convertUBAR2PSI(workingValueDouble)
+                            }
+                            self.saveTankData(key: "CylinderSize", value: sizeValueDouble)
+                            self.saveTankData(key: "WorkingPressure", value: workingValueDouble)
+                            
+                        case .cancel:
+                            break
+                        }
+                    }
+                }
+                break
+            case 1: // Tank Type
+                var tankTypeStr = tankTypeValueLb.text
+                var tankTypeIndex = 0
+                if tankTypeStr == alunium {
+                    tankTypeIndex = 0
+                    tankTypeStr = ""
+                } else if tankTypeStr == steel {
+                    tankTypeIndex = 1
+                    tankTypeStr = ""
+                } else {
+                    tankTypeIndex = 2 // Other
+                    if tankTypeStr == "---" { tankTypeStr = "" }
+                }
+                
+                TankTypeAlert.show(title: "Tank Type", selectedIndex: tankTypeIndex, otherText: tankTypeStr) { [self] action in
+                    switch action {
+                    case .cancel:
+                        break
+                    case .save(var text):
+                        self.saveTankData(key: "TankType", value: text ?? "")
+                        if text == "" { text = "---" }
+                        tankTypeValueLb.text = text
+                    }
+                }
+                break
+            case 2: // Start Pressure
+                let currentSP = (startPsiValueLb.text ?? "")
+                    .components(separatedBy: " ")
+                    .first
+                    .flatMap { $0 == "---" ? "" : $0 } ?? ""
+                let unitStr = unitOfDive == M ? "BAR":"PSI"
+                //let notes = unitOfDive == M ? "* From 0 m to 999.9 m":"* From 0 ft to 3300 ft"
+                MDepthInputAlert.showMessage(message: startPsiLb.text, selectedValue: currentSP, unitValue:unitStr) { [self] action, value in
+                    self.startPsiValueLb.text = value + " " + unitStr
+                    
+                    var valueDouble = value.toDouble()
+                    if unitOfDive == M {
+                        valueDouble = convertUBAR2PSI(valueDouble)
+                    }
+                    self.saveTankData(key: "StartPressure", value: valueDouble)
+                }
+                break
+            case 3: // End Pressure
+                let currentEP = (endPsiValueLb.text ?? "")
+                    .components(separatedBy: " ")
+                    .first
+                    .flatMap { $0 == "---" ? "" : $0 } ?? ""
+                let unitStr = unitOfDive == M ? "BAR":"PSI"
+                //let notes = unitOfDive == M ? "* From 0 m to 999.9 m":"* From 0 ft to 3300 ft"
+                MDepthInputAlert.showMessage(message: endPsiLb.text, selectedValue: currentEP, unitValue:unitStr) { [self] action, value in
+                    self.endPsiValueLb.text = value + " " + unitStr
+                    
+                    var valueDouble = value.toDouble()
+                    if unitOfDive == M {
+                        valueDouble = convertUBAR2PSI(valueDouble)
+                    }
+                    self.saveTankData(key: "EndPressure", value: valueDouble)
+                }
+                break
+            case 4: // Breathing Time
+                let timeString = breathingTimeValueLb.text ?? "00:00"
+                let components = timeString.split(separator: ":")
+
+                let minutes = Int(components.first ?? "0") ?? 0
+                let seconds = Int(components.last ?? "0") ?? 0
+                
+                BreathingTimeInputAlert.showMessage(
+                    message: "Breathing Time",
+                    minutes: minutes,
+                    seconds: seconds
+                ) { action in
+                    switch action {
+                    case .set(let mins, let secs):
+                        self.breathingTimeValueLb.text = String(format: "%02d:%02d", mins, secs)
+                        self.saveTankData(key: "BreathingMinutes", value: mins)
+                        self.saveTankData(key: "BreathingSeconds", value: secs)
+                    case .cancel:
+                        break
+                    }
+                }
+                break
+            case 5: // Max Depth
+                let currentMdepth = (mdepthValueLb.text ?? "")
+                    .components(separatedBy: " ")
+                    .first
+                    .flatMap { $0 == "---" ? "" : $0 } ?? ""
+                let unitStr = unitOfDive == M ? "M":"FT"
+                MDepthInputAlert.showMessage(message: mdepthLb.text, selectedValue: currentMdepth, unitValue:unitStr) { [self] action, value in
+                    self.mdepthValueLb.text = value + " " + unitStr
+                    
+                    var valueDouble = value.toDouble()
+                    if unitOfDive == M {
+                        valueDouble = convertMeter2Feet(valueDouble)
+                    }
+                    self.saveTankData(key: "MaxDepth", value: valueDouble)
+                }
+                break
+            case 6: // Min Depth
+                let currentMinDepth = (minDepthValueLb.text ?? "")
+                    .components(separatedBy: " ")
+                    .first
+                    .flatMap { $0 == "---" ? "" : $0 } ?? ""
+                let unitStr = unitOfDive == M ? "M":"FT"
+                //let notes = unitOfDive == M ? "* From 0 m to 999.9 m":"* From 0 ft to 3300 ft"
+                MDepthInputAlert.showMessage(message: minDepthLb.text, selectedValue: currentMinDepth, unitValue:unitStr) { [self] action, value in
+                    self.minDepthValueLb.text = value + " " + unitStr
+                    
+                    var valueDouble = value.toDouble()
+                    if unitOfDive == M {
+                        valueDouble = convertMeter2Feet(valueDouble)
+                    }
+                    self.saveTankData(key: "MinDepth", value: valueDouble)
+                }
+                break
+            case 7: // Avg Depth
+                let currentAvgDepth = (avgDepthValueLb.text ?? "")
+                    .components(separatedBy: " ")
+                    .first
+                    .flatMap { $0 == "---" ? "" : $0 } ?? ""
+                let unitStr = unitOfDive == M ? "M":"FT"
+                //let notes = unitOfDive == M ? "* From 0 m to 999.9 m":"* From 0 ft to 3300 ft"
+                MDepthInputAlert.showMessage(message: avgDepthLb.text, selectedValue: currentAvgDepth, unitValue:unitStr) { [self] action, value in
+                    self.avgDepthValueLb.text = value + " " + unitStr
+                    
+                    var valueDouble = value.toDouble()
+                    if unitOfDive == M {
+                        valueDouble = convertMeter2Feet(valueDouble)
+                    }
+                    self.saveTankData(key: "AvgDepth", value: valueDouble)
+                }
+                break
+            default:
+                break
+            }
+        }
     }
     
+    private func saveTankData(key: String, value: Any) {
+        DatabaseManager.shared.updateTable(tableName: "TankData",
+                                           params: [key: value],
+                                           conditions: "where TankID=\(tankId)")
+        self.configTankInfo()
+    }
 }
 
 extension GasDetailViewController: ChartViewDelegate {

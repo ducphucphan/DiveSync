@@ -93,3 +93,45 @@ func formatNumber(_ value: Double, decimalIfNeeded: Int = 1) -> String {
         return String(format: "%.\(decimalIfNeeded)f", rounded)
     }
 }
+
+func calculateSAC(
+    diveUnit: Int,
+    startPressure: Double,
+    endPressure: Double,
+    cylinderSize: Double,
+    time: Double,
+    avgDepth: Double,
+    workingPressure: Double
+) -> Double {
+    guard time > 0 else { return 0 }
+    
+    switch (diveUnit) {
+    case (FT):
+        return (startPressure - endPressure) * 33.0 / (time * (avgDepth + 33.0))
+    case (M):
+        return (startPressure - endPressure) / (time * (avgDepth / 10.0 + 1.0))
+    default:
+        return 0
+    }
+}
+
+// MARK: - RMV
+func calculateRMV(
+    diveUnit: Int,
+    startPressure: Double,
+    endPressure: Double,
+    cylinderSize: Double,
+    time: Double,
+    avgDepth: Double,
+    workingPressure: Double
+) -> Double {
+    guard time > 0 else { return 0 }
+    switch (diveUnit) {
+    case (FT):
+        return (startPressure - endPressure) * 33.0 * cylinderSize / (time * (avgDepth + 33.0) * workingPressure)
+    case (M):
+        return (startPressure - endPressure) * cylinderSize / (time * (avgDepth / 10.0 + 1.0))
+    default:
+        return 0
+    }
+}

@@ -7,6 +7,7 @@ struct Devices: Codable, FetchableRecord, PersistableRecord {
     var SerialNo: String?
     var ModelName: String?
     var Firmware: String?
+    var LCDFirmware: String?
     var LastSync: String?
     var OwnerName: String?
     var Identity: String?
