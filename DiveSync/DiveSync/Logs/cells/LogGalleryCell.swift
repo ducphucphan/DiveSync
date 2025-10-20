@@ -14,7 +14,7 @@ class LogGalleryCell: UICollectionViewCell {
     
     @IBOutlet weak var nextBtn: UIButton!
     @IBOutlet weak var prevBtn: UIButton!
-    
+    //
     private let currentImageView = UIImageView()
     private let nextImageView = UIImageView()
     

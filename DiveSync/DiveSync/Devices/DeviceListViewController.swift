@@ -33,7 +33,8 @@ class DeviceListViewController: BaseViewController {
         deviceCount = deviceList?.count ?? 0
         tableview.reloadData()
     }
-
+    
+    //
     @IBAction func addTapped(_ sender: Any) {
         searchType = .kAddDevice
         syncType = .kDownloadSetting

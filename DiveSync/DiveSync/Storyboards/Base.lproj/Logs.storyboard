@@ -297,12 +297,18 @@
                                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="URv-E4-UEu">
                                                             <rect key="frame" x="44" y="0.0" width="317" height="74"/>
                                                             <subviews>
-                                                                <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vbp-Ea-Xcw">
+                                                                <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Vbp-Ea-Xcw">
                                                                     <rect key="frame" x="0.0" y="0.0" width="317" height="22.333333333333332"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Besmi Island" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MFU-Bf-Ctu">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="235" height="22.333333333333332"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="203" height="22.333333333333332"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                                                            <nil key="textColor"/>
+                                                                            <nil key="highlightedColor"/>
+                                                                        </label>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="#1" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="byQ-ym-SGe">
+                                                                            <rect key="frame" x="211" y="0.0" width="16" height="22.333333333333332"/>
+                                                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                             <nil key="textColor"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
@@ -318,13 +324,13 @@
                                                                     <rect key="frame" x="0.0" y="22.333333333333329" width="317" height="26.666666666666671"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Spirit" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="l5E-km-Hvn">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="229" height="26.666666666666668"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="249" height="26.666666666666668"/>
                                                                             <fontDescription key="fontDescription" type="system" weight="medium" pointSize="16"/>
                                                                             <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
-                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="#1 00:00 AM" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QXu-Uz-Wgz">
-                                                                            <rect key="frame" x="229" y="0.0" width="88" height="26.666666666666668"/>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="252" horizontalCompressionResistancePriority="751" verticalCompressionResistancePriority="751" text="00:00 AM" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QXu-Uz-Wgz">
+                                                                            <rect key="frame" x="249" y="0.0" width="68" height="26.666666666666668"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                             <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                             <nil key="highlightedColor"/>
@@ -385,6 +391,7 @@
                                             <outlet property="deviceNameLb" destination="l5E-km-Hvn" id="r0D-ZZ-ChR"/>
                                             <outlet property="diveDateLb" destination="kAq-qg-hVh" id="qOp-1o-a5w"/>
                                             <outlet property="diveInfoLb" destination="Var-PW-AEU" id="4Wa-gR-PHv"/>
+                                            <outlet property="diveOfTheDayLb" destination="byQ-ym-SGe" id="9Im-vU-Qhk"/>
                                             <outlet property="diveTimeLb" destination="QXu-Uz-Wgz" id="veg-Lp-DcH"/>
                                             <outlet property="favoriteBtn" destination="0fC-kX-zRF" id="Jlz-uM-8qC"/>
                                             <outlet property="locLb" destination="MFU-Bf-Ctu" id="HNp-o9-thw"/>

@@ -251,6 +251,15 @@ class DeviceViewController: BaseViewController {
             } else {
                 statsAltLevelValueLb.text = String(format: "LEV%d", level)
             }
+            
+            if StatsLogTotalDives.toInt() == 0 {
+                statsTotalDivesValueLb.text = "---"
+                statsTotalDiveTimeValueLb.text = "---"
+                statsMdepthValueLb.text = "---"
+                statsAvgDepthValueLb.text = "---"
+                statsMinTempValueLb.text = "---"
+                statsAltLevelValueLb.text = "---"
+            }
         }
         
         updateButtonVisibility()

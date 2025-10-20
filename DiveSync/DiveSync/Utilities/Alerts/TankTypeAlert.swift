@@ -14,6 +14,7 @@ final class TankTypeAlert: UIViewController {
     private let containerView = UIView()
     private let titleLabel = UILabel()
 
+    //
     private let radioButton1 = UIButton(type: .system)
     private let radioLabel1 = UILabel()
 

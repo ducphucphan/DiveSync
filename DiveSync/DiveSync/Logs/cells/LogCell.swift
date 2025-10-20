@@ -18,6 +18,7 @@ class LogCell: UITableViewCell {
     @IBOutlet weak var diveInfoLb: UILabel!
     @IBOutlet weak var diveDateLb: UILabel!
     @IBOutlet weak var diveTimeLb: UILabel!
+    @IBOutlet weak var diveOfTheDayLb: UILabel!
     
     var isFavorite = false
     
@@ -73,9 +74,11 @@ class LogCell: UITableViewCell {
         let diveOfTheDay = row.stringValue(key: "DiveOfTheDay")
         
         diveDateLb.text = diveDate
-        diveTimeLb.text = String(format: "#%@ %@", diveOfTheDay, diveTime)
+        diveTimeLb.text = diveTime
+        
+        diveOfTheDayLb.text = "#\(diveOfTheDay)"
         if diveMode >= 100 { // Manual
-            diveTimeLb.text = String(format: "%@", diveTime)
+            diveOfTheDayLb.text = ""
         }
         
         let unitOfDive = row.stringValue(key: "Units").toInt()
