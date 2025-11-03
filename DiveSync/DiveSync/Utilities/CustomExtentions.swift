@@ -9,6 +9,10 @@ import UIKit
 import GRDB
 import DGCharts
 
+extension Notification.Name {
+    static let didImportDiveLog = Notification.Name("didImportDiveLog")
+}
+
 extension UINavigationController {
     func setTitleWithIcon(for navigationItem: UINavigationItem, title: String, icon: UIImage) {
         // Create a container view to hold both the icon and the title
@@ -479,6 +483,7 @@ extension String {
     }
     
     func toInt() -> Int {
+        /*
         // Nếu chuỗi là "OFF", trả về 0
         if self.uppercased() == OFF {
             return 0
@@ -489,6 +494,40 @@ extension String {
             .replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)  // Loại bỏ các ký tự không phải số
         
         return Int(cleanedString) ?? 0
+        */
+        
+        // Nếu chuỗi là "OFF", trả về 0
+        if self.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() == "OFF" {
+            return 0
+        }
+        
+        // Chuẩn hóa dấu phẩy -> dấu chấm (nếu người dùng dùng 12,5)
+        var s = self.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ".")
+        
+        // Giữ lại chỉ các ký tự hợp lệ: chữ số, một dấu chấm, và dấu '-' ở đầu nếu có
+        // Loại bỏ những ký tự khác
+        s = s.replacingOccurrences(of: "[^0-9.\\-]", with: "", options: .regularExpression)
+        
+        // Nếu có nhiều dấu chấm, giữ chỉ dấu chấm đầu tiên
+        if s.components(separatedBy: ".").count > 2 {
+            let parts = s.components(separatedBy: ".")
+            let first = parts.first ?? ""
+            let rest = parts.dropFirst().joined()
+            s = first + "." + rest
+        }
+        
+        // Nếu dấu '-' không nằm ở đầu thì bỏ nó
+        if let dashIndex = s.firstIndex(of: "-"), dashIndex != s.startIndex {
+            s.remove(at: dashIndex)
+        }
+        
+        // Chuyển sang Double trước, sau đó ép về Int (truncate)
+        if let d = Double(s) {
+            return Int(d)
+        }
+        
+        // fallback
+        return 0
     }
     
     func toDouble() -> Double {

@@ -31,6 +31,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return true
     }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        PrintLog("URL: \(url)")
+        if url.host == "dive" {
+            if let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?
+                .first(where: { $0.name == "token" })?.value {
+                // Handle token here
+                Utilities.handleSharedDive(token: token)
+            }
+        }
+        return true
+    }
 
     // MARK: UISceneSession Lifecycle
 

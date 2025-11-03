@@ -3,4 +3,54 @@
    uuid = "7424BA24-480E-498A-97C9-F5EB676DD9F3"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DiveSync/DataExport/Mappers/TankDataMapper.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "from(row:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB - 3f9e130437ac0593"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "static DiveSync.TankDataMapper.from(row: GRDB.Row) -&gt; Swift.Dictionary&lt;Swift.String, Any&gt;"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DataExport/Mappers/TankDataMapper.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62"
+                  offsetFromSymbolStart = "4824">
+               </Location>
+               <Location
+                  uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB - 3f9e130437ac0593"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "static DiveSync.TankDataMapper.from(row: GRDB.Row) -&gt; Swift.Dictionary&lt;Swift.String, Any&gt;"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DataExport/Mappers/TankDataMapper.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "62"
+                  endingLineNumber = "62"
+                  offsetFromSymbolStart = "4832">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

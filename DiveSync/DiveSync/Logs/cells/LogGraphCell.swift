@@ -321,11 +321,14 @@ extension LogGraphCell: ChartViewDelegate {
                 tempLb.text = formatNumber(TemperatureF) + " " + "°C"
             }
             
-            let TankPSI = selectedRow.stringValue(key: "TankPSI").toInt()
+            var TankPSI = selectedRow.stringValue(key: "TankPSI").toInt()
+            if TankPSI == 0xFFFF {
+                TankPSI = 0
+            }
             if unit == FT {
                 startTankLb.text = String(format: "%d PSI", TankPSI)
             } else {
-                startTankLb.text = String(format: "%d BAR", TankPSI)
+                startTankLb.text = String(format: "%.1f BAR", convertPSI2BAR(Double(TankPSI)))
             }
             
             didSelectedChartEntryPoint?(selectedRow)

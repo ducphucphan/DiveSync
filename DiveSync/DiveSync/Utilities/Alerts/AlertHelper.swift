@@ -29,6 +29,8 @@ func showAlert(on viewController: UIViewController,
         alert.addAction(cancelAction)
     }
     
-    viewController.present(alert, animated: true)
+    DispatchQueue.main.async {
+        viewController.present(alert, animated: true)
+    }
 }
 

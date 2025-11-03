@@ -85,17 +85,33 @@ class DatabaseManager {
         // migrator.eraseDatabaseOnSchemaChange = true
         // nhưng đừng bật trong production vì sẽ xóa toàn bộ dữ liệu
         
-        /*
         // 🔹 Migration 1: thêm cột mới
-        migrator.registerMigration("v1_add_column_to_DiveLog") { db in
-            // Ví dụ: thêm cột DiveRating nếu chưa có
-            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "DiveRating" }) {
+        migrator.registerMigration("v1_add_column_to_DiveLog_DiveProfile") { db in
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "TankTurnAlarmOn" }) {
                 try db.alter(table: "DiveLog") { t in
-                    t.add(column: "DiveRating", .integer).defaults(to: 0)
+                    // Do 3 fields này được thêm cùng thời điểm nên không cần check contains từng field.
+                    t.add(column: "TankTurnAlarmOn", .text)
+                    t.add(column: "TankEndAlarmOn", .text)
+                    t.add(column: "TankTurnAlarmBar", .text)
+                    t.add(column: "TankEndAlarmBar", .text)
+                    t.add(column: "TankTurnAlarmPsi", .text)
+                    t.add(column: "TankEndAlarmPsi", .text)
+                    t.add(column: "TankReserveTimeAlarmOn", .text)
+                    t.add(column: "TankReserveTimeAlarmMin", .text)
+                }
+            }
+            
+            if try !db.columns(in: "DiveProfile").contains(where: { $0.name == "TankAtrMin" }) {
+                try db.alter(table: "DiveProfile") { t in
+                    // Do 3 fields này được thêm cùng thời điểm nên không cần check contains từng field.
+                    t.add(column: "TankAtrMin", .text)
+                    t.add(column: "ActualTankID", .text)
+                    t.add(column: "AlarmID2", .text)
                 }
             }
         }
-
+        
+        /*
         // 🔹 Migration 2: thêm bảng mới
         migrator.registerMigration("v2_create_table_SyncHistory") { db in
             if try !db.tableExists("SyncHistory") {
@@ -113,6 +129,9 @@ class DatabaseManager {
             try db.create(index: "idx_DiveLog_SerialNo_ModelID", on: "DiveLog", columns: ["SerialNo", "ModelID"])
         }
         */
+        
+        //AlarmID1
+        
         try migrator.migrate(dbQueue)
     }
     
@@ -733,28 +752,58 @@ extension DatabaseManager {
                     return nil
                 }
                 
-                let excludeDiveLog = ["DiveID", "DiveNo", "IsFavorite", "Water", "Sound", "Light", "Language"]
-                let diveLogDict = diveLogRow.toDictionary(excluding: excludeDiveLog)
+                //let excludeDiveLog = ["DiveID", "DiveNo", "IsFavorite", "Water", "Sound", "Light", "Language"]
+                //let diveLogDict = diveLogRow.toDictionary(excluding: excludeDiveLog)
+                let diveLogDict = DiveLogMapper.from(row: diveLogRow)
+                //diveLogDict["Units"] = "0"
                 
                 // 2️⃣ Lấy danh sách DiveProfile
                 let diveProfiles = try Row.fetchAll(
                     db,
                     sql: "SELECT * FROM DiveProfile WHERE DiveID = ? ORDER BY RowID ASC",
                     arguments: [diveID]
-                ).map { $0.toDictionary() }
+                ).map { DiveProfileMapper.from(row: $0) }
                 
                 // 3️⃣ Lấy danh sách TankData
                 let tankData = try Row.fetchAll(
                     db,
                     sql: "SELECT * FROM TankData WHERE DiveID = ? ORDER BY TankID ASC",
                     arguments: [diveID]
-                ).map { $0.toDictionary() }
+                ).map { TankDataMapper.from(row: $0) }
+                
+                // Bổ sung đủ 4 tank
+                var filledTankData: [[String: Any]] = []
+
+                for i in 1...4 {
+                    if let existing = tankData.first(where: { ($0["TankNo"] as? String) == "\(i)" }) {
+                        filledTankData.append(existing)
+                    } else {
+                        // Nếu không có, tạo bản ghi rỗng
+                        let emptyTank: [String: Any] = [
+                            "TankID": 0,
+                            "TankNo": "\(i)",
+                            "TankUnit": diveLogDict["Units"] ?? "0",
+                            "DiveID": "\(diveID)",
+                            "CylinderSize": "",
+                            "WorkingPressure": "",
+                            "TankType": "",
+                            "StartPressure": "",
+                            "EndPressure": "",
+                            "BreathingMinutes": "",
+                            "BreathingSeconds": "",
+                            "MaxDepth": "",
+                            "MinDepth": "",
+                            "AvgDepth": ""
+                        ]
+                        filledTankData.append(emptyTank)
+                    }
+                }
                 
                 // 4️⃣ Gom lại thành dictionary
                 let jsonBody: [String: Any] = [
                     "DiveLog": diveLogDict,
                     "DiveProfile": diveProfiles,
-                    "TankData": tankData
+                    "TankData": filledTankData
                 ]
                 
                 return jsonBody
@@ -763,5 +812,31 @@ extension DatabaseManager {
             PrintLog("❌ exportDiveDataDictionary failed: \(error)")
             return nil
         }
+    }
+}
+
+extension DatabaseManager {
+    func isDuplicateDive(modelId: String, serialNo: String, diveNo: String, diveStartLocalTime: String) -> Bool {
+        let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+        var exists = false
+        
+        do {
+            try dbQueue.read { db in
+                let sql = """
+                    SELECT 1 FROM DiveLog
+                    WHERE ModelID = ?
+                      AND SerialNo = ?
+                      AND DiveNo = ?
+                      AND DiveStartLocalTime = ?
+                    LIMIT 1
+                """
+                let row = try Row.fetchOne(db, sql: sql, arguments: [modelId, serialNo, diveNo, diveStartLocalTime])
+                exists = (row != nil)
+            }
+        } catch {
+            PrintLog("❌ Failed to check duplicate DiveLog: \(error)")
+        }
+        
+        return exists
     }
 }

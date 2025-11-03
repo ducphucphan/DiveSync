@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 import GRDB
+import ProgressHUD
 
 func HomeDirectory() -> String {
     return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].path
@@ -419,5 +420,107 @@ class Utilities {
         let minutes = (seconds % 3600) / 60
         let secs = seconds % 60
         return String(format: "%02d:%02d:%02d", hours, minutes, secs)
+    }
+    
+    static func to8BitBinaryString(_ value: Int) -> String {
+        let v = max(0, min(255, value)) // Giới hạn trong phạm vi 0–255 (1 byte)
+        let binary = String(v, radix: 2)
+        return String(repeating: "0", count: 8 - binary.count) + binary
+    }
+    
+    static func from8BitBinaryString(_ binaryString: String) -> Int {
+        // Kiểm tra chuỗi chỉ gồm '0' hoặc '1' và có độ dài hợp lệ (1–8 ký tự)
+        guard binaryString.range(of: "^[01]{1,8}$", options: .regularExpression) != nil else {
+            return 0
+        }
+        return Int(binaryString, radix: 2) ?? 0
+    }
+    
+    ///
+    /// Handle share dive
+    ///
+    @MainActor
+    static func handleSharedDive(token: String) {
+        Task {
+            do {
+                ProgressHUD.animate()
+
+                let data = try await APIManager.shared.getDiveData(token: token)
+                guard
+                    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                    let status = json["status"] as? String
+                else {
+                    ProgressHUD.dismiss()
+                    return
+                }
+
+                guard
+                    let rootVC = UIApplication.shared.connectedScenes
+                        .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
+                        .first
+                else {
+                    ProgressHUD.dismiss()
+                    return
+                }
+
+                ProgressHUD.dismiss()
+                
+                if status == "success" {
+                    // Kiểm tra dive trong dive list.
+                    if let diveLog = json["DiveLog"] as? [String: Any],
+                       let diveProfile = json["DiveProfile"] as? [[String: Any]],
+                       let tankData = json["TankData"] as? [[String: Any]] {
+
+                        let modelId = diveLog["ModelID"] as! String
+                        let serialNo = diveLog["SerialNo"] as! String
+                        let diveNo = diveLog["DiveNoOfDay"] as! String
+
+                        var diveStartLocalTime = diveLog["DiveStartLocalTime"] as! String
+                        diveStartLocalTime = Utilities.convertDateFormat(from: diveStartLocalTime, fromFormat: "MM/dd/yyyy HH:mm:ss", toFormat: "dd/MM/yyyy HH:mm:ss")
+                        
+                        let exists = DatabaseManager.shared.isDuplicateDive(
+                            modelId: String(format: "%d", modelIDImport(modelId: modelId.toInt())),
+                            serialNo: serialNo,
+                            diveNo: diveNo,
+                            diveStartLocalTime: diveStartLocalTime
+                        )
+
+                        if exists {
+                            showAlert(on: rootVC, message: "Dive already exists")
+                        } else {
+                            showAlert(on: rootVC,
+                                      message: "Do you want to import this dive into your log?",
+                                      okTitle: "YES",
+                                      cancelTitle: "NO",
+                                      okHandler: {
+                                ProgressHUD.animate()
+                                do {
+                                    let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+                                    try dbQueue.write { db in
+                                        let newDiveID = try DiveLogMapper.insert(diveLog, db: db)
+                                        print("Inserted DiveLog with DiveID:", newDiveID)
+
+                                        try DiveProfileMapper.bulkInsert(forDiveID: Int(newDiveID), profiles: diveProfile, db: db)
+                                        try TankDataMapper.bulkInsert(forDiveID: Int(newDiveID), tankDatas: tankData, db: db)
+                                    }
+                                    
+                                    ProgressHUD.dismiss()
+                                    NotificationCenter.default.post(name: .didImportDiveLog, object: nil)
+                                    
+                                } catch {
+                                    ProgressHUD.dismiss()
+                                    print("❌ Import failed:", error)
+                                    showAlert(on: rootVC, message: "Failed to import dive: \(error.localizedDescription)")
+                                }
+                            })
+                        }
+                    }
+                } else {
+                    showAlert(on: rootVC, message: json["message"] as? String ?? "Unknown error")
+                }
+            } catch {
+                print("❌ Error fetching dive data:", error)
+            }
+        }
     }
 }

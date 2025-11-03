@@ -19,17 +19,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-//        let window = UIWindow(windowScene: windowScene)
+        // Lấy URL nếu app được mở bằng deep link
+        if let url = connectionOptions.urlContexts.first?.url {
+            PrintLog("URL willConnectTo: \(url)")
+            if url.host == "dive" {
+                if let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                    .queryItems?
+                    .first(where: { $0.name == "token" })?.value {
+                    // 👉 Gọi function xử lý token ở đây, ví dụ:
+                    Utilities.handleSharedDive(token: token)
+                }
+            }
+        }
+    }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
         
-//        // Kiểm tra nếu người dùng đã đăng nhập
-//        if UserDefaults.standard.bool(forKey: "isAccceptedPersonalData") {
-//            window.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "LoginViewController") // Màn hình chính
-//        } else {
-//            window.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PersonalDataCheckViewController") // Màn hình khởi động
-//        }
-//        self.window = window
-//        window.makeKeyAndVisible()
+        PrintLog("URL openURLContexts: \(url)")
         
+        if url.host == "dive" {
+            if let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?
+                .first(where: { $0.name == "token" })?.value {
+                // 👉 Gọi function xử lý token ở đây, ví dụ:
+                Utilities.handleSharedDive(token: token)
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

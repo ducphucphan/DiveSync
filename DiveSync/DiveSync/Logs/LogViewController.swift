@@ -7,6 +7,7 @@
 
 import UIKit
 import GRDB
+import ProgressHUD
 
 class LogViewController: BaseViewController {
     
@@ -442,165 +443,25 @@ class LogViewController: BaseViewController {
     }
     
     @IBAction func shareTapped(_ sender: Any) {
-        
-         // Lấy tất cả ảnh được chọn
-         guard let image = scrollView.captureFullContent() else {
-         return
-         }
-         
-         // Gọi tiện ích share có sẵn
-         Utilities.share(items: [image], from: self, sourceView: sender as! UIButton)
-         
         /*
+        // Lấy tất cả ảnh được chọn
+        guard let image = scrollView.captureFullContent() else {
+            return
+        }
+        
+        // Gọi tiện ích share có sẵn
+        Utilities.share(items: [image], from: self, sourceView: sender as! UIButton)
+        */
+        
+        shareThisDive()
+        
+        
+    }
+    
+    private func shareThisDive() {
         Task {
             do {
-                // 1️⃣ Tạo dữ liệu JSON (từ file hoặc biến sẵn)
-//                var jsonBody: [String: Any] = [
-//                    "DiveLog": [
-//                        "GPSStartDive" : "NaN",
-//                        "MaxPpo2" : "1.2974691",
-//                        "TankTurnAlarmBar" : "100",
-//                        "Mix6PpO2Barx100" : "160",
-//                        "SafetyStopDepthFT" : "20",
-//                        "DiveSiteID" : "2",
-//                        "Mix3PpO2Barx100" : "160",
-//                        "MaxGAS" : "4",
-//                        "MaxAscentSpeedLev" : "4",
-//                        "DiveNoOfDay" : "1",
-//                        "MaxTLBG" : "4",
-//                        "TotalDiveTime" : "767",
-//                        "OxToxAlarmPercent" : "80",
-//                        "Mix7Fo2Percent" : "21",
-//                        "GfHighPercent" : "89",
-//                        "DeepStopMode" : "0",
-//                        "ProfileSizeBytes" : "2464",
-//                        "TankEndAlarmOn" : "0",
-//                        "AvgDepthFT" : "92.99927",
-//                        "Mix3Fo2Percent" : "21",
-//                        "TankEndAlarmPsi" : "500",
-//                        "LocalTimeZoneID" : "16",
-//                        "Mix2FHePercent" : "0",
-//                        "DiveMode" : "0",
-//                        "DiveOfTheDay" : "1",
-//                        "MaxTemperatureF" : "32.0",
-//                        "MaxDepthFT" : "170.95612",
-//                        "SamplingTime" : "10",
-//                        "SerialNo" : "000123",
-//                        "BuzzerMode" : "0",
-//                        "GPSEndDive" : "NaN",
-//                        "WaterDensity" : "1",
-//                        "Mix1Fo2Percent" : "21",
-//                        "Mix5PpO2Barx100" : "160",
-//                        "SurfTime" : "388",
-//                        "IsDecoDive" : "0",
-//                        "Mix3FHePercent" : "0",
-//                        "Units" : "1",
-//                        "Errors" : "00000000",
-//                        "TankTurnAlarmPsi" : "1500",
-//                        "Mix4PpO2Barx100" : "160",
-//                        "StartDiveTankPressurePSI" : "65535",
-//                        "AscentSpeedAlarm" : "30",
-//                        "GroupMonthYear" : "Jan 2024",
-//                        "EndingTlbg" : "4",
-//                        "EndingOxToxPercent" : "3",
-//                        "Mix4Fo2Percent" : "21",
-//                        "LifeTimeDiveNo" : "1",
-//                        "ModelID" : "686586",
-//                        "Mix6FHePercent" : "0",
-//                        "Favorites" : "0",
-//                        "ProfileStartAddress" : "327680",
-//                        "DepthAlarmMT" : "0",
-//                        "DiveStatus" : "",
-//                        "DiveStartLocalTime" : "01/01/2024 13:06:22",
-//                        "SafetyStopTime" : "3",
-//                        "Mix4FHePercent" : "0",
-//                        "EndingMixIdx" : "1",
-//                        "AvgMixConsumption" : "NaN",
-//                        "BacklightLevel" : "30",
-//                        "DiveSiteName" : "H? Long Bay",
-//                        "StartingMixIdx" : "1",
-//                        "TankTurnAlarmOn" : "0",
-//                        "Mix7PpO2Barx100" : "160",
-//                        "DiveTimeAlarm" : "0",
-//                        "UserID" : "",
-//                        "Mix2PpO2Barx100" : "160",
-//                        "MaxOxToxPercent" : "3",
-//                        "Mix7FHePercent" : "0",
-//                        "Mix5Fo2Percent" : "21",
-//                        "TankEndAlarmBar" : "50",
-//                        "MinTemperatureF" : "32.0",
-//                        "NoDecoTimeAlarm" : "5",
-//                        "TimeFormat" : "1",
-//                        "Mix6Fo2Percent" : "21",
-//                        "Mix5FHePercent" : "0",
-//                        "Mix1PpO2Barx100" : "160",
-//                        "DepthAlarmFT" : "0",
-//                        "SafetyStopMode" : "1",
-//                        "AltitudeLevel" : "0",
-//                        "TlbgAlarm" : "0",
-//                        "DiveEndLocalTime" : "01/01/2024 13:19:31",
-//                        "ManualDive" : "0",
-//                        "SafetyStopDepthMT" : "6",
-//                        "Mix2Fo2Percent" : "21",
-//                        "EndDiveTankPressurePSI" : "65535",
-//                        "DateFormat" : "1",
-//                        "GfLowPercent" : "89",
-//                        "AvgTemperatureF" : "",
-//                        "AddressID" : "00:80:E1:27:57:A7",
-//                        "Mix1FHePercent" : "0",
-//                        "EnabledMixes" : "00000010",
-//                        "DeepStopTime" : "2",
-//                        "Memo" : "",
-//                        "DeviceName" : "DAVINCI"
-//                    ],
-//                    "DiveProfile": [
-//                        [
-//                            "RowID" : "1828",
-//                            "DecoTime" : "0.0",
-//                            "DiveID" : "27",
-//                            "OxToxPercent" : "0",
-//                            "DepthMeters" : "2.8",
-//                            "AlarmID1" : "255",
-//                            "SwitchMixFlag" : "0",
-//                            "AlarmID2" : "DEPTH RANGE ALARM",
-//                            "GfLocalPercent" : "0",
-//                            "TankPSI" : "65535.0",
-//                            "SpeedFpm" : "65476.0",
-//                            "DiveTime" : "0.0",
-//                            "NdlMin" : "598.0",
-//                            "TemperatureC" : "0.0",
-//                            "PpO2Barx100" : "26.0",
-//                            "TankAtrMin" : "65535.0",
-//                            "Tlbg" : "0",
-//                            "DecoStopDepthFT" : "0.0",
-//                            "CurrentUsedMixIdx" : "1",
-//                            "ActualTankID" : "255"
-//                        ],
-//                        [
-//                            "RowID" : "1829",
-//                            "DecoTime" : "0.0",
-//                            "DiveID" : "27",
-//                            "OxToxPercent" : "0",
-//                            "DepthMeters" : "6.2",
-//                            "AlarmID1" : "255",
-//                            "SwitchMixFlag" : "0",
-//                            "AlarmID2" : "DEPTH RANGE ALARM",
-//                            "GfLocalPercent" : "0",
-//                            "TankPSI" : "65535.0",
-//                            "SpeedFpm" : "65476.0",
-//                            "DiveTime" : "10.0",
-//                            "NdlMin" : "598.0",
-//                            "TemperatureC" : "0.0",
-//                            "PpO2Barx100" : "33.0",
-//                            "TankAtrMin" : "65535.0",
-//                            "Tlbg" : "0",
-//                            "DecoStopDepthFT" : "0.0",
-//                            "CurrentUsedMixIdx" : "1",
-//                            "ActualTankID" : "255"
-//                        ]
-//                        // Có thể thêm nhiều item khác
-//                    ]
-//                ]
+                ProgressHUD.animate()
                 
                 let jsonBody: [String: Any] = DatabaseManager.shared.exportDiveDataDictionary(diveID: self.diveLog.intValue(key: "DiveID")) ?? [:]
                 
@@ -613,6 +474,9 @@ class LogViewController: BaseViewController {
                                isFormEncoded: true       // 👈 để sendRawRequest tự gói “data={jsonString}”
                               )
                 )
+                
+                ProgressHUD.dismiss()
+                
                 // In ra JSON string để xem nội dung
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                     if let status = json["status"] as? String {
@@ -625,7 +489,7 @@ class LogViewController: BaseViewController {
                             print("DiveID:", diveID ?? 0)
                             print("Share link:", shareLink ?? "")
                             if let shareLink = shareLink, !shareLink.isEmpty {
-                                Utilities.share(items: [shareLink], from: self, sourceView: sender as! UIButton)
+                                Utilities.share(items: [shareLink], from: self)
                             }
                             
                         } else {
@@ -637,10 +501,10 @@ class LogViewController: BaseViewController {
                     }
                 }
             } catch {
+                ProgressHUD.dismiss()
                 print("API Error:", error.localizedDescription)
             }
         }
-         */
     }
 }
 

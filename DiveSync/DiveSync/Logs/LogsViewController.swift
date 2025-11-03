@@ -33,6 +33,10 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     
     private var disposeBag = DisposeBag()
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -42,7 +46,21 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         // Register the default cell
         tableView.backgroundColor = .clear
         
+        NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleDiveImport),
+                name: .didImportDiveLog,
+                object: nil
+            )
+        
         loadData(sort: SortPreferences.load())
+    }
+    
+    @objc private func handleDiveImport() {
+        print("🔄 Received import event — reload logs")
+        if self.isViewLoaded && self.view.window != nil {
+            loadData(sort: SortPreferences.load())
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {

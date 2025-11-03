@@ -85,22 +85,25 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
         resultTableView.reloadData()
         
         // Bind danh sách về UI
-        let knownDevicesSerials: Set<String> = Set(DatabaseManager.shared.fetchDevices()?.compactMap { $0.SerialNo } ?? [])
+        //let knownDevicesSerials: Set<String> = Set(DatabaseManager.shared.fetchDevices()?.compactMap { $0.SerialNo } ?? [])
+        let knownDevicesIdentities: Set<String> = Set(DatabaseManager.shared.fetchDevices()?.compactMap { $0.Identity } ?? [])
         
         // Bind danh sách về UI
         BluetoothDeviceCoordinator.shared.scannedDevices
             .map { scannedList -> [ScannedPeripheral] in
                 // Filter chỉ những device chưa có trong app
                 scannedList.filter { sp in
-                    guard let (_, serial) = sp.peripheral.peripheral.splitDeviceName() else { return true }
-                    return !knownDevicesSerials.contains(serial)
+                    //guard let (_, serial) = sp.peripheral.peripheral.splitDeviceName() else { return true }
+                    //return !knownDevicesSerials.contains(serial)
+                    guard let IdentityName = sp.peripheral.peripheral.name else { return true } // IdentityName [DAVxxxxx, SKIxxxxx, SPIxxxxx]
+                    return !knownDevicesIdentities.contains(IdentityName)
                 }
             }
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] peripherals in
                 guard let self = self else { return }
                 
-                PrintLog("unknown devices: \(peripherals)")
+                PrintLog("unknown devices: \(peripherals.map { $0.advertisementData.localName ?? $0.peripheral.name ?? "Unknown" })")
                 
                 if !peripherals.isEmpty {
                     foundAny = true

@@ -88,10 +88,25 @@ extension APIManager {
             throw APIError.invalidResponse
         }
         
-        print("⬅️ Response Code:", httpResponse.statusCode)
-        print("⬅️ Response Body:", String(data: data, encoding: .utf8) ?? "<no body>")
+        //print("⬅️ Response Code:", httpResponse.statusCode)
+        //print("⬅️ Response Body:", String(data: data, encoding: .utf8) ?? "<no body>")
         
         return data
     }
 
+}
+
+extension APIManager {
+    /// 📦 Lấy dữ liệu dive theo token chia sẻ
+    func getDiveData(token: String) async throws -> Data {
+        let request = APIRequest(
+            path: "/get_dive_data.php",
+            method: .POST,
+            parameters: ["token": token],
+            isFormEncoded: false
+        )
+        
+        let data = try await sendRawRequest(request)
+        return data
+    }
 }

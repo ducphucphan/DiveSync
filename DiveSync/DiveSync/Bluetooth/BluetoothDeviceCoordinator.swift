@@ -86,14 +86,28 @@ final class BluetoothDeviceCoordinator {
                 return matched
             }
             .scan([ScannedPeripheral]()) { current, new in
+                
+                PrintLog("🟦 current: \(current.map { $0.advertisementData.localName ?? $0.peripheral.name ?? "Unknown" })")
+                PrintLog("🟨 new: \(new.advertisementData.localName ?? new.peripheral.name ?? "Unknown")")
+                
                 var arr = current
                 if !arr.contains(where: { $0.peripheral.identifier == new.peripheral.identifier }) {
                     arr.append(new)
+                    PrintLog("✅ appended \(new.peripheral.identifier)")
+                } else {
+                    PrintLog("⏩ already exists \(new.peripheral.identifier)")
                 }
                 return arr
             }
             .distinctUntilChanged { lhs, rhs in
-                lhs.map { $0.peripheral.identifier } == rhs.map { $0.peripheral.identifier }
+                let lhsIDs = lhs.map { $0.peripheral.identifier }
+                let rhsIDs = rhs.map { $0.peripheral.identifier }
+                
+                PrintLog("🔄 distinctUntilChanged check:")
+                PrintLog("lhs: \(lhsIDs)")
+                PrintLog("rhs: \(rhsIDs)")
+                
+                return lhsIDs == rhsIDs
             }
             .do(onNext: { [weak self] list in
                 self?.scannedDevices.accept(list)

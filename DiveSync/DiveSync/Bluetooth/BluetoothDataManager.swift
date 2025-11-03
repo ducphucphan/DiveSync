@@ -1675,6 +1675,35 @@ class BluetoothDataManager {
         divedata["EnabledMixes"] = self.dataDecrypt(data: logData, startIndex: 128, len: 2)
         divedata["MaxTLBG"] = logData[130]
         
+        //
+        //res0
+        
+        //TankTurnAlramOn
+        divedata["TankTurnAlarmOn"] = logData[131]
+        
+        //TankEndAlramOn
+        divedata["TankEndAlarmOn"] = logData[132]
+        
+        //TankTurnAlramBar
+        divedata["TankTurnAlarmBar"] = self.dataDecrypt(data: logData, startIndex: 133, len: 2)
+        
+        //TankEndAlramBar
+        divedata["TankEndAlarmBar"] = self.dataDecrypt(data: logData, startIndex: 135, len: 2)
+        
+        //TankTurnAlramPsi
+        divedata["TankTurnAlarmPsi"] = self.dataDecrypt(data: logData, startIndex: 137, len: 2)
+        
+        //TankEndAlramPsi
+        divedata["TankEndAlarmPsi"] = self.dataDecrypt(data: logData, startIndex: 139, len: 2)
+        
+        //TankReserveTimeAlramOn
+        divedata["TankReserveTimeAlarmOn"] = logData[141]
+        
+        //TankReserveTimeAlramMin
+        divedata["TankReserveTimeAlarmMin"] = logData[142]
+        //
+        
+        
         let rs = DatabaseManager.shared.saveDiveData(diveData: divedata)
         if rs.existed == true { return }
         
@@ -1686,17 +1715,21 @@ class BluetoothDataManager {
             row["DiveTime"] = self.dataDecrypt(data: profile, startIndex: 4, len: 4)
             row["DepthFT"] = self.dataDecrypt(data: profile, startIndex: 8, len: 2) // Dive Depth in meters x 10
             row["TemperatureF"] = self.dataDecrypt(data: profile, startIndex: 10, len: 2) // Temperature in Celcisuis x 10
-            row["GfLocalPercent"] = profile[16]
-            row["Tlbg"] = profile[17]
-            row["OxToxPercent"] = profile[18]
-            row["AlarmID"] = profile[19]
-            row["PpO2Barx100"] = self.dataDecrypt(data: profile, startIndex: 20, len: 2)
-            row["CurrentUsedMixIdx"] = profile[22]
-            row["SwitchMixFlag"] = profile[23]
-            row["TankPSI"] = self.dataDecrypt(data: profile, startIndex: 24, len: 2)
-            row["NdlMin"] = self.dataDecrypt(data: profile, startIndex: 26, len: 2)
-            row["DecoStopDepthFT"] = self.dataDecrypt(data: profile, startIndex: 28, len: 2)
-            row["DecoTime"] = self.dataDecrypt(data: profile, startIndex: 30, len: 2)
+            row["GfLocalPercent"] = profile[12]
+            row["Tlbg"] = profile[13]
+            row["OxToxPercent"] = profile[14]
+            row["AlarmID"] = profile[15]
+            row["PpO2Barx100"] = self.dataDecrypt(data: profile, startIndex: 16, len: 2)
+            row["CurrentUsedMixIdx"] = profile[18]
+            row["SwitchMixFlag"] = profile[19]
+            row["NdlMin"] = self.dataDecrypt(data: profile, startIndex: 20, len: 2)
+            row["DecoStopDepthFT"] = self.dataDecrypt(data: profile, startIndex: 22, len: 2)
+            row["DecoTime"] = self.dataDecrypt(data: profile, startIndex: 24, len: 2)
+            row["TankPSI"] = self.dataDecrypt(data: profile, startIndex: 26, len: 2)
+            row["TankAtrMin"] = self.dataDecrypt(data: profile, startIndex: 28, len: 2)
+            row["ActualTankID"] = profile[30]
+            row["AlarmID2"] = profile[31]
+            
             DatabaseManager.shared.saveDiveProfile(profile: row)
         }
     }
