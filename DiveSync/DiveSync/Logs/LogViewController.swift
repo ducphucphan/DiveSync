@@ -740,7 +740,7 @@ extension LogViewController {
                     opts = (32...210).map { String(format: "%d °F", $0) }
                 }
                 ItemSelectionAlert.showMessage(
-                    message: "Min Temp",
+                    message: "Max Temp",
                     options: opts,
                     selectedValue: maxTempValueLb.text
                 ) { [weak self] action, value, index in
