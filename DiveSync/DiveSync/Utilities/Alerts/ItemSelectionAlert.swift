@@ -6,6 +6,9 @@ final class ItemSelectionAlert: UIViewController {
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var messageLabel: UILabel!
     
+    @IBOutlet private weak var setBtn: UIButton!
+    @IBOutlet private weak var cancelBtn: UIButton!
+    
     @IBOutlet weak var notesLabel: UILabel!
     
     @IBOutlet weak var pickerViewLeft: UIPickerView!
@@ -18,8 +21,8 @@ final class ItemSelectionAlert: UIViewController {
     
     private var completionWithValue: ((_ action: PrivacyAlertAction, _ selectedValue: String?, _ selectedIndex: Int?) -> Void)?
     private var messageText: String = ""
-    private var setTitle: String = "SET"
-    private var cancelTitle: String = "CANCEL"
+    private var setTitle: String = "Set".localized.uppercased()
+    private var cancelTitle: String = "Cancel".localized.uppercased()
     
     private var notes: String? = "GF"
     
@@ -28,8 +31,8 @@ final class ItemSelectionAlert: UIViewController {
                             options: [String],
                             selectedValue: String?,
                             notesValue: String? = nil,
-                            setTitle: String = "SET",
-                            cancelTitle: String = "CANCEL",
+                            setTitle: String = "Set".localized.uppercased(),
+                            cancelTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String?, _ selectedIndex: Int?) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -64,6 +67,8 @@ final class ItemSelectionAlert: UIViewController {
         pickerViewLeft.delegate = self
         
         messageLabel.text = messageText
+        setBtn.setTitle(setTitle, for: .normal)
+        cancelBtn.setTitle(cancelTitle, for: .normal)
         
         containerView.backgroundColor = UIColor.B_3
         containerView.layer.cornerRadius = 16
@@ -145,11 +150,11 @@ extension ItemSelectionAlert: UIPickerViewDelegate, UIPickerViewDataSource {
         if let notes = notes, notes == "GF" {
             switch selectedIndex {
             case 0:
-                notesLabel.text = "GF High: 90, GF Low: 90"
+                notesLabel.text = "GF High".localized + ": 90, " + "GF Low".localized + ": 90"
             case 1:
-                notesLabel.text = "GF High: 85, GF Low: 35"
+                notesLabel.text = "GF High".localized + ": 85, " + "GF Low".localized + ": 35"
             case 2:
-                notesLabel.text = "GF High: 70, GF Low: 35"
+                notesLabel.text = "GF High".localized + ": 70, " + "GF Low".localized + ": 35"
             default:
                 break
             }

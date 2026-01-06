@@ -83,7 +83,7 @@ final class TwoRowPickerAlert: UIViewController {
         containerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(containerView)
 
-        titleLabel.text = "GAS CONSUMPTION RATE"
+        titleLabel.text = "GAS CONSUMPTION RATE".localized
         titleLabel.textColor = .white
         titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -126,14 +126,14 @@ final class TwoRowPickerAlert: UIViewController {
             bottomLine.centerYAnchor.constraint(equalTo: pickerView.centerYAnchor, constant: 20),
         ])
 
-        cancelButton.setTitle("CANCEL", for: .normal)
+        cancelButton.setTitle("Cancel".localized.uppercased(), for: .normal)
         cancelButton.setTitleColor(.systemOrange, for: .normal)
         cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(cancelButton)
 
-        saveButton.setTitle("SAVE", for: .normal)
+        saveButton.setTitle("SAVE".localized, for: .normal)
         saveButton.setTitleColor(.systemOrange, for: .normal)
         saveButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)

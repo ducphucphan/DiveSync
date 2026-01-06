@@ -9,6 +9,8 @@ import UIKit
 
 class PermissionViewController: BaseViewController {
 
+    @IBOutlet weak var valueDesc: UILabel!
+    @IBOutlet weak var titleLb: UILabel!
     @IBOutlet weak var valueLb: UILabel!
     
     override func viewDidLoad() {
@@ -24,18 +26,21 @@ class PermissionViewController: BaseViewController {
         
         if let permissionAllow:Bool = AppSettings.shared.get(forKey: AppSettings.Keys.permissionIdentify),
             permissionAllow == true {
-            valueLb.text = "Allow"
+            valueLb.text = "Allow".localized
         } else {
-            valueLb.text = "Decline"
+            valueLb.text = "Decline".localized
         }
+        
+        titleLb.text = "Permission".localized
+        valueDesc.text = "Allow DiveSync to collect data from your dive computer for helping us to make improvements to our products.".localized
         
     }
     
     @IBAction func permissionTapped(_ sender: Any) {
         
         ItemSelectionAlert.showMessage(
-            message: "Permission",
-            options: ["Decline", "Allow"],
+            message: "Permission".localized,
+            options: ["Decline".localized, "Allow".localized],
             selectedValue: valueLb.text
         ) { [weak self] action, value, index in
             guard let self = self else { return }

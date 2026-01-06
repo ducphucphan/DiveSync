@@ -26,8 +26,8 @@ final class Set2ValueSettingAlert: UIViewController {
     private var selectedRight = 0
     
     private var completionWithValue: ((_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void)?
-    private var allowTitle: String = "SET"
-    private var denyTitle: String = "CANCEL"
+    private var allowTitle: String = "Set".localized.uppercased()
+    private var denyTitle: String = "Cancel".localized.uppercased()
     
     private var leftValue: String = ""
     private var rightValue: String = ""
@@ -35,13 +35,13 @@ final class Set2ValueSettingAlert: UIViewController {
     private var messageText: String? = nil
         
     // MARK: - Initializer
-    static func showMessage(message: String? = "Safety Stop",
+    static func showMessage(message: String? = "Safety Stop".localized,
                             leftValue: String,
                             rightValue: String,
                             leftOptions: [String],
                             rightOptions: [String],
-                            allowTitle: String = "SET",
-                            denyTitle: String = "CANCEL",
+                            allowTitle: String = "Set".localized.uppercased(),
+                            denyTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -73,6 +73,8 @@ final class Set2ValueSettingAlert: UIViewController {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
         messageLabel.text = messageText
+        allowButton.setTitle(allowTitle, for: .normal)
+        denyButton.setTitle(denyTitle, for: .normal)
         
         // Picker
         pickerViewLeft.dataSource = self

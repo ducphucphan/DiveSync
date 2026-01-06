@@ -27,6 +27,8 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
     @IBOutlet weak var tryagainBtn: UIButton!
     @IBOutlet weak var headerView: UIStackView!
     
+    @IBOutlet weak var nearbyLb: UILabel!
+    
     // 1) make disposeBag mutable
     private var disposeBag = DisposeBag()
     private var peripherals = BehaviorRelay<[ScannedPeripheral]>(value: [])
@@ -59,12 +61,12 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Scan Devices",
+                                                  title: self.title ?? "Scan Devices".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
         
-        lookingLb.text = "No Device Found.\nEnsure your device is ON and Bluetooth is set to ON."
+        lookingLb.text = "No Device Found.\nEnsure your device is ON and Bluetooth is set to ON.".localized
         
         setupTableView()
         
@@ -75,6 +77,13 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
         super.viewWillAppear(animated)
         enableTryAgain(tryagain: false)
         startScanning()
+    }
+    
+    override func updateTexts() {
+        super.updateTexts()
+        
+        nearbyLb.text = "Nearby Devices".localized
+        tryagainLb.text = "Try Again".localized
     }
     
     private func startScanning() {
@@ -135,12 +144,12 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
             tryagainImv.alpha = 1.0
             tryagainLb.alpha = 1.0
             tryagainBtn.isEnabled = true
-            lookingLb.text = "No Device Found.\nEnsure your device is ON and Bluetooth is set to ON."
+            lookingLb.text = "No Device Found.\nEnsure your device is ON and Bluetooth is set to ON.".localized
         } else {
             tryagainImv.alpha = 0.5
             tryagainLb.alpha = 0.5
             tryagainBtn.isEnabled = false
-            lookingLb.text = "Looking for devices..."
+            lookingLb.text = "Looking for devices...".localized
         }
     }
     

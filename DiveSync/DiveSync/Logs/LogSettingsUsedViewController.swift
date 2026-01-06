@@ -24,7 +24,7 @@ class LogSettingsUsedViewController: BaseViewController {
         super.viewDidLoad()
 
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Log - Settings Used",
+                                                  title: self.title ?? "Log - Settings Used".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
@@ -117,7 +117,7 @@ extension LogSettingsUsedViewController: UITableViewDataSource, UITableViewDeleg
             break
         }
         
-        cell.bindCell(title: titleData[indexPath.row], value: value)
+        cell.bindCell(title: titleData[indexPath.row].localized, value: value)
         
         cell.accessoryType = .none
         cell.selectionStyle = .none

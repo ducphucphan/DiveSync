@@ -24,8 +24,8 @@ final class PrivacyAlert: UIViewController {
 
     // MARK: - Init
     init(message: String,
-         allowTitle: String = "ALLOW",
-         denyTitle: String = "DENY",
+         allowTitle: String = "ALLOW".localized,
+         denyTitle: String = "DENY".localized,
          completion: @escaping (PrivacyAlertAction) -> Void) {
         super.init(nibName: nil, bundle: nil)
         self.completion = completion
@@ -40,8 +40,8 @@ final class PrivacyAlert: UIViewController {
 
     // MARK: - Static Show Method
     static func showMessage(message: String,
-                             allowTitle: String = "ALLOW",
-                             denyTitle: String = "DENY",
+                             allowTitle: String = "ALLOW".localized,
+                             denyTitle: String = "DENY".localized,
                              completion: @escaping (PrivacyAlertAction) -> Void) {
         guard let topVC = UIApplication.shared.topMostViewController() else {
             return

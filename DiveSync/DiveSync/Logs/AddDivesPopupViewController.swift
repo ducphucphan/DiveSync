@@ -27,6 +27,9 @@ final class AddDivesPopupViewController: UIViewController {
     @IBOutlet private weak var emptyStateLabel: UILabel!
     @IBOutlet private weak var addNewDeviceButton: UIButton!
     
+    @IBOutlet weak var addManualLb: UILabel!
+    
+    
     weak var delegate: AddLogsPopupDelegate?
     
     // Demo data — thay bằng dữ liệu thực tế từ BLE
@@ -44,6 +47,14 @@ final class AddDivesPopupViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        titleLabel.text = "Add Logs".localized
+        addManualLb.text = "Add Manual Log".localized
+        downloadTitleLabel.text = "Download Logs".localized
+        downloadSubtitleLabel.text = "Please select a device below".localized + ":"
+        emptyStateLabel.text = "No device to list.".localized
+        addNewDeviceButton.setTitle("Add New Device".localized + "?", for: .normal)
+        
         loadDevices()
         setupUI()
         setupCollectionView()

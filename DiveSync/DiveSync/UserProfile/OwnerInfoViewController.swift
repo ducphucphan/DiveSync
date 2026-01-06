@@ -43,6 +43,7 @@ class OwnerInfoViewController: BaseViewController {
     
     @IBOutlet weak var userImv: UIImageView!
     @IBOutlet weak var nameLb: UILabel!
+    @IBOutlet weak var addImgLb: UILabel!
     
     let titleData = ["Weight", "Height", "Gender", "Blood Type", "Birth Date", "Address",
                      "City", "State/Province", "Zip/Post Code", "Phone Number",
@@ -60,6 +61,8 @@ class OwnerInfoViewController: BaseViewController {
         self.navigationController?.setCustomTitle(for: self.navigationItem, title: self.title ?? "", pushBack: true)
         self.title = nil
         
+        addImgLb.text = "+" + "Add Image".localized
+        
         userView.layer.borderColor = UIColor.B_3.cgColor
         
         let avatarPath = HomeDirectory().appendingFormat("%@", USERINFO_DIR) + "avatar.png"
@@ -76,7 +79,7 @@ class OwnerInfoViewController: BaseViewController {
     }
     
     @IBAction func editUserName(_ sender: Any) {
-        InputAlert.show(title: "What is your name?", currentValue: nameLb.text ?? "") { action in
+        InputAlert.show(title: "What is your name?".localized, currentValue: nameLb.text ?? "") { action in
             switch action {
             case .save(let value):
                 
@@ -90,27 +93,27 @@ class OwnerInfoViewController: BaseViewController {
     }
     
     @IBAction func choosePhoto(_ sender: Any) {        
-        let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+        let cameraAction = UIAlertAction(title: "Camera".localized, style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 let cameraPicker = UIImagePickerController()
                 cameraPicker.sourceType = .camera
                 cameraPicker.delegate = self
                 self.present(cameraPicker, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: nil, message: "Camera could not available for this device!", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                let alert = UIAlertController(title: nil, message: "Camera could not available for this device!".localized, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK".localized, style: .default, handler: nil))
                 self.present(alert, animated: true, completion: nil)
             }
         }
         
-        let albumsAction = UIAlertAction(title: "Albums", style: .default) { _ in
+        let albumsAction = UIAlertAction(title: "Albums".localized, style: .default) { _ in
             let albumPicker = UIImagePickerController()
             albumPicker.sourceType = .photoLibrary
             albumPicker.delegate = self
             self.present(albumPicker, animated: true, completion: nil)
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized, style: .cancel)
         
         presentActionSheet(from: sender,
                                title: nil,
@@ -120,7 +123,7 @@ class OwnerInfoViewController: BaseViewController {
     
     @IBAction func shareTapped(_ sender: Any) {
         
-        Utilities.share(items: ["What do you want to share?"], from: self)
+        Utilities.share(items: ["What do you want to share?".localized], from: self)
         
     }
 }
@@ -142,7 +145,7 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
         let fieldType = ProfileFieldType.type(for: key)
         switch fieldType {
         case .cert:
-            cell.bindCell(title: titleData[indexPath.row], value: "", imageName: "cetificate")
+            cell.bindCell(title: titleData[indexPath.row].localized.capitalized, value: "", imageName: "cetificate")
             cell.accessoryType = .disclosureIndicator
         default:
             let value = profileValues[key]
@@ -152,7 +155,7 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
             } else {
                 displayValue = "-"
             }
-            cell.bindCell(title: titleData[indexPath.row], value: displayValue)
+            cell.bindCell(title: titleData[indexPath.row].localized.capitalized, value: displayValue)
         }
         
         cell.backgroundColor = .clear

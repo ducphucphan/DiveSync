@@ -94,6 +94,20 @@ class DeviceViewController: BaseViewController {
     @IBOutlet weak var statsMinTempValueLb: UILabel!
     @IBOutlet weak var statsAltLevelValueLb: UILabel!
     
+    @IBOutlet weak var autoSyncLb: UILabel!
+    @IBOutlet weak var logStatisticLb: UILabel!
+    @IBOutlet weak var totalDivesLb: UILabel!
+    @IBOutlet weak var diveTimeLb: UILabel!
+    @IBOutlet weak var maxDepthLb: UILabel!
+    @IBOutlet weak var avgDepthLb: UILabel!
+    @IBOutlet weak var minTempLb: UILabel!
+    @IBOutlet weak var altLb: UILabel!
+    @IBOutlet weak var logsLb: UILabel!
+    @IBOutlet weak var settingsLb: UILabel!
+    @IBOutlet weak var updateDcLb: UILabel!
+    @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var tapOnLb: UILabel!
+    
     private var disposeBag = DisposeBag()
 
     private var currentIndex = 0
@@ -113,7 +127,7 @@ class DeviceViewController: BaseViewController {
         self.title = nil
         
         var config = UIButton.Configuration.plain()
-        config.title = "Add"
+        config.title = "Add".localized
         config.image = UIImage(systemName: "plus")
         config.imagePlacement = .trailing
         config.imagePadding = 4
@@ -141,6 +155,25 @@ class DeviceViewController: BaseViewController {
         super.viewWillAppear(animated)
         
         loadDevices()
+    }
+    
+    override func updateTexts() {
+        super.updateTexts()
+        
+        autoSyncLb.text = "Auto Sync".localized
+        logStatisticLb.text = "Log Statistics".localized
+        totalDivesLb.text = "Total Dives".localized
+        diveTimeLb.text = "Dive Time".localized
+        maxDepthLb.text = "Max Depth".localized
+        avgDepthLb.text = "Avg Depth".localized
+        minTempLb.text = "Min Temp".localized
+        altLb.text = "Altitude Level".localized
+        
+        logsLb.text = "Logs".localized
+        settingsLb.text = "Settings".localized
+        updateDcLb.text = "Update DC".localized
+        deleteLb.text = "Delete".localized
+        tapOnLb.text = "Tap on + to add new device".localized
     }
     
     private func loadDevices() {
@@ -197,15 +230,15 @@ class DeviceViewController: BaseViewController {
         
         
         deviceName.text = device.ModelName ?? ""
-        serialNoLb.text = String(format: "Serial Number: %05d", device.SerialNo?.toInt() ?? 0)
+        serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
         
-        var versionText = "Firmware Version: \(device.Firmware ?? "")"
+        var versionText = "Firmware Version".localized + ": \(device.Firmware ?? "")"
         if let lcd = device.LCDFirmware, !lcd.isEmpty {
             versionText += ".\(lcd)"
         }
         versionLb.text = versionText
         
-        syncedLb.text = "Synced: " + (device.LastSync ?? "")
+        syncedLb.text = "Synced".localized + ": " + (device.LastSync ?? "")
         
         if let deviceIdentify = device.Identity, let autosyncDeviceIdentify:String = AppSettings.shared.get(forKey: AppSettings.Keys.autosyncDeviceIdentify), deviceIdentify == autosyncDeviceIdentify {
             autosyncSwitch.isOn = true
@@ -358,8 +391,8 @@ class DeviceViewController: BaseViewController {
         let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
         guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
             PrintLog("Device not found in scannedDevices yet")
-            showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
-            completion(.failure(NSError(domain: "DeviceNotFound", code: -1, userInfo: nil)))
+            showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
+            completion(.failure(NSError(domain: "DeviceNotFound".localized, code: -1, userInfo: nil)))
             return
         }
         
@@ -429,7 +462,7 @@ class DeviceViewController: BaseViewController {
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
-                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
+                showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 return
             }
             
@@ -489,7 +522,7 @@ class DeviceViewController: BaseViewController {
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
-                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
+                showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 
                 return
             }
@@ -534,8 +567,8 @@ class DeviceViewController: BaseViewController {
             switch result {
             case .success(let dataManager):
                 let currentFw = dataManager.firmwareRev
-                let msg = "Looking new firmware\nCurrent: v \(currentFw)"
-                DialogViewController.showLoading(title: "Firmware Update", message: msg, task:  {_ in
+                let msg = "Looking new firmware\nCurrent".localized + ": v \(currentFw)"
+                DialogViewController.showLoading(title: "Firmware Update".localized, message: msg, task:  {_ in
                     
                     let group = DispatchGroup()
                     var iniContent: String?
@@ -579,7 +612,7 @@ class DeviceViewController: BaseViewController {
                                         }
                                         self.present(fwVC, animated: true)
                                     } else {
-                                        DialogViewController.showMessage(title: "Firmware Update", message: "Your dive computer firmware is up to date!")
+                                        DialogViewController.showMessage(title: "Firmware Update".localized, message: "Your dive computer firmware is up to date!".localized)
                                         
                                         BluetoothDeviceCoordinator.shared.disconnect()
                                         //self.updateDeviceStateUI()
@@ -611,7 +644,7 @@ class DeviceViewController: BaseViewController {
             return
         }
         
-        PrivacyAlert.showMessage(message: "Are you sure to want to delete this device?", allowTitle: "YES", denyTitle: "NO") { action in
+        PrivacyAlert.showMessage(message: "Are you sure to want to delete this device?".localized, allowTitle: "OK".localized, denyTitle: "Cancel".localized.uppercased()) { action in
             switch action {
             case .allow:
                 
@@ -646,8 +679,14 @@ class DeviceViewController: BaseViewController {
         guard let sw = sender as? UISwitch else { return }
         let isOn = sw.isOn
         if isOn {
+            AppSettings.shared.set(device.Identity, forKey: AppSettings.Keys.autosyncDeviceIdentify)
+        } else {
+            AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
+        }
+        /*
+        if isOn {
             // Alert
-            PrivacyAlert.showMessage(message: "Enabling this option allows the app to automatically connect and retrieve all dive logs each time it is launched.", allowTitle: "ENABLED", denyTitle: "CLOSE") { action in
+            PrivacyAlert.showMessage(message: "Enabling this option allows the app to automatically connect and retrieve all dive logs each time it is launched.".localized, allowTitle: "ENABLED".localized, denyTitle: "CLOSE".localized) { action in
                 if  action == .deny {
                     self.autosyncSwitch.isOn = false
                 } else {
@@ -658,6 +697,7 @@ class DeviceViewController: BaseViewController {
         } else {
             AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
         }
+        */
     }
 }
 
@@ -703,8 +743,8 @@ extension DeviceViewController {
         }
         
         DialogViewController.showProcess(
-            title: "Firmware Update",
-            message: "Downloading firmware v \(latestVersion)",
+            title: "Firmware Update".localized,
+            message: "Downloading firmware v".localized + " \(latestVersion)",
             task: { alertVC in
                 
                 let ver = latestVersion.replacingOccurrences(of: ".", with: "_")
@@ -728,7 +768,7 @@ extension DeviceViewController {
                         DispatchQueue.main.async {
                             DialogViewController.dismissAlert {
                                 BluetoothDeviceCoordinator.shared.disconnect()
-                                DialogViewController.showMessage(title: "Firmware Update", message: "❌ Firmware file not found on server.")
+                                DialogViewController.showMessage(title: "Firmware Update".localized, message: "❌ Firmware file not found on server.".localized)
                             }
                         }
                         // Dừng hẳn ở đây, KHÔNG chạy tiếp
@@ -765,7 +805,7 @@ extension DeviceViewController {
                             self.doUpdateFirmware(fileUrl: fileUrl)
                         }
                     } else {
-                        DialogViewController.showMessage(title: "Firmware Update", message: "❌ Download failed") {
+                        DialogViewController.showMessage(title: "Firmware Update".localized, message: "❌ Download failed".localized) {
                             BluetoothDeviceCoordinator.shared.disconnect()
                         }
                     }

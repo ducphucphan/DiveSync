@@ -27,7 +27,7 @@ class DeviceViewCell: UITableViewCell {
         
         guard let (bleName, serialNo) = mDevice.peripheral.peripheral.splitDeviceName() else { return }
         
-        modelSerialLb.text = String(format: "Serial Number: %05d", serialNo.toInt())
+        modelSerialLb.text = String(format: "Serial Number".localized + ": %05d", serialNo.toInt())
         
         if let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             modelNameLb.text = dcInfo[1]

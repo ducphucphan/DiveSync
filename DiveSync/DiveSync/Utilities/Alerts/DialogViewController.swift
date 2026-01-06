@@ -60,18 +60,18 @@ class DialogViewController: UIViewController {
             activityIndicator.startAnimating()
             activityIndicator.isHidden = false
             progressView.isHidden = true
-            cancelButton.setTitle("CANCEL", for: .normal)
+            cancelButton.setTitle("Cancel".localized.uppercased(), for: .normal)
             
         case .progress:
             activityIndicator.isHidden = true
             progressView.isHidden = false
             progressView.progress = 0
-            cancelButton.setTitle("CANCEL", for: .normal)
+            cancelButton.setTitle("Cancel".localized.uppercased(), for: .normal)
             
         case .message:
             activityIndicator.isHidden = true
             progressView.isHidden = true
-            cancelButton.setTitle("OK", for: .normal)
+            cancelButton.setTitle("OK".localized, for: .normal)
         }
     }
     

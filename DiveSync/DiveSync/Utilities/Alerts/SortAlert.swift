@@ -8,21 +8,22 @@ final class SortAlert: UIViewController {
     @IBOutlet private weak var allowButton: UIButton!
     @IBOutlet private weak var denyButton: UIButton!
     @IBOutlet private weak var favoriteOnlyButton: UIButton!
+    @IBOutlet weak var favoriteOnlyLb: UILabel!
     
     @IBOutlet weak var pickerViewLeft: UIPickerView!
     
     @IBOutlet weak var pickerViewRight: UIPickerView!
     
-    private var leftOptions = ["Increasing", "Decreasing"]
-    private var rightOptions = ["Date", "Max Depth", "Dive Time"]
+    private var leftOptions = ["Increasing".localized, "Decreasing".localized]
+    private var rightOptions = ["Date".localized, "Max Depth".localized, "Dive Time".localized]
     
     private var selectedLeft = 0
     private var selectedRight = 0
     
     private var completion: ((PrivacyAlertAction) -> Void)?
     private var messageText: String = ""
-    private var allowTitle: String = "ALLOW"
-    private var denyTitle: String = "DENY"
+    private var allowTitle: String = "Sort".localized.uppercased()
+    private var denyTitle: String = "Cancel".localized.uppercased()
     
     var isFavoriteOnly = false
     
@@ -31,8 +32,8 @@ final class SortAlert: UIViewController {
     
     // MARK: - Initializer
     static func showMessage(message: String,
-                            allowTitle: String = "ALLOW",
-                            denyTitle: String = "DENY",
+                            allowTitle: String = "Sort".localized.uppercased(),
+                            denyTitle: String = "Cancel".localized.uppercased(),
                             currentOptions: SortOptions,
                             completion: @escaping (SortOptions?) -> Void) {
         guard let topVC = UIApplication.shared.topMostViewController(),
@@ -61,6 +62,11 @@ final class SortAlert: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        
+        messageLabel.text = messageText.localized
+        allowButton.setTitle(allowTitle, for: .normal)
+        denyButton.setTitle(denyTitle, for: .normal)
+        favoriteOnlyLb.text = "Favorites Only".localized
         
         // Picker
         pickerViewLeft.dataSource = self

@@ -25,6 +25,9 @@ class LogGalleryCell: UICollectionViewCell {
         super.awakeFromNib()
         
         noPhotosLb.isHidden = true
+        noPhotosLb.text = "No Photos Added".localized
+        prevBtn.setTitle("Previous".localized, for: .normal)
+        nextBtn.setTitle("Next".localized, for: .normal)
         
         photoCollectionView.delegate = self
         photoCollectionView.dataSource = self

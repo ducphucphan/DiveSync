@@ -50,7 +50,7 @@ final class DeviceCollectionViewCell: UICollectionViewCell {
     
     func configure(with item: Devices) {
         imageView.image = UIImage(named: "\(item.modelId ?? 0)") ?? UIImage(systemName: "8682")
-        nameLabel.text = String(format: "%@-%05d", item.ModelName ?? "Unknown", item.SerialNo?.toInt() ?? 0)
+        nameLabel.text = String(format: "%@-%05d", item.ModelName ?? "Unknown".localized, item.SerialNo?.toInt() ?? 0)
         
         // Kiểm tra kết nối từ BluetoothDeviceCoordinator
         if let active = BluetoothDeviceCoordinator.shared.activeDataManager,
@@ -59,7 +59,7 @@ final class DeviceCollectionViewCell: UICollectionViewCell {
            active.peripheral.peripheral.state == .connected {
             
             statusLabel.isHidden = false
-            statusLabel.text = "Connected"
+            statusLabel.text = "Connected".localized
             statusLabel.textColor = .systemGreen
         } else {
             statusLabel.isHidden = true

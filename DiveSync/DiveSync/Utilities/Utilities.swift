@@ -360,14 +360,14 @@ class Utilities {
     static func fo2GasValue(gasNo: Int, fo2: Int) -> String {
         var gasValue = ""
         if gasNo == 1 && fo2 <= 21 {
-            gasValue = "AIR"
+            gasValue = "AIR".localized
         } else {
             if fo2 <= 21 {
-                gasValue = "AIR"
+                gasValue = "AIR".localized
             } else if fo2 == 100 {
-                gasValue = "O2"
+                gasValue = "O2".localized
             } else if fo2 > 100 {
-                gasValue = OFF
+                gasValue = OFF.localized
             } else {
                 gasValue = String(format: "EAN%d", fo2)
             }
@@ -486,12 +486,12 @@ class Utilities {
                         )
 
                         if exists {
-                            showAlert(on: rootVC, message: "Dive already exists")
+                            showAlert(on: rootVC, message: "Dive already exists".localized)
                         } else {
                             showAlert(on: rootVC,
-                                      message: "Do you want to import this dive into your log?",
-                                      okTitle: "YES",
-                                      cancelTitle: "NO",
+                                      message: "Do you want to import this dive into your log?".localized,
+                                      okTitle: "YES".localized,
+                                      cancelTitle: "NO".localized,
                                       okHandler: {
                                 ProgressHUD.animate()
                                 do {

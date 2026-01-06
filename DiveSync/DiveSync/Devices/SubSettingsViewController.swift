@@ -10,13 +10,15 @@ import RxSwift
 import ProgressHUD
 import RxBluetoothKit
 
-class SubSettingsViewController: UIViewController {
+class SubSettingsViewController: BaseViewController {
     
     @IBOutlet weak var tableview: UITableView!
     
     @IBOutlet weak var uploadView: UIView!
     @IBOutlet weak var uploadDateView: UIView!
     @IBOutlet weak var deleteView: UIView!
+    @IBOutlet weak var uploadDateTimeLb: UILabel!
+    @IBOutlet weak var deleteLb: UILabel!
     
     var device: Devices!
     
@@ -54,6 +56,13 @@ class SubSettingsViewController: UIViewController {
         } else {
             uploadView.isHidden = true
         }
+    }
+    
+    override func updateTexts() {
+        super.updateTexts()
+        
+        uploadDateTimeLb.text = "Upload Date/Time".localized
+        deleteLb.text = "Delete".localized
     }
     
     func getPDCSettings() -> [String: Any] {
@@ -129,7 +138,7 @@ class SubSettingsViewController: UIViewController {
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
-                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
+                showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 
                 return
             }
@@ -285,7 +294,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 keyType = .emailAddress
             }
             
-            InputAlert.show(title: row.title, saveTitle: "SET", currentValue: row.value ?? "", keyboardType: keyType) { action in
+            InputAlert.show(title: row.title.localized, saveTitle: "SET", currentValue: row.value ?? "", keyboardType: keyType) { action in
                 switch action {
                 case .save(let value):
                     self.rows[indexPath.row].value = value?.uppercased()
@@ -391,7 +400,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             if row.id == "conservatism" { notes = "GF" }
             
             ItemSelectionAlert.showMessage(
-                message: row.title,
+                message: row.title.localized,
                 options: optionsToUse,
                 selectedValue: currentValue,
                 notesValue: notes
@@ -514,7 +523,7 @@ func presentTimePicker(from viewController: UIViewController,
                        outputFormat: String? = "HH:mm",
                        onTimePicked: @escaping (String) -> Void) {
     let alert = UIAlertController(title: nil, message: "\n\n\n\n\n\n", preferredStyle: .actionSheet)
-    let title = "Set Time"
+    let title = "Set Time".localized
     let attributedTitle = NSAttributedString(string: title, attributes: [
         .font: UIFont.boldSystemFont(ofSize: 20),
         .foregroundColor: UIColor.systemBlue
@@ -545,8 +554,8 @@ func presentTimePicker(from viewController: UIViewController,
     picker.frame = CGRect(x: 0, y: 30, width: alert.view.bounds.width - 20, height: 160)
     alert.view.addSubview(picker)
     
-    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-    alert.addAction(UIAlertAction(title: "Set", style: .default, handler: { _ in
+    alert.addAction(UIAlertAction(title: "Cancel".localized, style: .cancel, handler: nil))
+    alert.addAction(UIAlertAction(title: "Set".localized, style: .default, handler: { _ in
         let formatter = DateFormatter()
         formatter.dateFormat = outputFormat
         formatter.locale = Locale(identifier: "en_US_POSIX")

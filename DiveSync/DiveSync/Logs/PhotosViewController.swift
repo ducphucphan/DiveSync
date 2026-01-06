@@ -14,6 +14,9 @@ class PhotosViewController: BaseViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var noPhotosLabel: UILabel!
+    @IBOutlet weak var addLb: UILabel!
+    @IBOutlet weak var shareLb: UILabel!
+    @IBOutlet weak var removeLb: UILabel!
     
     @IBOutlet weak var addView: UIView!
     @IBOutlet weak var shareView: UIView!
@@ -33,10 +36,15 @@ class PhotosViewController: BaseViewController {
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Photos",
+                                                  title: self.title ?? "Photos".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
+        
+        noPhotosLabel.text = "No Photos Added".localized
+        addLb.text = "Add".localized
+        shareLb.text = "Share".localized
+        removeLb.text = "Remove".localized
         
         if UIDevice.current.userInterfaceIdiom == .pad {
             photoColumnNumber = 4
@@ -92,9 +100,9 @@ class PhotosViewController: BaseViewController {
     }
     
     @IBAction private func removeTapped(_ sender: UIButton) {
-        PrivacyAlert.showMessage(message: "Are you sure to want to delete selected photos?",
-                                 allowTitle: "DELETE",
-                                 denyTitle: "CANCEL") { action in
+        PrivacyAlert.showMessage(message: "Are you sure to want to delete selected photos?".localized,
+                                 allowTitle: "Delete".localized.uppercased(),
+                                 denyTitle: "Cancel".localized.uppercased()) { action in
             switch action {
             case .allow:
                 var errors: [Error] = []
@@ -126,7 +134,7 @@ class PhotosViewController: BaseViewController {
     }
     
     @IBAction func addImageTapped(_ sender: Any) {        
-        let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+        let cameraAction = UIAlertAction(title: "Camera".localized, style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 let cameraPicker = UIImagePickerController()
                 cameraPicker.sourceType = .camera
@@ -134,21 +142,21 @@ class PhotosViewController: BaseViewController {
                 self.present(cameraPicker, animated: true)
             } else {
                 let alert = UIAlertController(title: nil,
-                                              message: "Camera not available on this device!",
+                                              message: "Camera not available on this device!".localized,
                                               preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                alert.addAction(UIAlertAction(title: "OK".localized, style: .default))
                 self.present(alert, animated: true)
             }
         }
         
-        let albumsAction = UIAlertAction(title: "Albums", style: .default) { _ in
+        let albumsAction = UIAlertAction(title: "Albums".localized, style: .default) { _ in
             let albumPicker = UIImagePickerController()
             albumPicker.sourceType = .photoLibrary
             albumPicker.delegate = self
             self.present(albumPicker, animated: true)
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized, style: .cancel)
         
         presentActionSheet(from: sender,
                            title: nil,

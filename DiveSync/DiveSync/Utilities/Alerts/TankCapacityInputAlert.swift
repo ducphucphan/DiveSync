@@ -11,6 +11,9 @@ final class TankCapacityInputAlert: UIViewController {
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var messageLabel: UILabel!
     
+    @IBOutlet private weak var setButton: UIButton!
+    @IBOutlet private weak var cancelButton: UIButton!
+    
     @IBOutlet weak var cylinderLb: UILabel!
     @IBOutlet weak var cylinderValueTf: UITextField!
     
@@ -26,16 +29,16 @@ final class TankCapacityInputAlert: UIViewController {
         
     private var completion: ((_ action: TankCapacityAlertAction) -> Void)?
     private var messageText: String? = nil
-    private var setTitle: String = "SET"
-    private var cancelTitle: String = "CANCEL"
+    private var setTitle: String = "Set".localized.uppercased()
+    private var cancelTitle: String = "Cancel".localized.uppercased()
     
     // MARK: - Initializer
-    static func showMessage(message: String? = "Tank Capacity",
+    static func showMessage(message: String? = "Tank Capacity".localized,
                             cylinderSize: Double = 0,
                             workingPressure: Double = 0,
                             unitOfDive: Int = M,
-                            setTitle: String = "SET",
-                            cancelTitle: String = "CANCEL",
+                            setTitle: String = "Set".localized.uppercased(),
+                            cancelTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: TankCapacityAlertAction) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -71,7 +74,13 @@ final class TankCapacityInputAlert: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
+        cylinderLb.text = "Cylinder Size".localized
+        workingLb.text = "Working Pressure".localized
+        
         messageLabel.text = messageText
+        cancelButton.setTitle(cancelTitle, for: .normal)
+        setButton.setTitle(setTitle, for: .normal)
+        
         containerView.backgroundColor = UIColor.B_3
         containerView.layer.cornerRadius = 16
         containerView.translatesAutoresizingMaskIntoConstraints = false

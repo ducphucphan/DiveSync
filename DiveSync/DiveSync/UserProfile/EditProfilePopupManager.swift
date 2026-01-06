@@ -25,8 +25,8 @@ final class EditProfilePopupManager {
             $0.text = valueToShow
             $0.keyboardType = keyboardType
         }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Set", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: "Cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "Set".localized.uppercased(), style: .default) { _ in
             if let value = alert.textFields?.first?.text {
                 onSave(value)
             }
@@ -72,9 +72,9 @@ final class EditProfilePopupManager {
     ) {
         showTextInput(
             in: viewController,
-            title: "Phone number",
+            title: "Phone Number".localized,
             currentValue: currentValue,
-            placeholder: "Enter phone number",
+            placeholder: "Enter phone number".localized,
             keyboardType: .phonePad,
             onSave: onSave
         )

@@ -82,7 +82,7 @@ class GasDetailViewController: BaseViewController {
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Log - Gas Detail",
+                                                  title: self.title ?? "Log - Gas Details".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
@@ -127,6 +127,21 @@ class GasDetailViewController: BaseViewController {
         lineChartView.isHidden = true
         switchesView.isHidden = true
         startDiveView.isHidden = true
+    }
+    
+    override func updateTexts() {
+        super.updateTexts()
+        
+        tankCapacityLb.text = "Tank Capacity".localized
+        tankTypeLb.text = "Tank Type".localized
+        startPsiLb.text = "Start Pressure".localized
+        endPsiLb.text = "End Pressure".localized
+        breathingTimeLb.text = "Breathing Time".localized
+        mdepthLb.text = "Max Depth".localized
+        minDepthLb.text = "Min Depth".localized
+        avgDepthLb.text = "Avg Depth".localized
+        sacLb.text = "SAC".localized
+        rmvLb.text = "Avg RMV".localized
     }
     
     private func configTankInfo() {
@@ -289,9 +304,9 @@ class GasDetailViewController: BaseViewController {
             break
         }
         
-        gasNoLb.text = String(format: "%@ %d - %@", "GAS", gasNo, Utilities.fo2GasValue(gasNo: gasNo, fo2: fo2))
+        gasNoLb.text = String(format: "%@ %d - %@", "Gas".localized.uppercased(), gasNo, Utilities.fo2GasValue(gasNo: gasNo, fo2: fo2))
         if mixesEnabled[gasNo] == false {
-            gasNoLb.text = String(format: "%@ %d - %@", "GAS", gasNo, OFF)
+            gasNoLb.text = String(format: "%@ %d - %@", "Gas".localized.uppercased(), gasNo, OFF)
         }
         
     }
@@ -323,7 +338,7 @@ class GasDetailViewController: BaseViewController {
         // Create an array of ChartDataEntry from dive data
         chartEntries = gasData.map { ChartDataEntry(x: $0.time, y: $0.gas) }
         
-        let dataSet = LineChartDataSet(entries: chartEntries, label: "Gas Used")
+        let dataSet = LineChartDataSet(entries: chartEntries, label: "Gas Used".localized)
         dataSet.mode = .cubicBezier
         dataSet.drawCirclesEnabled = false
         dataSet.lineWidth = 1.2
@@ -488,7 +503,7 @@ class GasDetailViewController: BaseViewController {
                     let pressure = Double(psiString) ?? 0
                  
                     TankCapacityInputAlert.showMessage(
-                        message: "Tank Capacity",
+                        message: "Tank Capacity".localized,
                         cylinderSize: size,
                         workingPressure: pressure,
                         unitOfDive: unitOfDive
@@ -526,7 +541,7 @@ class GasDetailViewController: BaseViewController {
                     if tankTypeStr == "---" { tankTypeStr = "" }
                 }
                 
-                TankTypeAlert.show(title: "Tank Type", selectedIndex: tankTypeIndex, otherText: tankTypeStr) { [self] action in
+                TankTypeAlert.show(title: "Tank Type".localized, selectedIndex: tankTypeIndex, otherText: tankTypeStr) { [self] action in
                     switch action {
                     case .cancel:
                         break
@@ -579,7 +594,7 @@ class GasDetailViewController: BaseViewController {
                 let seconds = Int(components.last ?? "0") ?? 0
                 
                 BreathingTimeInputAlert.showMessage(
-                    message: "Breathing Time",
+                    message: "Breathing Time".localized,
                     minutes: minutes,
                     seconds: seconds
                 ) { action in

@@ -18,6 +18,8 @@ class CertificationsViewController: BaseViewController {
     @IBOutlet weak var cancelView: UIView!
     
     @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var addLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
     
     var selectedIndexes = Set<Int>()
     var isDeleteMode = false
@@ -32,10 +34,14 @@ class CertificationsViewController: BaseViewController {
         tableView.backgroundColor = .clear
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Certifications",
+                                                  title: self.title ?? "Certifications".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
+        
+        addLb.text = "Add".localized
+        cancelLb.text = "Cancel".localized
+        noCertLb.text = "No Certification to List".localized
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -74,9 +80,9 @@ class CertificationsViewController: BaseViewController {
         // Đang ở chế độ chọn: thực hiện xóa
         if selectedIndexes.count > 0 {
             PrivacyAlert.showMessage(
-                message: "Are you sure you want to delete selected certifications?",
-                allowTitle: "DELETE",
-                denyTitle: "CANCEL"
+                message: "Are you sure you want to delete selected certifications?".localized,
+                allowTitle: "Delete".localized.uppercased(),
+                denyTitle: "Cancel".localized.uppercased()
             ) { action in
                 switch action {
                 case .allow:
@@ -106,7 +112,7 @@ class CertificationsViewController: BaseViewController {
     func updateUIForDeleteMode() {
         addView.isHidden = isDeleteMode
         cancelView.isHidden = !isDeleteMode
-        deleteLb.text = isDeleteMode ? "Delete Selected" : "Delete"
+        deleteLb.text = isDeleteMode ? "Delete Selected".localized : "Delete".localized
         
         deleteView.isHidden = true
         if certificates.count == 0 {
@@ -180,7 +186,7 @@ extension CertificationsViewController: UITableViewDataSource, UITableViewDelega
         
         let row = certificates[indexPath.row]
         
-        cell.certNoLb.text = "Certification \(indexPath.row+1)"
+        cell.certNoLb.text = "Certification".localized + " \(indexPath.row+1)"
         cell.certNameLb.text = row["levels"]
         cell.dateLb.text = row["dates"]
         
@@ -212,7 +218,7 @@ extension CertificationsViewController: UITableViewDataSource, UITableViewDelega
         } else {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let vc = storyboard.instantiateViewController(withIdentifier: "CertificationViewController") as! CertificationViewController
-            vc.titleText = "Certificate \(indexPath.row+1)"
+            vc.titleText = "Certificate".localized + " \(indexPath.row+1)"
             vc.mode = .edit(item: certificates[indexPath.row])
             self.navigationController?.pushViewController(vc, animated: true)
         }

@@ -19,7 +19,7 @@ class LogGasViewController: BaseViewController {
         super.viewDidLoad()
 
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Log - Gas Details",
+                                                  title: self.title ?? "Log - Gas Details".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil

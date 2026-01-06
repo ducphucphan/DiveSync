@@ -10,7 +10,7 @@ import UIKit
 func showAlert(on viewController: UIViewController,
                title: String? = nil,
                message: String,
-               okTitle: String = "OK",
+               okTitle: String = "OK".localized,
                cancelTitle: String? = nil,
                okHandler: (() -> Void)? = nil,
                cancelHandler: (() -> Void)? = nil) {

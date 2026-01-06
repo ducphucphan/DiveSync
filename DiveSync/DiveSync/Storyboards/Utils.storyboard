@@ -201,8 +201,12 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="allowButton" destination="i7b-Dm-5vS" id="wPC-so-gwt"/>
                         <outlet property="containerView" destination="vOo-Nf-1bS" id="n2q-Om-SaV"/>
+                        <outlet property="denyButton" destination="Mtw-C1-3qJ" id="ENu-zW-GpB"/>
                         <outlet property="favoriteOnlyButton" destination="5Bc-cN-Y6L" id="khF-rs-uMd"/>
+                        <outlet property="favoriteOnlyLb" destination="yyB-KC-BP2" id="Apb-co-Fvu"/>
+                        <outlet property="messageLabel" destination="8wg-ca-ruv" id="mn0-CV-ElA"/>
                         <outlet property="pickerViewLeft" destination="y8I-EU-hWh" id="Pan-gA-1qc"/>
                         <outlet property="pickerViewRight" destination="03L-qo-gxc" id="pSY-ZD-96r"/>
                     </connections>
@@ -493,10 +497,12 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="cancelBtn" destination="H8A-SH-IIU" id="WkU-mc-lwr"/>
                         <outlet property="containerView" destination="2L2-Pd-4Cs" id="G3z-cw-14Q"/>
                         <outlet property="messageLabel" destination="ASN-wA-Hrm" id="Jdx-iw-MGH"/>
                         <outlet property="notesLabel" destination="n85-dv-NCl" id="D32-py-5WR"/>
                         <outlet property="pickerViewLeft" destination="tXX-0i-auk" id="YsX-Et-YZV"/>
+                        <outlet property="setBtn" destination="lUG-FF-tE7" id="Ijx-RO-hzS"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7lH-5s-ITi" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -737,8 +743,11 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="allowButton" destination="9mj-V6-fEj" id="Pi5-6K-qxX"/>
                         <outlet property="amButton" destination="fcb-3x-nnm" id="Uww-he-3QG"/>
                         <outlet property="containerView" destination="u6C-Py-vKK" id="qIe-kn-VDQ"/>
+                        <outlet property="denyButton" destination="MjO-q9-Xgc" id="g4x-IR-36A"/>
+                        <outlet property="messageLabel" destination="bke-Pt-Z4u" id="ZJU-ad-cci"/>
                         <outlet property="pickerViewLeft" destination="Abu-7o-fCC" id="8eq-0C-gyw"/>
                         <outlet property="pickerViewRight" destination="MUC-kf-DXP" id="3h6-yc-1an"/>
                         <outlet property="pmButton" destination="zTg-Ij-OfF" id="T0T-fh-Tqe"/>
@@ -927,7 +936,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="allowButton" destination="IAq-II-reV" id="uQx-9n-H65"/>
                         <outlet property="containerView" destination="z3O-Nm-BkL" id="cql-8g-Jei"/>
+                        <outlet property="denyButton" destination="uk7-Ph-jv4" id="QMU-Ta-FhU"/>
                         <outlet property="messageLabel" destination="qrk-hL-nO2" id="lPG-SX-4q8"/>
                         <outlet property="pickerViewLeft" destination="S93-lH-Ffb" id="jgb-RD-Vc6"/>
                         <outlet property="pickerViewRight" destination="dYG-rV-t49" id="bn6-6o-Mub"/>
@@ -1077,7 +1088,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="allowButton" destination="8NC-7f-FnV" id="YW3-wr-tN3"/>
                         <outlet property="containerView" destination="Djr-aw-zW8" id="Ho4-uR-5Ug"/>
+                        <outlet property="denyButton" destination="gmx-g5-r4M" id="DFs-og-hh4"/>
                         <outlet property="messageLabel" destination="a40-UA-Ug5" id="ZHd-X6-9EX"/>
                         <outlet property="notesLabel" destination="4HT-83-pBQ" id="nxd-Qr-dR2"/>
                         <outlet property="unitLb" destination="ky6-hB-cGD" id="Jvd-G7-f4N"/>
@@ -1406,9 +1419,11 @@
                         <outlet property="allowButton" destination="rwI-yo-4M9" id="R7m-9k-1aW"/>
                         <outlet property="containerView" destination="ZYa-dd-U7J" id="8Al-0d-FDR"/>
                         <outlet property="denyButton" destination="oqq-ak-6Pm" id="R1H-FB-inL"/>
+                        <outlet property="leftTitleLb" destination="h23-AJ-LdV" id="HWA-uA-vC0"/>
                         <outlet property="messageLabel" destination="Ce1-sb-hMG" id="m6S-Ni-qTx"/>
                         <outlet property="pickerViewLeft" destination="Yv9-Vj-KxW" id="JeO-No-C0H"/>
                         <outlet property="pickerViewRight" destination="Tmp-KN-4nL" id="ED2-jy-LTM"/>
+                        <outlet property="rightTitleLb" destination="G9q-Gu-Nbe" id="cNR-RN-D5h"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rf0-5C-SUx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1606,12 +1621,14 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="cancelButton" destination="NtS-bE-xaX" id="Jac-Q6-M2z"/>
                         <outlet property="containerView" destination="5Tb-vh-PII" id="TYh-Us-i8v"/>
                         <outlet property="messageLabel" destination="r7z-HH-afb" id="bbT-5b-EZe"/>
                         <outlet property="minLb" destination="QMW-Dh-Du8" id="HvW-x7-I4y"/>
                         <outlet property="minValueTf" destination="AD0-Tf-nzq" id="9pd-Ry-fwk"/>
                         <outlet property="secLb" destination="reX-Ho-ejc" id="XDh-rS-znl"/>
                         <outlet property="secValueTf" destination="Cn5-BQ-G7s" id="z4w-Rj-5Kg"/>
+                        <outlet property="setButton" destination="ajg-e9-tec" id="JzM-AR-fIk"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zOg-wP-PoA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -1803,11 +1820,13 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="cancelButton" destination="Lxg-q8-eYI" id="z8o-6S-CcL"/>
                         <outlet property="containerView" destination="vYr-mo-Hpi" id="Kpw-4A-Gfp"/>
                         <outlet property="cylinderLb" destination="LtE-EX-ets" id="uoZ-Kk-ukR"/>
                         <outlet property="cylinderUnitLb" destination="MIc-2z-qcL" id="cnq-75-AvU"/>
                         <outlet property="cylinderValueTf" destination="3e1-Uc-2sz" id="rE8-AJ-qPt"/>
                         <outlet property="messageLabel" destination="qh5-vC-oDW" id="fqw-rE-EOO"/>
+                        <outlet property="setButton" destination="9Ll-eO-44l" id="Sc3-lD-QE1"/>
                         <outlet property="workingLb" destination="ZCm-Qj-wuG" id="MOc-qz-LO5"/>
                         <outlet property="workingUnitLb" destination="287-GG-ZI6" id="evo-VO-nB7"/>
                         <outlet property="workingValueTf" destination="42d-kV-Nn0" id="K3T-sL-2T9"/>

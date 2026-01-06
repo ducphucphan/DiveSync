@@ -27,7 +27,7 @@ final class InputAlert: UIViewController {
     
     // MARK: - Init
     init(title: String,
-         saveTitle: String = "SAVE",
+         saveTitle: String = "SAVE".localized,
          currentValue: String = "",
          placeholder: String? = nil,
          unitText: String = "",
@@ -47,7 +47,7 @@ final class InputAlert: UIViewController {
 
     // MARK: - Static Show Method
     static func show(title: String,
-                     saveTitle: String = "SAVE",
+                     saveTitle: String = "SAVE".localized,
                      currentValue: String = "",
                      placeholder: String? = nil,
                      unitText: String = "",
@@ -108,7 +108,7 @@ final class InputAlert: UIViewController {
         containerView.addSubview(inputStack)
 
         // Buttons
-        cancelButton.setTitle("CANCEL", for: .normal)
+        cancelButton.setTitle("Cancel".localized.uppercased(), for: .normal)
         cancelButton.setTitleColor(UIColor.B_1, for: .normal)
         cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)

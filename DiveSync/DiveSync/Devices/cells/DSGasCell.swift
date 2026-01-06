@@ -19,7 +19,7 @@ class DSGasCell: UITableViewCell {
     }
     
     func bindRow(row: SettingsRow) {
-        titleLabel.text = row.title
+        titleLabel.text = row.title.localized
         typeLabel.text = row.value
         
         if let disable = row.disable, disable == 1 {

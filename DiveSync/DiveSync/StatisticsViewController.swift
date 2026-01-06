@@ -96,12 +96,16 @@ class StatisticsViewController: BaseViewController {
         // 🔥 Move camera đến Most Visited Dive Spot
         let targetAnnotation = annotations.first { $0.title == stats?.mostVisitedDiveSpot } ?? annotations.first
         if let target = targetAnnotation {
+            /*
             let region = MKCoordinateRegion(
                 center: target.coordinate,
                 latitudinalMeters: 1500,
                 longitudinalMeters: 1500
             )
             mapview.setRegion(region, animated: true)
+            */
+            
+            mapview.setCenterCoordinate(target.coordinate, zoomLevel: 1, animated: false)
             mapview.selectAnnotation(target, animated: true)
         }
     }
@@ -191,7 +195,7 @@ extension StatisticsViewController: UITableViewDataSource, UITableViewDelegate {
             }
         }
         
-        cell.bindCell(title: titleData[indexPath.row], value: value)
+        cell.bindCell(title: titleData[indexPath.row].localized, value: value)
         
         cell.selectionStyle = .none
         cell.backgroundColor = .clear

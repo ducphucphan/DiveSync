@@ -17,6 +17,8 @@ class DiveSpotsViewController: UIViewController {
     @IBOutlet weak var cancelView: UIView!
     
     @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var addLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
     
     @IBOutlet weak var noSpotLb: UILabel!
     
@@ -36,7 +38,7 @@ class DiveSpotsViewController: UIViewController {
         // Do any additional setup after loading the view.\
         if selectMode {
             self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                      title: self.title ?? "Dive Spot",
+                                                      title: self.title ?? "Dive Spot".localized,
                                                       pushBack: true,
                                                       backImage: "chevron.backward")
         } else {
@@ -48,6 +50,10 @@ class DiveSpotsViewController: UIViewController {
         tableView.backgroundColor = .clear
         
         tableView.register(UINib(nibName: "BaseTableViewCell", bundle: nil), forCellReuseIdentifier: "BaseTableViewCell")
+        
+        noSpotLb.text = "No Dive Spot to List".localized
+        addLb.text = "Add".localized
+        cancelLb.text = "Cancel".localized
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -116,9 +122,9 @@ class DiveSpotsViewController: UIViewController {
         // Đang ở chế độ chọn: thực hiện xóa
         if selectedIndexes.count > 0 {
             PrivacyAlert.showMessage(
-                message: "Are you sure you want to delete selected dive spots?",
-                allowTitle: "DELETE",
-                denyTitle: "CANCEL"
+                message: "Are you sure you want to delete selected dive spots?".localized,
+                allowTitle: "Delete".localized.uppercased(),
+                denyTitle: "Cancel".localized.uppercased()
             ) { action in
                 switch action {
                 case .allow:
@@ -147,7 +153,7 @@ class DiveSpotsViewController: UIViewController {
     func updateUIForDeleteMode() {
         addView.isHidden = isDeleteMode
         cancelView.isHidden = !isDeleteMode
-        deleteLb.text = isDeleteMode ? "Delete Selected" : "Delete"
+        deleteLb.text = isDeleteMode ? "Delete Selected".localized : "Delete".localized
         
         deleteView.isHidden = true
         if divespots.count == 0 {

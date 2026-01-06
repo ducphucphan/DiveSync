@@ -86,14 +86,14 @@ class FirmwarePageViewController: UIViewController {
     
     private func setupButtons() {
         let agreeButton = UIButton(type: .system)
-        agreeButton.setTitle("I agree", for: .normal)
+        agreeButton.setTitle("I agree".localized, for: .normal)
         agreeButton.backgroundColor = .B_3
         agreeButton.setTitleColor(.white, for: .normal)
         agreeButton.layer.cornerRadius = 8
         agreeButton.addTarget(self, action: #selector(agreeTapped), for: .touchUpInside)
         
         let disagreeButton = UIButton(type: .system)
-        disagreeButton.setTitle("I do not agree", for: .normal)
+        disagreeButton.setTitle("I do not agree".localized, for: .normal)
         disagreeButton.backgroundColor = .B_3
         disagreeButton.setTitleColor(.white, for: .normal)
         disagreeButton.layer.cornerRadius = 8

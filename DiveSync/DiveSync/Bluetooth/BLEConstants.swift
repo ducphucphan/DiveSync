@@ -14,6 +14,10 @@ let C_DAV       = 6886
 let C_SKI       = 8375
 let C_SPI       = 8380
 
+let C_LOG       = 7679
+let C_CEN       = 6769
+let C_GRA       = 7182
+
 let PKT_SIZE        = 135
 let PKT_SIZE_250    = 250
 let BLOCK_SIZE_256  = 256

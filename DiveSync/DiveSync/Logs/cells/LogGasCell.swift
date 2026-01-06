@@ -25,6 +25,9 @@ class LogGasCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        
+        consmLb.text = "Consumption".localized
+        po2Lb.text = "Max PPO2".localized.uppercased()
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -36,7 +39,7 @@ class LogGasCell: UITableViewCell {
     func bindValueAt(row: Int, fromDiveLog: Row) {
         gasNo = (row + 1)
         
-        gasNoLb.text = String(format: "Gas %d", gasNo)
+        gasNoLb.text = String(format: "%@ %d", "Gas".localized, gasNo)
         psiValueLb.text = ""
         
         let mixes = fromDiveLog.stringValue(key: "EnabledMixes").toInt()
@@ -61,7 +64,7 @@ class LogGasCell: UITableViewCell {
         
         fo2ValueBt.setTitle(Utilities.fo2GasValue(gasNo: gasNo, fo2: fo2), for: .normal)
         if mixesEnabled[gasNo] == false {
-            fo2ValueBt.setTitle(OFF, for: .normal)
+            fo2ValueBt.setTitle(OFF.localized, for: .normal)
         }
         
         let diveMode = fromDiveLog.stringValue(key: "DiveMode").toInt()
@@ -80,21 +83,21 @@ class LogGasCell: UITableViewCell {
         var opts: [String] = []
 
         if gasNo == 2 || gasNo == 3 {
-            opts.append(OFF)
+            opts.append(OFF.localized)
         }
         
         // Thêm Air
-        opts.append("AIR")
+        opts.append("AIR".localized)
         
         // Thêm EAN22 -> EAN99
         let eanValues = (22...99).map { "EAN\($0)" }
         opts.append(contentsOf: eanValues)
 
         // Thêm O2
-        opts.append("O2")
+        opts.append("O2".localized)
         
         ItemSelectionAlert.showMessage(
-            message: String(format: "Gas %i", gasNo),
+            message: String(format: "%@ %d", "Gas".localized, gasNo),
             options: opts,
             selectedValue: fo2ValueBt.title(for: .normal)
         ) { [weak self] action, value, index in
@@ -104,17 +107,17 @@ class LogGasCell: UITableViewCell {
             
             if let value = value {
                 var fo2Save = 0
-                if value == OFF {
+                if value == OFF.localized {
                     fo2Save = 21
-                } else if value == "AIR" {
+                } else if value == "AIR".localized {
                     fo2Save = 21
-                } else if value == "O2" {
+                } else if value == "O2".localized {
                     fo2Save = 100
                 } else {
                     fo2Save = value.toInt()
                 }
                 
-                if value == OFF {
+                if value == OFF.localized {
                     mixes &= ~(1 << gasNo)
                 } else {
                     mixes |= (1 << gasNo)

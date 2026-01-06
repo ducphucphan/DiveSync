@@ -51,6 +51,34 @@ class LogViewController: BaseViewController {
     
     @IBOutlet weak var graphHeightContraints: NSLayoutConstraint!
     
+    //
+    @IBOutlet weak var dateLb: UILabel!
+    @IBOutlet weak var altitudeLb: UILabel!
+    @IBOutlet weak var modeTitleLb: UILabel!
+    @IBOutlet weak var diveStatusTitleLb: UILabel!
+    @IBOutlet weak var siTitleLb: UILabel!
+    @IBOutlet weak var startDiveTitleLb: UILabel!
+    @IBOutlet weak var diveTimeLb: UILabel!
+    @IBOutlet weak var mdepthLb: UILabel!
+    @IBOutlet weak var tlbgLb: UILabel!
+    @IBOutlet weak var maxAscLb: UILabel!
+    @IBOutlet weak var minTempLb: UILabel!
+    @IBOutlet weak var maxTempLb: UILabel!
+    @IBOutlet weak var oxtoxLb: UILabel!
+    @IBOutlet weak var maxPo2Lb: UILabel!
+    @IBOutlet weak var startGasLb: UILabel!
+    @IBOutlet weak var endGasLb: UILabel!
+    @IBOutlet weak var conservatismLb: UILabel!
+    @IBOutlet weak var gasDetailLb: UILabel!
+    @IBOutlet weak var settingsUsedLb: UILabel!
+    @IBOutlet weak var diveSpotLb: UILabel!
+    @IBOutlet weak var photosLb: UILabel!
+    @IBOutlet weak var memoLb: UILabel!
+    @IBOutlet weak var shareLb: UILabel!
+    @IBOutlet weak var deleteLb: UILabel!
+    
+    //
+    
     //let fullVC = ChartFullScreenViewController()
     
     lazy var fullVC: ChartFullScreenViewController = {
@@ -76,7 +104,7 @@ class LogViewController: BaseViewController {
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Log",
+                                                  title: self.title ?? "Log".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
@@ -148,6 +176,35 @@ class LogViewController: BaseViewController {
         enlargePageControlDots(pageControl, scale: 1.5)
     }
     
+    override func updateTexts() {
+        super.updateTexts()
+        
+        dateLb.text = "Date".localized
+        altitudeLb.text = "Altitude Level".localized
+        modeTitleLb.text = "Mode".localized
+        diveStatusTitleLb.text = "Dive Status".localized
+        siTitleLb.text = "Surface Interval".localized
+        startDiveTitleLb.text = "Start Dive".localized
+        diveTimeLb.text = "Dive Time".localized
+        mdepthLb.text = "Max Depth".localized
+        tlbgLb.text = "TLBG Bar".localized
+        maxAscLb.text = "Max Ascent Rate".localized
+        minTempLb.text = "Min Temperature".localized
+        maxTempLb.text = "Max Temperature".localized
+        oxtoxLb.text = "OXTOX end dive".localized
+        maxPo2Lb.text = "Max PPO2".localized
+        startGasLb.text = "Start Gas".localized
+        endGasLb.text = "End Gas".localized
+        conservatismLb.text = "Conservatism".localized
+        gasDetailLb.text = "Gas Details".localized
+        settingsUsedLb.text = "Settings Used".localized
+        diveSpotLb.text = "Dive Spot".localized
+        photosLb.text = "Photos".localized
+        memoLb.text = "Memo".localized
+        shareLb.text = "Share".localized
+        deleteLb.text = "Delete".localized
+    }
+    
     private func fillDiveData() {
         
         PrintLog(diveLog)
@@ -163,12 +220,12 @@ class LogViewController: BaseViewController {
         }
         
         if manualDive == false {
-            diveNameLb.text = String(format: "%@, SN: %05d", diveLog.stringValue(key: "DeviceName"), diveLog.stringValue(key: "SerialNo").toInt())
+            diveNameLb.text = String(format: "%@, %@: %05d", diveLog.stringValue(key: "DeviceName"), "SN".localized, diveLog.stringValue(key: "SerialNo").toInt())
         } else {
             diveNameLb.text = String(format: "%@", diveLog.stringValue(key: "DeviceName"))
         }
         if (diveLog.stringValue(key: "DeviceName").isEmpty) {
-            diveNameLb.text = "Dive Computer Name"
+            diveNameLb.text = "Dive Computer Name".localized
         }
         
         let diveDateTime = diveLog.stringValue(key: "DiveStartLocalTime")
@@ -271,8 +328,8 @@ class LogViewController: BaseViewController {
             }
         }
         
-        startGasValueLb.text = "Gas \(startingMixIdx) - " + Utilities.fo2GasValue(gasNo: startingMixIdx, fo2: startingFo2Percent)
-        endGasValueLb.text = "Gas \(endingMixIdx) - " + Utilities.fo2GasValue(gasNo: endingMixIdx, fo2: endingFo2Percent)
+        startGasValueLb.text = "Gas".localized + " \(startingMixIdx) - " + Utilities.fo2GasValue(gasNo: startingMixIdx, fo2: startingFo2Percent)
+        endGasValueLb.text = "Gas".localized + " \(endingMixIdx) - " + Utilities.fo2GasValue(gasNo: endingMixIdx, fo2: endingFo2Percent)
         
         // Favorite
         isFavorite = (diveLog.intValue(key: "IsFavorite") != 0)
@@ -527,10 +584,10 @@ extension LogViewController {
             switch buttonTag {
             case 0: // Device Name
                 var currentValue = diveNameLb.text ?? ""
-                if (currentValue == "Dive Computer Name") {
+                if (currentValue == "Dive Computer Name".localized) {
                     currentValue = ""
                 }
-                InputAlert.show(title: "Dive Computer Name", currentValue: currentValue) { action in
+                InputAlert.show(title: "Dive Computer Name".localized, currentValue: currentValue) { action in
                     switch action {
                     case .save(let value):
                         self.diveNameLb.text = value
@@ -543,7 +600,7 @@ extension LogViewController {
                 
                 EditProfilePopupManager.showBirthDatePicker(
                     in: self,
-                    title: "Dive Date",
+                    title: "Dive Date".localized,
                     currentValue: diveDate,
                     inputFormat: "dd.MM.yy",
                     onSave: { [weak self] newDateString in
@@ -555,7 +612,7 @@ extension LogViewController {
             case 2: // Alt Level
                 let altOpts = ["SEA", "LEV1", "LEV2", "LEV3", "LEV4"]
                 ItemSelectionAlert.showMessage(
-                    message: "Altitude Level",
+                    message: "Altitude Level".localized,
                     options: altOpts,
                     selectedValue: altLevelLb.text
                 ) { [weak self] action, value, index in
@@ -564,9 +621,9 @@ extension LogViewController {
                     self.saveDiveData(key: "AltitudeLevel", value: index ?? 0)
                 }
             case 3: // Mode
-                let opts = ["COMPUTER", "GAUGE"]
+                let opts = ["Computer".localized.uppercased(), "Gauge".localized.uppercased()]
                 ItemSelectionAlert.showMessage(
-                    message: "Mode",
+                    message: "Mode".localized,
                     options: opts,
                     selectedValue: modeLb.text
                 ) { [weak self] action, value, index in
@@ -580,9 +637,9 @@ extension LogViewController {
                     self.saveDiveData(key: "DiveMode", value: saveValue)
                 }
             case 17: // Dive Status
-                let opts = ["NO DECO", "DECO", "VIOLATION"]
+                let opts = ["NO DECO".localized, "DECO".localized, "VIOLATION".localized]
                 ItemSelectionAlert.showMessage(
-                    message: "Dive Status",
+                    message: "Dive Status".localized,
                     options: opts,
                     selectedValue: diveStatusLb.text
                 ) { [weak self] action, value, index in
@@ -602,7 +659,7 @@ extension LogViewController {
             case 4:
                 let altOpts = ["C0", "C1", "C2"]
                 ItemSelectionAlert.showMessage(
-                    message: "Conservatism",
+                    message: "Conservatism".localized,
                     options: altOpts,
                     selectedValue: consValueLb.text,
                     notesValue: "GF"
@@ -689,7 +746,7 @@ extension LogViewController {
                 let firstNumber = text.components(separatedBy: "/").first ?? ""
                 let opts:[String] = (1...5).map { String(format: "%d", $0) }
                 ItemSelectionAlert.showMessage(
-                    message: "TLBG Bar",
+                    message: "TLBG Bar".localized,
                     options: opts,
                     selectedValue: firstNumber
                 ) { [weak self] action, value, index in
@@ -701,7 +758,7 @@ extension LogViewController {
                 var currentMdepth = ascValueLb.text ?? ""
                 currentMdepth = currentMdepth.components(separatedBy: " ").first ?? ""
                 let unitStr = unitOfDive == M ? "M/MIN":"FT/MIN"
-                MDepthInputAlert.showMessage(message: "Max Ascent Rate", selectedValue: currentMdepth, unitValue:unitStr) { action, value in
+                MDepthInputAlert.showMessage(message: "Max Ascent Rate".localized, selectedValue: currentMdepth, unitValue:unitStr) { action, value in
                     self.ascValueLb.text = value + " " + unitStr
                     
                     var valueDouble = value.toDouble()
@@ -717,7 +774,7 @@ extension LogViewController {
                     opts = (32...210).map { String(format: "%d °F", $0) }
                 }
                 ItemSelectionAlert.showMessage(
-                    message: "Min Temp",
+                    message: "Min Temp".localized,
                     options: opts,
                     selectedValue: minTempValueLb.text
                 ) { [weak self] action, value, index in
@@ -740,7 +797,7 @@ extension LogViewController {
                     opts = (32...210).map { String(format: "%d °F", $0) }
                 }
                 ItemSelectionAlert.showMessage(
-                    message: "Max Temp",
+                    message: "Max Temp".localized,
                     options: opts,
                     selectedValue: maxTempValueLb.text
                 ) { [weak self] action, value, index in
@@ -760,7 +817,7 @@ extension LogViewController {
             case 13: // OXTOX
                 let opts: [String] = (0...200).map { String(format: "%d %%", $0) }
                 ItemSelectionAlert.showMessage(
-                    message: "OXTOX",
+                    message: "OXTOX".localized,
                     options: opts,
                     selectedValue: oxtoxValueLb.text
                 ) { [weak self] action, value, index in
@@ -775,7 +832,7 @@ extension LogViewController {
                 let opts: [String] = stride(from: 0.21, through: 2.0, by: 0.01)
                     .map { String(format: "%.2f", $0) }
                 ItemSelectionAlert.showMessage(
-                    message: "Max PPO2",
+                    message: "Max PPO2".localized,
                     options: opts,
                     selectedValue: maxPo2ValueLb.text
                 ) { [weak self] action, value, index in
@@ -900,7 +957,7 @@ extension LogViewController {
     private func getAltitudeLevel() -> String {
         let level = diveLog.stringValue(key: "AltitudeLevel").toInt()
         if level == 0 {
-            return "SEA"
+            return "SEA".localized
         } else {
             return String(format: "LEV%d", level)
         }
@@ -911,22 +968,22 @@ extension LogViewController {
         if mode >= 100 { mode = mode % 100 }
         switch mode {
         case 0:
-            return "COMPUTER"
+            return "Computer".localized.uppercased()
         default:
-            return "GAUGE"
+            return "Gauge".localized.uppercased()
         }
     }
     
     private func getDiveStatus() -> String {
         if hasViolationMode() {
-            return "VIOLATION"
+            return "VIOLATION".localized
         } else {
             let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
             switch isDeco {
             case 0:
-                return "NO DECO"
+                return "NO DECO".localized
             default:
-                return "DECO"
+                return "DECO".localized
             }
         }
     }

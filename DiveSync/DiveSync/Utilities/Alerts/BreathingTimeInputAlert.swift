@@ -10,6 +10,8 @@ final class BreathingTimeInputAlert: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var messageLabel: UILabel!
+    @IBOutlet private weak var setButton: UIButton!
+    @IBOutlet private weak var cancelButton: UIButton!
     
     @IBOutlet weak var minLb: UILabel!
     @IBOutlet weak var minValueTf: UITextField!
@@ -22,15 +24,15 @@ final class BreathingTimeInputAlert: UIViewController {
         
     private var completion: ((_ action: BreathingTimeAlertAction) -> Void)?
     private var messageText: String? = nil
-    private var setTitle: String = "SET"
-    private var cancelTitle: String = "CANCEL"
+    private var setTitle: String = "Set".localized.uppercased()
+    private var cancelTitle: String = "Cancel".localized.uppercased()
     
     // MARK: - Initializer
-    static func showMessage(message: String? = "Breathing Time",
+    static func showMessage(message: String? = "Breathing Time".localized,
                             minutes: Int = 0,
                             seconds: Int = 0,
-                            setTitle: String = "SET",
-                            cancelTitle: String = "CANCEL",
+                            setTitle: String = "Set".localized.uppercased(),
+                            cancelTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: BreathingTimeAlertAction) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -65,7 +67,13 @@ final class BreathingTimeInputAlert: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
+        minLb.text = "Minutes".localized
+        secLb.text = "Seconds".localized
+        
         messageLabel.text = messageText
+        cancelButton.setTitle(cancelTitle, for: .normal)
+        setButton.setTitle(setTitle, for: .normal)
+        
         containerView.backgroundColor = UIColor.B_3
         containerView.layer.cornerRadius = 16
         containerView.translatesAutoresizingMaskIntoConstraints = false

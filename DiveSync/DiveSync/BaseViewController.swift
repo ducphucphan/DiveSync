@@ -1,5 +1,6 @@
 import UIKit
 import SwiftHEXColors
+import Lightbox
 
 class BaseViewController: UIViewController {
     
@@ -11,6 +12,32 @@ class BaseViewController: UIViewController {
         //setBackgroundImage()
         setupNavigationBar()
         setupRightBarItem()
+        
+        registerLanguageObserver()
+        updateTexts()
+    }
+    
+    private func registerLanguageObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(languageDidChange),
+            name: .languageDidChange,
+            object: nil
+        )
+    }
+    
+    @objc private func languageDidChange() {
+        updateTexts()
+    }
+    
+    /// Override ở các ViewController con
+    @objc func updateTexts() {
+        // Default empty
+        
+        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UISearchBar.self])
+            .title = "Cancel".localized
+        
+        LightboxConfig.CloseButton.text = "Close".localized
     }
     
     private func setupRightBarItem() {
@@ -96,6 +123,7 @@ class BaseViewController: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self, name: .themeDidChange, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .languageDidChange, object: nil)
     }
     
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {

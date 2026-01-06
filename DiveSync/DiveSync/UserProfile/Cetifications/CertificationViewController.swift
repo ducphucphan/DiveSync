@@ -41,19 +41,35 @@ class CertificationViewController: BaseViewController {
     @IBOutlet weak var deleteView: UIView!
     @IBOutlet weak var cancelView: UIView!
     
-    var titleText = "Add certificate"
+    @IBOutlet weak var addImgLb: UILabel!
+    @IBOutlet weak var dateLb: UILabel!
+    @IBOutlet weak var certificationLb: UILabel!
+    @IBOutlet weak var saveLb: UILabel!
+    @IBOutlet weak var shareLb: UILabel!
+    @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
+    
+    var titleText = "Add certificate".localized
     var mode: EditMode = .add(maxId: 0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Certification",
+                                                  title: self.title ?? "Certification".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
         
         certVew.layer.borderColor = UIColor.darkGray.cgColor
+        
+        addImgLb.text = "+" + "Add Image".localized
+        dateLb.text = "Date".localized
+        certificationLb.text = "Certification".localized
+        saveLb.text = "SAVE".localized.capitalized
+        shareLb.text = "Share".localized
+        deleteLb.text = "Delete".localized
+        cancelLb.text = "Cancel".localized
         
         titleLb.text = titleText
         
@@ -80,27 +96,27 @@ class CertificationViewController: BaseViewController {
     @IBAction func addImageTapped(_ sender: Any) {
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
-        let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+        let cameraAction = UIAlertAction(title: "Camera".localized, style: .default) { _ in
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 let cameraPicker = UIImagePickerController()
                 cameraPicker.sourceType = .camera
                 cameraPicker.delegate = self
                 self.present(cameraPicker, animated: true, completion: nil)
             } else {
-                let alert = UIAlertController(title: nil, message: "Camera could not available for this device!", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                let alert = UIAlertController(title: nil, message: "Camera could not available for this device!".localized, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK".localized, style: .default, handler: nil))
                 self.present(alert, animated: true, completion: nil)
             }
         }
         
-        let albumsAction = UIAlertAction(title: "Albums", style: .default) { _ in
+        let albumsAction = UIAlertAction(title: "Albums".localized, style: .default) { _ in
             let albumPicker = UIImagePickerController()
             albumPicker.sourceType = .photoLibrary
             albumPicker.delegate = self
             self.present(albumPicker, animated: true, completion: nil)
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized, style: .cancel)
         
         presentActionSheet(from: sender,
                            title: nil,
@@ -111,7 +127,7 @@ class CertificationViewController: BaseViewController {
     @IBAction func dateTapped(_ sender: Any) {
         EditProfilePopupManager.showBirthDatePicker(
             in: self,
-            title: "Date",
+            title: "Date".localized,
             currentValue: dateValueLb.text ?? "",
             onSave: { [weak self] newDateString in
                 guard let self = self else { return }
@@ -122,7 +138,7 @@ class CertificationViewController: BaseViewController {
     
     @IBAction func countryTapped(_ sender: Any) {
         let currentValue = certValueLb.text ?? ""
-        InputAlert.show(title: "Enter your cetificate", currentValue: currentValue) { action in
+        InputAlert.show(title: "Enter your cetificate".localized, currentValue: currentValue) { action in
             switch action {
             case .save(let value):
                 self.certValueLb.text = value
@@ -138,9 +154,9 @@ class CertificationViewController: BaseViewController {
     
     @IBAction func deleteTapped(_ sender: Any) {
         PrivacyAlert.showMessage(
-            message: "Are you sure you want to delete certification?",
-            allowTitle: "DELETE",
-            denyTitle: "CANCEL"
+            message: "Are you sure you want to delete certification?".localized,
+            allowTitle: "Delete".localized.uppercased(),
+            denyTitle: "Cancel".localized.uppercased()
         ) { action in
             switch action {
             case .allow:

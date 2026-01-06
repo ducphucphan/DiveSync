@@ -111,6 +111,21 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v1_add_column_deleted_to_DiveLog") { db in
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "Deleted" }) {
+
+                try db.alter(table: "DiveLog") { t in
+                    t.add(column: "Deleted", .integer).defaults(to: 0)
+                }
+
+                try db.execute(sql: """
+                    UPDATE DiveLog
+                    SET Deleted = 0
+                    WHERE Deleted IS NULL
+                """)
+            }
+        }
+        
         /*
         // 🔹 Migration 2: thêm bảng mới
         migrator.registerMigration("v2_create_table_SyncHistory") { db in
@@ -838,5 +853,34 @@ extension DatabaseManager {
         }
         
         return exists
+    }
+}
+
+extension DatabaseManager {
+
+    /// Kiểm tra xem có DiveLog nào đang bị soft-delete (Deleted = 1) hay không
+    func hasDeletedDiveLogs() -> Bool {
+        let dbQueue = getDatabaseQueue()
+        var hasDeleted = false
+
+        do {
+            try dbQueue.read { db in
+                hasDeleted = try Bool.fetchOne(
+                    db,
+                    sql: """
+                        SELECT EXISTS(
+                            SELECT 1
+                            FROM DiveLog
+                            WHERE Deleted = 1
+                            LIMIT 1
+                        )
+                    """
+                ) ?? false
+            }
+        } catch {
+            PrintLog("❌ Failed to check deleted DiveLog: \(error)")
+        }
+
+        return hasDeleted
     }
 }

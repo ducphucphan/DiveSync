@@ -576,7 +576,7 @@ class BluetoothDataManager {
         let subject = PublishSubject<Bool>()
         
         if self.peripheral.isOta {
-            DialogViewController.showProcess(title: "Firmware Update", message: "Uploading firmware", hideCancel: true, task: {_ in
+            DialogViewController.showProcess(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task: {_ in
                     self.sendFirmware(fileURL: fwrUrl) { progress in
                         DialogViewController.updateProgress(Float(progress))
                     }
@@ -593,7 +593,7 @@ class BluetoothDataManager {
                 }
             );
         } else {
-            DialogViewController.showLoading(title: "Firmware Update", message: "Uploading firmware", hideCancel: true, task:  {_ in
+            DialogViewController.showLoading(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task:  {_ in
                 self.sendRebootOta(fileURL: fwrUrl)
                     .subscribe(onNext: { success in
                         subject.onNext(success)
@@ -713,11 +713,11 @@ class BluetoothDataManager {
     func readAllSettings(completion: (() -> Void)? = nil) {
         
         if syncType == .kDownloadSetting {
-            ProgressHUD.animate("Reading device settings...")
+            ProgressHUD.animate("Reading device settings...".localized)
         } else if syncType == .kUploadSetting {
-            ProgressHUD.animate("Writing device settings...")
+            ProgressHUD.animate("Writing device settings...".localized)
         } else if syncType == .kDownloadDiveData {
-            ProgressHUD.animate("Downloading dives...")
+            ProgressHUD.animate("Downloading dives...".localized)
         }
         
         var settingsResult = DeviceDataSettings()
@@ -896,14 +896,14 @@ class BluetoothDataManager {
                     completion?()
                 } else {
                     BluetoothDeviceCoordinator.shared.disconnect()
-                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg)
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg.localized)
                 }
             }, onError: { error in
                 ProgressHUD.dismiss()
                 
                 let msg = error.localizedDescription
                 BluetoothDeviceCoordinator.shared.disconnect()
-                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(msg)")
+                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(msg.localized)")
             })
             .disposed(by: disposeBag)
     }
@@ -1543,7 +1543,7 @@ class BluetoothDataManager {
                     PrintLog("GetLog - ID: \(logId)")
                     return self.sendGetLog(logId: logId) {
                         let percent = Int((Double(self.completedSampleCount) / Double(max(self.totalSampleCount, 1))) * 100)
-                        ProgressHUD.animate("Downloading dive \(logId)/\(self.lastLogID) (\(percent)%)")
+                        ProgressHUD.animate("Downloading dive".localized + " \(logId)/\(self.lastLogID) (\(percent)%)")
                     }
                 }
                 

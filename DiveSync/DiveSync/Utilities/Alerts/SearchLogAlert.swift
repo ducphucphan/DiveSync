@@ -10,21 +10,21 @@ final class SearchLogAlert: UIViewController {
     
     @IBOutlet weak var pickerViewLeft: UIPickerView!
     
-    private var leftOptions = ["Increasing", "Decreasing", "Counting", "Nha Trang City"]
+    private var leftOptions = ["Increasing".localized, "Decreasing".localized, "Counting".localized, "Nha Trang City"]
     
     private var selectedLeft = 0
     
     private var completion: ((PrivacyAlertAction) -> Void)?
     private var messageText: String = ""
-    private var allowTitle: String = "ALLOW"
-    private var denyTitle: String = "DENY"
+    private var allowTitle: String = "ALLOW".localized
+    private var denyTitle: String = "DENY".localized
     
     var isFavoriteOnly = false
     
     // MARK: - Initializer
     static func showMessage(message: String,
-                            allowTitle: String = "ALLOW",
-                            denyTitle: String = "DENY",
+                            allowTitle: String = "ALLOW".localized,
+                            denyTitle: String = "DENY".localized,
                             completion: @escaping (PrivacyAlertAction) -> Void) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)

@@ -29,13 +29,13 @@ class EditDatePickerViewController: UIViewController {
         view.clipsToBounds = true
 
         // Cấu hình tiêu đề
-        titleLabel.text = "Select Date"
+        titleLabel.text = "Select Date".localized
         titleLabel.font = .boldSystemFont(ofSize: 18)
         titleLabel.textAlignment = .center
 
         // Cấu hình các nút
-        cancelButton.setTitle("Cancel", for: .normal)
-        saveButton.setTitle("Set", for: .normal)
+        cancelButton.setTitle("Cancel".localized, for: .normal)
+        saveButton.setTitle("Set".localized.uppercased(), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
 

@@ -20,7 +20,7 @@ class DSToggleCell: UITableViewCell {
     }
     
     func configure(title: String, isOn: Bool, onToggle: ((Bool) -> Void)?) {
-        titleLabel.text = title
+        titleLabel.text = title.localized
         toggleSwitch.isOn = isOn
         self.onToggle = onToggle
     }
@@ -31,7 +31,7 @@ class DSToggleCell: UITableViewCell {
     }
  
     func bindRow(row: SettingsRow) {
-        titleLabel.text = row.title
+        titleLabel.text = row.title.localized
         toggleSwitch.isOn = DeviceSettings.shared.useSystemDateTime
     }
 }

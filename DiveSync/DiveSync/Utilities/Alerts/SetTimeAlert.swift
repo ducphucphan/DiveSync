@@ -34,8 +34,8 @@ final class SetTimeAlert: UIViewController {
     private var selectedRight = 0
     
     private var completionWithValue: ((_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void)?
-    private var allowTitle: String = "SET"
-    private var denyTitle: String = "CANCEL"
+    private var allowTitle: String = "Set".localized.uppercased()
+    private var denyTitle: String = "Cancel".localized.uppercased()
     
     private var hourValue: String?
     private var minValue: String?
@@ -45,8 +45,8 @@ final class SetTimeAlert: UIViewController {
     // MARK: - Initializer
     static func showMessage(hourValue: String?,
                             minValue: String?,
-                            allowTitle: String = "SET",
-                            denyTitle: String = "CANCEL",
+                            allowTitle: String = "Set".localized.uppercased(),
+                            denyTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -73,6 +73,10 @@ final class SetTimeAlert: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        
+        
+        allowButton.setTitle(allowTitle, for: .normal)
+        denyButton.setTitle(denyTitle, for: .normal)
         
         // Picker
         pickerViewLeft.dataSource = self

@@ -24,6 +24,16 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     private var searchController: UISearchController!
     private var searchButton: UIBarButtonItem!
     
+    @IBOutlet weak var myLocLb: UILabel!
+    @IBOutlet weak var saveLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
+    
+    @IBOutlet weak var latlb: UILabel!
+    @IBOutlet weak var lngLb: UILabel!
+    
+    @IBOutlet weak var spotNameLb: UILabel!
+    @IBOutlet weak var countryLb: UILabel!
+    
     let locationManager = CLLocationManager()
     var currentLocation = CLLocationCoordinate2D(latitude: .zero, longitude: .zero)
     
@@ -34,7 +44,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Dive Spot",
+                                                  title: self.title ?? "Dive Spot".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
@@ -51,6 +61,16 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         
         // Đặt màu cho tất cả UIBarButtonItem trong navigation bar
         navigationController?.navigationBar.tintColor = .white
+        
+        myLocLb.text = "My Location".localized
+        saveLb.text = "SAVE".localized.capitalized
+        cancelLb.text = "Cancel".localized
+        
+        latlb.text = "Latitude".localized
+        lngLb.text = "Longitude".localized
+        
+        spotNameLb.text = "Spot Name".localized
+        countryLb.text = "Country".localized
         
         // Setup SearchController
         setupSearchBar()
@@ -80,7 +100,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         searchController = UISearchController(searchResultsController: resultsController)
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Search location"
+        searchController.searchBar.placeholder = "Search location".localized
         searchController.delegate = self
         searchController.searchBar.tintColor = .white
         definesPresentationContext = true
@@ -92,7 +112,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         
         // Placeholder
         textField.attributedPlaceholder = NSAttributedString(
-            string: "Search location",
+            string: "Search location".localized,
             attributes: [.foregroundColor: UIColor.white]
         )
         
@@ -118,10 +138,11 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
             lngValueLb.text = Utilities.coordinateLatString(Float(lng))
             
             let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-            let region = MKCoordinateRegion(center: coordinate,
-                                            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+            //let region = MKCoordinateRegion(center: coordinate,
+            //                                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
             
-            mapView.setRegion(region, animated: true)
+            //mapView.setRegion(region, animated: true)
+            mapView.setCenterCoordinate(coordinate, zoomLevel: 10, animated: false)
         }
     }
     
@@ -177,7 +198,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     
     @IBAction func spotNameTapped(_ sender: Any) {
         let currentValue = spotNameValueLb.text ?? ""
-        InputAlert.show(title: "Spot Name", currentValue: currentValue) { action in
+        InputAlert.show(title: "Spot Name".localized, currentValue: currentValue) { action in
             switch action {
             case .save(let value):
                 self.spotNameValueLb.text = value
@@ -189,7 +210,7 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     
     @IBAction func countryTapped(_ sender: Any) {
         let currentValue = countryValueLb.text ?? ""
-        InputAlert.show(title: "Country", currentValue: currentValue) { action in
+        InputAlert.show(title: "Country".localized, currentValue: currentValue) { action in
             switch action {
             case .save(let value):
                 self.countryValueLb.text = value
@@ -211,11 +232,11 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
     
     private func updateSpot(mode: EditMode) {
         guard let spotName = spotNameValueLb.text, !spotName.isEmpty, spotName != "-" else {
-            showAlert(on: self, message: "Enter spot name")
+            showAlert(on: self, message: "Enter spot name".localized)
             return
         }
         guard let spotCountry = countryValueLb.text, !spotCountry.isEmpty, spotCountry != "-" else {
-            showAlert(on: self, message: "Enter spot country")
+            showAlert(on: self, message: "Enter spot country".localized)
             return
         }
         
@@ -231,9 +252,9 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
             self.navigationController?.popViewController(animated: true)
         case .edit(let item):
             PrivacyAlert.showMessage(
-                message: "Do you want to save changes?",
-                allowTitle: "SAVE",
-                denyTitle: "CANCEL"
+                message: "Do you want to save changes?".localized,
+                allowTitle: "SAVE".localized,
+                denyTitle: "Cancel".localized.uppercased()
             ) { action in
                 switch action {
                 case .allow:
@@ -306,9 +327,10 @@ extension DiveSpotViewController: SearchDiveSpotsResultsDelegate {
                 self.lngValueLb.text = Utilities.coordinateLongString(Float(longitude))
                 
                 // Di chuyển map và thêm annotation
-                let region = MKCoordinateRegion(center: coordinate,
-                                                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                self.mapView.setRegion(region, animated: true)
+                //let region = MKCoordinateRegion(center: coordinate,
+                //                                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                //self.mapView.setRegion(region, animated: true)
+                self.mapView.setCenterCoordinate(coordinate, zoomLevel: 10, animated: false)
                 
                 self.mapView.removeAnnotations(self.mapView.annotations)
                 let annotation = MKPointAnnotation()

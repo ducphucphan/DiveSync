@@ -187,6 +187,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="addImgLb" destination="BlL-NO-xkb" id="6Ka-2l-Z0E"/>
                         <outlet property="nameLb" destination="XuG-WK-aHl" id="Hme-hX-zBE"/>
                         <outlet property="tableView" destination="Wfa-uw-3gZ" id="UAr-cY-KpF"/>
                         <outlet property="userImv" destination="yls-iz-a4l" id="mv6-f2-0wf"/>
@@ -477,7 +478,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="addLb" destination="hFl-rl-K7U" id="d6I-lg-2xw"/>
                         <outlet property="addView" destination="u4j-Ey-f8n" id="xSw-Ca-veL"/>
+                        <outlet property="cancelLb" destination="aMi-20-do7" id="MdG-0h-3Qb"/>
                         <outlet property="cancelView" destination="ieK-yc-x9w" id="MOG-dU-QPw"/>
                         <outlet property="deleteLb" destination="dOu-nw-fPO" id="4hZ-sA-HSF"/>
                         <outlet property="deleteView" destination="yVw-Q1-4X1" id="Lu1-nP-oGk"/>
@@ -845,14 +848,21 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="addImgLb" destination="hcd-oc-CNd" id="bgj-ET-sQp"/>
                         <outlet property="addView" destination="2fX-6R-4Rq" id="FyM-Bc-YZ5"/>
+                        <outlet property="cancelLb" destination="TaU-TZ-4Wg" id="CBY-Nx-lHc"/>
                         <outlet property="cancelView" destination="zku-CJ-qsE" id="e3O-c5-Dvz"/>
                         <outlet property="certBtn" destination="AqG-IP-AIy" id="j9H-M3-yUN"/>
                         <outlet property="certValueLb" destination="FM0-vc-QGt" id="j63-PL-Asy"/>
                         <outlet property="certVew" destination="QWT-3k-qt3" id="Ov7-QK-eSD"/>
+                        <outlet property="certificationLb" destination="Irz-50-cuv" id="oRe-8o-XlF"/>
+                        <outlet property="dateLb" destination="r7J-e2-Q0Y" id="8pY-rU-mW6"/>
                         <outlet property="dateValueLb" destination="hOk-tT-vks" id="pqv-ex-QAn"/>
+                        <outlet property="deleteLb" destination="8qs-de-WNC" id="wAb-Xb-3tR"/>
                         <outlet property="deleteView" destination="jtb-sh-EqW" id="auV-Yy-F1c"/>
                         <outlet property="imv" destination="5gz-lr-ebL" id="Ofk-bm-nRM"/>
+                        <outlet property="saveLb" destination="p1Z-07-edV" id="iUl-Vg-BRF"/>
+                        <outlet property="shareLb" destination="tIB-8r-nC7" id="BFJ-hI-jG1"/>
                         <outlet property="titleLb" destination="HiH-CQ-iAh" id="d8d-Q9-5vW"/>
                     </connections>
                 </viewController>
@@ -932,6 +942,40 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bvb-en-UmI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-3654.1984732824426" y="358.45070422535213"/>
+        </scene>
+        <!--Language View Controller-->
+        <scene sceneID="sPL-lf-mIE">
+            <objects>
+                <viewController storyboardIdentifier="LanguageViewController" id="oEd-PJ-wtp" customClass="LanguageViewController" customModule="DiveSync" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="1Zx-u8-4f8">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="9u5-UL-7SI">
+                                <rect key="frame" x="0.0" y="59" width="393" height="793"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="oEd-PJ-wtp" id="Kct-z5-FYg"/>
+                                    <outlet property="delegate" destination="oEd-PJ-wtp" id="0Xt-vd-qip"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="GUb-LI-tEb"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="GUb-LI-tEb" firstAttribute="trailing" secondItem="9u5-UL-7SI" secondAttribute="trailing" id="8ci-SU-BQO"/>
+                            <constraint firstItem="9u5-UL-7SI" firstAttribute="leading" secondItem="GUb-LI-tEb" secondAttribute="leading" id="ckq-si-pgY"/>
+                            <constraint firstItem="9u5-UL-7SI" firstAttribute="top" secondItem="GUb-LI-tEb" secondAttribute="top" id="qeT-3V-UiX"/>
+                            <constraint firstAttribute="bottom" secondItem="9u5-UL-7SI" secondAttribute="bottom" id="utc-Nb-4Cm"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="tableView" destination="9u5-UL-7SI" id="W10-da-5BF"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nNU-GJ-XFx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-3654" y="1046"/>
         </scene>
         <!--About View Controller-->
         <scene sceneID="Pvl-eG-fND">
@@ -1093,12 +1137,48 @@ our products.</string>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="titleLb" destination="n2b-Po-VQ8" id="SEn-dO-cE0"/>
+                        <outlet property="valueDesc" destination="ST3-wH-5jj" id="cMZ-2D-eNy"/>
                         <outlet property="valueLb" destination="zMd-uh-zpP" id="JEc-Jn-fwp"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vw6-zZ-qhr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-1086.2595419847328" y="357.74647887323948"/>
+        </scene>
+        <!--Help View Controller-->
+        <scene sceneID="lEW-RK-6E7">
+            <objects>
+                <viewController storyboardIdentifier="HelpViewController" id="BqI-bt-cKN" customClass="HelpViewController" customModule="DiveSync" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="hWY-zA-3xJ">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="z23-uc-cil">
+                                <rect key="frame" x="0.0" y="59" width="393" height="793"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="BqI-bt-cKN" id="gFw-a0-2a5"/>
+                                    <outlet property="delegate" destination="BqI-bt-cKN" id="hZ6-rs-rGO"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="MRQ-Q7-mhH"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="z23-uc-cil" firstAttribute="top" secondItem="MRQ-Q7-mhH" secondAttribute="top" id="DH6-Ig-S9o"/>
+                            <constraint firstItem="z23-uc-cil" firstAttribute="leading" secondItem="MRQ-Q7-mhH" secondAttribute="leading" id="XHR-V8-T9q"/>
+                            <constraint firstItem="MRQ-Q7-mhH" firstAttribute="trailing" secondItem="z23-uc-cil" secondAttribute="trailing" id="gBH-Sr-sCR"/>
+                            <constraint firstAttribute="bottom" secondItem="z23-uc-cil" secondAttribute="bottom" id="uz0-yi-1YO"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="tableView" destination="z23-uc-cil" id="aTb-VQ-Elg"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7ky-sF-XSw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-2836" y="1046"/>
         </scene>
     </scenes>
     <resources>
@@ -1131,7 +1211,7 @@ our products.</string>
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemCyanColor">
-            <color red="0.19607843137254902" green="0.67843137254901964" blue="0.90196078431372551" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.1960784314" green="0.67843137249999996" blue="0.90196078430000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -5,6 +5,8 @@ final class MDepthInputAlert: UIViewController {
     // MARK: - IBOutlets
     @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var messageLabel: UILabel!
+    @IBOutlet private weak var allowButton: UIButton!
+    @IBOutlet private weak var denyButton: UIButton!
     
     @IBOutlet weak var notesLabel: UILabel!
     @IBOutlet weak var unitLb: UILabel!
@@ -14,8 +16,8 @@ final class MDepthInputAlert: UIViewController {
         
     private var completionWithValue: ((_ action: PrivacyAlertAction, _ selectedValue: String) -> Void)?
     private var messageText: String? = nil
-    private var setTitle: String = "SET"
-    private var cancelTitle: String = "CANCEL"
+    private var setTitle: String = "Set".localized.uppercased()
+    private var cancelTitle: String = "Cancel".localized.uppercased()
     private var unitValue: String = "M"
     private var notes: String? = "GF"
     
@@ -33,12 +35,12 @@ final class MDepthInputAlert: UIViewController {
     }
     
     // MARK: - Initializer
-    static func showMessage(message: String? = "Max Depth",
+    static func showMessage(message: String? = "Max Depth".localized,
                             selectedValue: String,
                             notesValue: String? = nil,
                             unitValue: String,
-                            setTitle: String = "SET",
-                            cancelTitle: String = "CANCEL",
+                            setTitle: String = "Set".localized.uppercased(),
+                            cancelTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -69,6 +71,8 @@ final class MDepthInputAlert: UIViewController {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
         messageLabel.text = messageText
+        allowButton.setTitle(setTitle, for: .normal)
+        denyButton.setTitle(cancelTitle, for: .normal)
         
         containerView.backgroundColor = UIColor.B_3
         containerView.layer.cornerRadius = 16
@@ -79,7 +83,7 @@ final class MDepthInputAlert: UIViewController {
         valueTf.delegate = self
         valueTf.addTarget(self, action: #selector(textFieldValueChanged), for: .editingChanged)
         
-        notesLabel.text = notes
+        notesLabel.text = notes?.localized
         unitLb.text = unitValue
         valueTf.text = selectedValue
     }

@@ -15,7 +15,7 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     @IBOutlet weak var tableView: UITableView!
     
     @IBOutlet weak var addView: UIView!
-    @IBOutlet weak var downloadView: UIView!
+    @IBOutlet weak var recycleView: UIView!
     @IBOutlet weak var deleteView: UIView!
     @IBOutlet weak var cancelView: UIView!
     @IBOutlet weak var sortView: UIView!
@@ -24,6 +24,11 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     @IBOutlet weak var deleteLb: UILabel!
     
     @IBOutlet weak var noDivesLb: UILabel!
+    @IBOutlet weak var addLb: UILabel!
+    @IBOutlet weak var recycleLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
+    @IBOutlet weak var sortLb: UILabel!
+    @IBOutlet weak var searchLb: UILabel!
     
     var diveList:[Row] = []
     
@@ -42,6 +47,13 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         
         self.navigationController?.setCustomTitle(for: self.navigationItem, title: self.title ?? "", pushBack: true)
         self.title = nil
+        
+        noDivesLb.text = "No Logs".localized
+        addLb.text = "Add".localized
+        recycleLb.text = "Recently deleted".localized
+        cancelLb.text = "Cancel".localized
+        sortLb.text = "Sort".localized
+        searchLb.text = "Search".localized
         
         // Register the default cell
         tableView.backgroundColor = .clear
@@ -96,14 +108,16 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         }
     }
     
-    @IBAction func downloadAction(_ sender: Any) {
-        searchType = .kAddDive
-        syncType = .kDownloadDiveData
-        
-        let storyboard = UIStoryboard(name: "Device", bundle: nil)
-        let bluetoothScanVC = storyboard.instantiateViewController(withIdentifier: "BluetoothScanViewController") as! BluetoothScanViewController
-        self.navigationController?.pushViewController(bluetoothScanVC, animated: true)
-        
+    @IBAction func recycleAction(_ sender: Any) {
+        let storyboard = UIStoryboard(name: "Logs", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "RecycleViewController") as! RecycleViewController
+        vc.onUpdated = { [weak self] updated in
+            guard let self = self else { return }
+            if updated {
+                self.loadData(sort: SortPreferences.load())
+            }
+        }
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     @IBAction func addButtonTapped(_ sender: UIButton) {
@@ -133,9 +147,9 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         // Đang ở chế độ chọn: thực hiện xóa
         if selectedIndexes.count > 0 {
             PrivacyAlert.showMessage(
-                message: "Are you sure you want to delete selected dives?",
-                allowTitle: "DELETE",
-                denyTitle: "CANCEL"
+                message: "Are you sure you want to delete selected dives?".localized,
+                allowTitle: "Delete".localized.uppercased(),
+                denyTitle: "Cancel".localized.uppercased()
             ) { action in
                 switch action {
                 case .allow:
@@ -158,7 +172,7 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     
     @IBAction func sortAction(_ sender: Any) {
         let current = SortPreferences.load()
-        SortAlert.showMessage(message: "Sort your logs", currentOptions: current) { options in
+        SortAlert.showMessage(message: "Sort your logs".localized, currentOptions: current) { options in
             guard let selected = options else { return }
             
             self.loadData(sort: selected)
@@ -218,7 +232,7 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     
     private func loadData(sort: SortOptions? = nil) {
         do {
-            let diveLog = try DatabaseManager.shared.fetchDiveLog(sort: sort)
+            let diveLog = try DatabaseManager.shared.fetchDiveLog(where: "Deleted=0", sort: sort)
             diveList = diveLog
         } catch {
             PrintLog("Failed to load divelog data: \(error)")
@@ -239,24 +253,27 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         
         if isDeleteMode {
             addView.isHidden = true
-            downloadView.isHidden = true
+            recycleView.isHidden = true
             sortView.isHidden = true
             searchView.isHidden = true
             deleteView.isHidden = false
             cancelView.isHidden = false
             
             if selectedIndexes.count > 0 {
-                deleteLb.text = "Delete Selected"
+                deleteLb.text = "Delete Selected".localized
             } else {
-                deleteLb.text = "Delete"
+                deleteLb.text = "Delete".localized
             }
         } else {
             addView.isHidden = false
-            downloadView.isHidden = true
             sortView.isHidden = false
             searchView.isHidden = true
             deleteView.isHidden = true
             cancelView.isHidden = true
+            
+            let showRecycle = DatabaseManager.shared.hasDeletedDiveLogs()
+            recycleView.isHidden = !showRecycle
+            
         }
         
         if let reloadedIndexPaths = indexPaths, reloadedIndexPaths.count > 0 {
@@ -270,8 +287,16 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         let sortedIndexes = selectedIndexes.sorted(by: >)
         for index in sortedIndexes {
             let diveID = diveList[index].intValue(key: "DiveID")
+            /*
             DatabaseManager.shared.deleteRows(from: "DiveLog", where: "DiveID=?", arguments: [diveID])
             DatabaseManager.shared.deleteRows(from: "DiveProfile", where: "DiveID=?", arguments: [diveID])
+            */
+            
+            DatabaseManager.shared.updateTable(tableName: "DiveLog",
+                                               params: ["Deleted": 1],
+                                               conditions: "where DiveID=\(diveID)")
+            
+            
             diveList.remove(at: index)
         }
         selectedIndexes.removeAll()
@@ -368,15 +393,15 @@ extension LogsViewController: BluetoothScanDelegate {
 extension LogsViewController: AddLogsPopupDelegate {
     func popupDidTapAddManualLog(_ vc: AddDivesPopupViewController) {
         vc.dismiss(animated: true) {
-            let alert = UIAlertController(title: "Add Manual Dive Entry",
-                                          message: "Please select the unit for this dive log",
+            let alert = UIAlertController(title: "Add Manual Dive Entry".localized,
+                                          message: "Please select the unit for this dive log".localized,
                                           preferredStyle: .alert)
             
             // Tạo content VC để chứa segmented control
             let contentVC = UIViewController()
             contentVC.preferredContentSize = CGSize(width: 260, height: 50)
             
-            let segmented = UISegmentedControl(items: ["Meters", "Feet"])
+            let segmented = UISegmentedControl(items: ["Meters".localized, "Feet".localized])
             segmented.selectedSegmentIndex = 0
             segmented.translatesAutoresizingMaskIntoConstraints = false
             segmented.backgroundColor = .B_3 // màu giống top bar
@@ -400,8 +425,8 @@ extension LogsViewController: AddLogsPopupDelegate {
             alert.setValue(contentVC, forKey: "contentViewController")
             
             // Actions
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            let ok = UIAlertAction(title: "OK", style: .default) { _ in
+            let cancel = UIAlertAction(title: "Cancel".localized, style: .cancel, handler: nil)
+            let ok = UIAlertAction(title: "OK".localized, style: .default) { _ in
                 let unit = segmented.selectedSegmentIndex
                 self.addManualEntry(unit: unit)
             }
@@ -435,7 +460,7 @@ extension LogsViewController: AddLogsPopupDelegate {
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
-                showAlert(on: self, title: "Device not found!", message: "Ensure that your Device is ON and Bluetooth is opened.")
+                showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 return
             }
             

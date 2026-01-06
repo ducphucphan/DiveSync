@@ -7,47 +7,143 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB"
+            uuid = "BCA0CAE2-2C91-4C3E-B438-70353B4757AD"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/DataExport/Mappers/TankDataMapper.swift"
+            filePath = "DiveSync/DiveSpots/DiveSpotViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "62"
-            endingLineNumber = "62"
-            landmarkName = "from(row:)"
+            startingLineNumber = "190"
+            endingLineNumber = "190"
+            landmarkName = "getLocationTapped(_:)"
             landmarkType = "7">
             <Locations>
                <Location
-                  uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB - 3f9e130437ac0593"
+                  uuid = "BCA0CAE2-2C91-4C3E-B438-70353B4757AD - a4b5bac7a66e4a5f"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "static DiveSync.TankDataMapper.from(row: GRDB.Row) -&gt; Swift.Dictionary&lt;Swift.String, Any&gt;"
+                  symbolName = "DiveSync.DiveSpotViewController.getLocationTapped(Any) -&gt; ()"
                   moduleName = "DiveSync"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DataExport/Mappers/TankDataMapper.swift"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "62"
-                  endingLineNumber = "62"
-                  offsetFromSymbolStart = "4824">
+                  startingLineNumber = "192"
+                  endingLineNumber = "192"
+                  offsetFromSymbolStart = "588">
                </Location>
                <Location
-                  uuid = "AA157168-C5D6-46FC-88A2-D9087FD327DB - 3f9e130437ac0593"
+                  uuid = "BCA0CAE2-2C91-4C3E-B438-70353B4757AD - a4b5bac7a66e4a99"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "static DiveSync.TankDataMapper.from(row: GRDB.Row) -&gt; Swift.Dictionary&lt;Swift.String, Any&gt;"
+                  symbolName = "DiveSync.DiveSpotViewController.getLocationTapped(Any) -&gt; ()"
                   moduleName = "DiveSync"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DataExport/Mappers/TankDataMapper.swift"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "62"
-                  endingLineNumber = "62"
-                  offsetFromSymbolStart = "4832">
+                  startingLineNumber = "190"
+                  endingLineNumber = "190"
+                  offsetFromSymbolStart = "468">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "FE8B2E65-EF1C-421B-A58D-D5EEA8662936"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DiveSync/DiveSpots/DiveSpotViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "362"
+            endingLineNumber = "362"
+            landmarkName = "locationManager(_:didUpdateLocations:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "FE8B2E65-EF1C-421B-A58D-D5EEA8662936 - 4ed5e8254a3353a8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DiveSync.DiveSpotViewController.locationManager(_: __C.CLLocationManager, didUpdateLocations: Swift.Array&lt;__C.CLLocation&gt;) -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "363"
+                  endingLineNumber = "363"
+                  offsetFromSymbolStart = "500">
+               </Location>
+               <Location
+                  uuid = "FE8B2E65-EF1C-421B-A58D-D5EEA8662936 - 4ed5e8254a335397"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DiveSync.DiveSpotViewController.locationManager(_: __C.CLLocationManager, didUpdateLocations: Swift.Array&lt;__C.CLLocation&gt;) -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "364"
+                  endingLineNumber = "364"
+                  offsetFromSymbolStart = "500">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "481D6569-A112-44E5-BDA0-CA07F5EA68D6"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DiveSync/DiveSpots/DiveSpotViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "176"
+            endingLineNumber = "176"
+            landmarkName = "updateCoordinateLocation(fromMap:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "481D6569-A112-44E5-BDA0-CA07F5EA68D6 - 2fc54ba6d6b39a9c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DiveSync.DiveSpotViewController.updateCoordinateLocation(fromMap: Swift.Bool) -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "176"
+                  endingLineNumber = "176"
+                  offsetFromSymbolStart = "1516">
+               </Location>
+               <Location
+                  uuid = "481D6569-A112-44E5-BDA0-CA07F5EA68D6 - 2fc54ba6d6b39a9c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DiveSync.DiveSpotViewController.updateCoordinateLocation(fromMap: Swift.Bool) -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source/DiveSync/DiveSync/DiveSpots/DiveSpotViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "176"
+                  endingLineNumber = "176"
+                  offsetFromSymbolStart = "920">
                </Location>
             </Locations>
          </BreakpointContent>

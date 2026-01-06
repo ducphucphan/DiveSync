@@ -13,6 +13,8 @@ import RxBluetoothKit
 class DeviceSettingViewController: BaseViewController {
     
     @IBOutlet weak var tableview: UITableView!
+    @IBOutlet weak var downloadSettingsLb: UILabel!
+    @IBOutlet weak var uploadSettingsLb: UILabel!
     
     var device: Devices!
     
@@ -33,7 +35,7 @@ class DeviceSettingViewController: BaseViewController {
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Device Settings",
+                                                  title: self.title ?? "Device Settings".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
@@ -43,6 +45,13 @@ class DeviceSettingViewController: BaseViewController {
         tableview.dataSource = self
         
         applyValues()
+    }
+    
+    override func updateTexts() {
+        super.updateTexts()
+        
+        downloadSettingsLb.text = "Download Settings".localized
+        uploadSettingsLb.text = "Upload Settings".localized
     }
     
     func loadSettingsSections(from filename: String) -> [SettingsSection]? {
@@ -602,7 +611,7 @@ class DeviceSettingViewController: BaseViewController {
             guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
-                showAlert(on: self, title: "Device not found!", message: "Ensure that your device is ON and Bluetooth is opened.")
+                showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 
                 return
             }
@@ -693,7 +702,7 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                 .instantiateViewController(withIdentifier: "SubSettingsViewController") as! SubSettingsViewController
             vc.rows = subRows.filter { $0.hidden != 1 }
             vc.rowId = row.id
-            vc.sectionTitle = row.title
+            vc.sectionTitle = row.title.localized
             vc.device = device
             navigationController?.pushViewController(vc, animated: true)
         } else {
@@ -727,7 +736,7 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                 guard !leftOptionsToUse.isEmpty else { return }
                 guard !rightOptionsToUse.isEmpty else { return }
                 
-                Set2ValueSettingAlert2.showMessage(message: row.title,
+                Set2ValueSettingAlert2.showMessage(message: row.title.localized,
                                                   leftValue: timeToDimValue,
                                                   rightValue: dimToBrightnessValue,
                                                   leftOptions: leftOptionsToUse,
@@ -746,7 +755,7 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                 }
                 
                 ItemSelectionAlert.showMessage(
-                    message: row.title,
+                    message: row.title.localized,
                     options: options,
                     selectedValue: row.value
                 ) { [weak self] action, value, index in

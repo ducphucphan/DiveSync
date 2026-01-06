@@ -247,7 +247,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="addLb" destination="agv-EW-WVQ" id="Tzr-41-nOr"/>
                         <outlet property="addView" destination="y7j-jp-4Tq" id="fBc-Ot-Pzz"/>
+                        <outlet property="cancelLb" destination="UGx-Ib-GPH" id="Fg6-Ue-0p4"/>
                         <outlet property="cancelView" destination="iWl-y9-J4h" id="Htu-m2-BXZ"/>
                         <outlet property="deleteLb" destination="csA-RU-vcw" id="p25-Mj-kks"/>
                         <outlet property="deleteView" destination="HVH-9D-9jl" id="FPO-GE-9TF"/>
@@ -641,11 +643,18 @@
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="cancelLb" destination="EUT-1i-mT3" id="iHw-gj-Pm0"/>
+                        <outlet property="countryLb" destination="OH8-88-nrk" id="hFb-KT-bXx"/>
                         <outlet property="countryValueLb" destination="qLd-L1-XDK" id="tKQ-H5-DVJ"/>
                         <outlet property="latValueLb" destination="L7v-jq-jB8" id="8ij-MB-cEo"/>
+                        <outlet property="latlb" destination="hxT-9l-mgJ" id="GiT-BG-mgr"/>
+                        <outlet property="lngLb" destination="MoZ-aM-t6D" id="pkg-ZF-Vki"/>
                         <outlet property="lngValueLb" destination="5ap-v2-yHz" id="vZ9-df-2XE"/>
                         <outlet property="mapView" destination="Pvb-i7-qyi" id="daK-Y9-JgA"/>
+                        <outlet property="myLocLb" destination="xhV-K3-Oi5" id="Wmi-Ro-htc"/>
                         <outlet property="pinImageView" destination="m1n-ih-Uqy" id="05l-ci-kB1"/>
+                        <outlet property="saveLb" destination="hoA-bY-7lu" id="Kup-1b-cmN"/>
+                        <outlet property="spotNameLb" destination="GjO-xW-mqf" id="Ypw-kw-va7"/>
                         <outlet property="spotNameValueLb" destination="wZz-gd-CZy" id="7MM-wp-A8J"/>
                     </connections>
                 </viewController>
@@ -678,7 +687,7 @@
             <color red="0.10999999940395355" green="0.10999999940395355" blue="0.11400000005960464" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

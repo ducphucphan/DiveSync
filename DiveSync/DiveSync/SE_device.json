@@ -104,7 +104,7 @@
           {
             "id": "no_deco",
             "type": "modeSelector",
-            "title": "No Deco",
+            "title": "NO DECO",
             "value": "0:01",
             "options": ["1 MIN", "2 MIN", "3 MIN", "4 MIN", "5 MIN", "6 MIN", "7 MIN", "8 MIN", "9 MIN", "10 MIN", "11 MIN", "12 MIN", "13 MIN", "14 MIN", "15 MIN", "16 MIN", "17 MIN", "18 MIN", "19 MIN", "20 MIN", "21 MIN", "22 MIN", "23 MIN", "24 MIN", "25 MIN", "26 MIN", "27 MIN", "28 MIN", "29 MIN", "30 MIN"]
           },

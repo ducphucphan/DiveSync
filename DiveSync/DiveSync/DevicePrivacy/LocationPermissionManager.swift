@@ -20,9 +20,9 @@ class LocationPermissionManager: NSObject, CLLocationManagerDelegate {
 
         // Hiển thị alert tùy chỉnh
         PrivacyAlert.showMessage(
-            message: "Allow DIVESYNC to access this device’s location.",
-            allowTitle: "ALLOW",
-            denyTitle: "DENY"
+            message: "Allow DIVESYNC to access this device’s location.".localized,
+            allowTitle: "ALLOW".localized,
+            denyTitle: "DENY".localized
         ) { action in
             switch action {
             case .allow:

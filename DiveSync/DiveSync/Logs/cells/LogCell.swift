@@ -64,7 +64,7 @@ class LogCell: UITableViewCell {
         if diveMode >= 100 { // Manual
             deviceNameLb.text = deviceNameStr.isEmpty ? "N/A":deviceNameStr
         } else {
-            deviceNameLb.text = String(format: "%@, SN: %05d", deviceNameStr, deviceSerialNo)
+            deviceNameLb.text = String(format: "%@, %@: %05d", deviceNameStr, "SN".localized, deviceSerialNo)
         }
         
         let diveDateTime = row.stringValue(key: "DiveStartLocalTime")

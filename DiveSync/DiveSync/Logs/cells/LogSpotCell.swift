@@ -58,8 +58,9 @@ class LogSpotCell: UICollectionViewCell, UIGestureRecognizerDelegate {
                     
                     // Cập nhật bản đồ
                     let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                    let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
-                    mapView.setRegion(region, animated: false)
+                    //let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
+                    //mapView.setRegion(region, animated: false)
+                    mapView.setCenterCoordinate(coordinate, zoomLevel: 10, animated: false)
                     
                     // Hiển thị marker
                     mapView.removeAnnotations(mapView.annotations)

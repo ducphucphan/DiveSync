@@ -261,7 +261,7 @@ final class BluetoothDeviceCoordinator {
         
         stopScan()   // ⛔ stop scan ngay khi bắt đầu connect
         
-        ProgressHUD.animate("Connecting to \(peripheral.peripheral.name?.formattedDeviceName() ?? "")...")
+        ProgressHUD.animate("Connecting to".localized + " \(peripheral.peripheral.name?.formattedDeviceName() ?? "")...")
         
         connectionDisposable?.dispose()
         connectionDisposable = nil

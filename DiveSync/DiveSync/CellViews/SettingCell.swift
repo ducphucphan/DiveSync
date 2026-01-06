@@ -26,7 +26,7 @@ class SettingCell: UITableViewCell {
     }
     
     func bindRow(row: SettingsRow) {
-        titleLb.text = row.title
+        titleLb.text = row.title.localized
         valueLb.text = row.value
         
         if let value = row.value, row.id == "conservatism" {

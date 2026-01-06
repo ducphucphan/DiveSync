@@ -15,8 +15,10 @@ final class Set2ValueSettingAlert2: UIViewController {
     @IBOutlet private weak var allowButton: UIButton!
     @IBOutlet private weak var denyButton: UIButton!
     
+    @IBOutlet weak var leftTitleLb: UILabel!
     @IBOutlet weak var pickerViewLeft: UIPickerView!
     
+    @IBOutlet weak var rightTitleLb: UILabel!
     @IBOutlet weak var pickerViewRight: UIPickerView!
     
     private var leftOptions: [String] = []
@@ -26,8 +28,8 @@ final class Set2ValueSettingAlert2: UIViewController {
     private var selectedRight = 0
     
     private var completionWithValue: ((_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void)?
-    private var allowTitle: String = "SET"
-    private var denyTitle: String = "CANCEL"
+    private var allowTitle: String = "Set".localized.uppercased()
+    private var denyTitle: String = "Cancel".localized.uppercased()
     
     private var leftValue: String = ""
     private var rightValue: String = ""
@@ -35,13 +37,13 @@ final class Set2ValueSettingAlert2: UIViewController {
     private var messageText: String? = nil
         
     // MARK: - Initializer
-    static func showMessage(message: String? = "Set Auto Dim",
+    static func showMessage(message: String? = "Set Auto Dim".localized,
                             leftValue: String,
                             rightValue: String,
                             leftOptions: [String],
                             rightOptions: [String],
-                            allowTitle: String = "SET",
-                            denyTitle: String = "CANCEL",
+                            allowTitle: String = "Set".localized.uppercased(),
+                            denyTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String?) -> Void ) {
         guard let topVC = UIApplication.shared.topMostViewController(),
               let alert = UIStoryboard(name: "Utils", bundle: nil)
@@ -72,7 +74,12 @@ final class Set2ValueSettingAlert2: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
+        leftTitleLb.text = "Time to dim".localized
+        rightTitleLb.text = "Dim to brightness".localized
+        
         messageLabel.text = messageText
+        allowButton.setTitle(allowTitle, for: .normal)
+        denyButton.setTitle(denyTitle, for: .normal)
         
         // Picker
         pickerViewLeft.dataSource = self

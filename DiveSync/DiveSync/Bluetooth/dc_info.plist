@@ -38,5 +38,23 @@
 		<string>SPIRIT</string>
 		<string>8380</string>
 	</array>
+	<key>LOG</key>
+	<array>
+		<string>Sherwood</string>
+		<string>LOGIC</string>
+		<string>7679</string>
+	</array>
+	<key>CEN</key>
+	<array>
+		<string>Genesis</string>
+		<string>CENTAURI</string>
+		<string>6769</string>
+	</array>
+	<key>GRA</key>
+	<array>
+		<string>Genesis</string>
+		<string>GRAVITON</string>
+		<string>7182</string>
+	</array>
 </dict>
 </plist>

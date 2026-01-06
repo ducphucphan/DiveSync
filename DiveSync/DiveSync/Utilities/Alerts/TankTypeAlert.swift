@@ -106,21 +106,21 @@ final class TankTypeAlert: UIViewController {
         containerView.addSubview(titleLabel)
 
         setupRadioButton(radioButton1, selected: true)
-        radioLabel1.text = alunium
+        radioLabel1.text = alunium.localized
         radioLabel1.textColor = .white
         radioLabel1.translatesAutoresizingMaskIntoConstraints = false
 
         setupRadioButton(radioButton2)
-        radioLabel2.text = steel
+        radioLabel2.text = steel.localized
         radioLabel2.textColor = .white
         radioLabel2.translatesAutoresizingMaskIntoConstraints = false
 
         setupRadioButton(radioButton3)
-        radioLabel3.text = "Other"
+        radioLabel3.text = "Other".localized
         radioLabel3.textColor = .white
         radioLabel3.translatesAutoresizingMaskIntoConstraints = false
 
-        otherTextField.placeholder = "Enter tank type"
+        otherTextField.placeholder = "Enter tank type".localized
         otherTextField.borderStyle = .roundedRect
         otherTextField.isEnabled = false
         otherTextField.translatesAutoresizingMaskIntoConstraints = false
@@ -134,14 +134,14 @@ final class TankTypeAlert: UIViewController {
         containerView.addSubview(radioLabel3)
         containerView.addSubview(otherTextField)
 
-        cancelButton.setTitle("CANCEL", for: .normal)
+        cancelButton.setTitle("Cancel".localized.uppercased(), for: .normal)
         cancelButton.setTitleColor(.B_1, for: .normal)
         cancelButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(cancelButton)
 
-        saveButton.setTitle("SET", for: .normal)
+        saveButton.setTitle("Set".localized.uppercased(), for: .normal)
         saveButton.setTitleColor(.B_1, for: .normal)
         saveButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)

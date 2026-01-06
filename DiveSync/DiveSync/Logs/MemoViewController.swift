@@ -11,22 +11,29 @@ import GRDB
 class MemoViewController: BaseViewController, UITextViewDelegate {
 
     @IBOutlet weak var memoTv: UITextView!
+    @IBOutlet weak var saveLb: UILabel!
+    @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var cancelLb: UILabel!
     
     var diveLog: Row!
     
     var onUpdated:(() -> Void)?
     
-    let placeholderText = "Tap here to input memo"
+    let placeholderText = "Tap here to input memo".localized
     let placeholderColor = UIColor.lightGray
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.navigationController?.setCustomTitle(for: self.navigationItem,
-                                                  title: self.title ?? "Memo",
+                                                  title: self.title ?? "Memo".localized,
                                                   pushBack: true,
                                                   backImage: "chevron.backward")
         self.title = nil
+        
+        saveLb.text = "SAVE".localized.capitalized
+        deleteLb.text = "Delete".localized
+        cancelLb.text = "Cancel".localized
         
         memoTv.delegate = self
         memoTv.returnKeyType = .done // tuỳ chọn nếu bạn muốn có nút "Done"
@@ -48,9 +55,9 @@ class MemoViewController: BaseViewController, UITextViewDelegate {
                 saveMemo()
             case 1:
                 PrivacyAlert.showMessage(
-                    message: "Are you sure you want to clear the memo?",
-                    allowTitle: "DELETE",
-                    denyTitle: "CANCEL"
+                    message: "Are you sure you want to clear the memo?".localized,
+                    allowTitle: "Delete".localized.uppercased(),
+                    denyTitle: "Cancel".localized.uppercased()
                 ) { action in
                     switch action {
                     case .allow:
