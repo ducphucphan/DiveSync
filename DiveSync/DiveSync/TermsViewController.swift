@@ -11,6 +11,8 @@ import WebKit
 enum TermsType {
     case terms
     case privacyPolicy
+    case faq
+    case tutorial
     
     var urlString: String {
         switch self {
@@ -18,6 +20,10 @@ enum TermsType {
             return "http://divesync.io/openfile.php?id=2025001"
         case .privacyPolicy:
             return "http://divesync.io/openfile.php?id=2025002"
+        case .faq:
+            return "https://divesync.io/divesync-faq"
+        case .tutorial:
+            return "https://divesync.io/tutorials"
         }
     }
 }

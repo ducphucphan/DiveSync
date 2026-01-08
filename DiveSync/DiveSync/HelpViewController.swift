@@ -65,8 +65,18 @@ extension HelpViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let vc = storyboard.instantiateViewController(withIdentifier: "TermsViewController") as! TermsViewController
+            vc.title = data[indexPath.row].localized
+            vc.type = .tutorial
+            self.navigationController?.pushViewController(vc, animated: true)
             break
         case 1:
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let vc = storyboard.instantiateViewController(withIdentifier: "TermsViewController") as! TermsViewController
+            vc.title = data[indexPath.row].localized
+            vc.type = .faq
+            self.navigationController?.pushViewController(vc, animated: true)
             break
         case 2:
             if !MFMailComposeViewController.canSendMail() {
