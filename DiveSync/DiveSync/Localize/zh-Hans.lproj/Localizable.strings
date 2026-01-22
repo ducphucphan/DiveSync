@@ -61,6 +61,7 @@
 "Weight" = "配重";
 "State/Province" = "省/州";
 "Zip/Post Code" = "邮政编码";
+"Emergency Contact" = "紧急联系人";
 "Emergency Contact Name" = "紧急联系人姓名";
 "Emergency Contact Phone" = "紧急联系人电话";
 "What is your name?" = "您的姓名？";
@@ -378,5 +379,8 @@ our products." = "允许DiveSync从您的潜水电脑收集数据，以帮助我
 "Dim to brightness" = "变暗后的亮度";
 "Upload Settings" = "上传设置";
 "Upload Date/Time" = "上传日期/时间";
+"Upload Owner Info" = "上传所有者信息";
 "Recently deleted" = "最近删除";
 "Restore" = "恢复";
+"Your device's owner info are uploaded" = "您的设备所有者信息已上传。";
+"Uploading your owner info..." = "正在上传您的车主信息……";

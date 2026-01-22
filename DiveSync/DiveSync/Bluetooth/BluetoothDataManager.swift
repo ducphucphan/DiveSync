@@ -64,6 +64,9 @@ struct cmd {
     
     static let SetGMTTime: UInt16           = 0x0050
     
+    static let UploadOwnerInfoScreenHeader: UInt16      = 0x0710
+    static let UploadOwnerInfoScreenData: UInt16        = 0x0711
+    
 }
 
 struct DeviceDataSettings {
@@ -107,6 +110,8 @@ class BluetoothDataManager {
     
     var totalSampleCount = 0
     var completedSampleCount = 0
+    
+    var uploadOwnerInfoData: Data!
         
     init(peripheral: Peripheral) {
         self.peripheral = peripheral
@@ -718,6 +723,8 @@ class BluetoothDataManager {
             ProgressHUD.animate("Writing device settings...".localized)
         } else if syncType == .kDownloadDiveData {
             ProgressHUD.animate("Downloading dives...".localized)
+        } else if syncType == .kUploadOwnerInfo {
+            ProgressHUD.animate("Uploading your owner info...".localized)
         }
         
         var settingsResult = DeviceDataSettings()
@@ -800,6 +807,8 @@ class BluetoothDataManager {
                         }
                 case .kUploadDateTime:
                     return self.U_SetDateTime(settings: settingsResult)
+                case .kUploadOwnerInfo:
+                    return self.U_UploadOwnerInfoScreen()
                 default:
                     return self.U_SaveSetting(settings: settingsResult)
                         .flatMap { saveSuccess -> Observable<DeviceReadResult> in
@@ -881,6 +890,8 @@ class BluetoothDataManager {
                         msg = "You device’s Date/Time are updated"
                     } else if syncType == .kRedownloadSetting {
                         msg = "Firmware upgrade success"
+                    } else if syncType == .kUploadOwnerInfo {
+                        msg = "Your device's owner info are uploaded"
                     }
                 }
                 
@@ -1446,7 +1457,11 @@ class BluetoothDataManager {
                     return self.sendSetScubaSettings(scubaSettings: scubaSettings)
                 }
                 .flatMap { _ in
-                    self.sendSetUserInfo(userInfosString)
+                    if self.ModelID == C_DAV {
+                        return Observable.just(true)
+                    } else {
+                        return self.sendSetUserInfo(userInfosString)
+                    }
                 }
                 .map { success in
                     success ? .success : .failure(error: nil)
@@ -1458,6 +1473,115 @@ class BluetoothDataManager {
         } catch {
             PrintLog("Failed to fetch data: \(error)")
             return .just(.failure(error: nil))
+        }
+    }
+    
+    func U_UploadOwnerInfoScreen() -> Observable<DeviceReadResult> {
+        
+        let chunkSize = 128
+        let totalChunks = Int(
+            ceil(Double(uploadOwnerInfoData.count) / Double(chunkSize))
+        )
+        
+        PrintLog("Total Chunks: \(totalChunks)")
+        
+        
+        // 0. Check characteristic
+        guard let characteristic = writeCharacteristic else {
+            return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write characteristic not found"]))
+        }
+        
+        // HEAER
+        var payloadHeader = Data(repeating: 0xFF, count: 64)
+        
+        let xResolution = 240
+        let yResolution = 240
+        
+        // X resolution
+        payloadHeader[0] = UInt8((xResolution >> 8) & 0xFF)
+        payloadHeader[1] = UInt8(xResolution & 0xFF)
+        
+        // Y resolution
+        payloadHeader[2] = UInt8((yResolution >> 8) & 0xFF)
+        payloadHeader[3] = UInt8(yResolution & 0xFF)
+        
+        let headerData = self.cmdData(for: cmd.UploadOwnerInfoScreenHeader, payload: payloadHeader)
+        
+        return Observable.create { [weak self] observer in
+            guard let self = self else {
+                observer.onError(NSError(domain: "Bluetooth", code: -999))
+                return Disposables.create()
+            }
+            
+            let composite = CompositeDisposable()
+            
+            // 2.1 Send start
+            let startDisp = self.peripheral
+                .writeValue(headerData, for: characteristic, type: .withoutResponse)
+                .subscribe(onSuccess: { _ in
+                    
+                    print("SEND HeaderData COMPLETTED !!!")
+                    
+                    func sendOwnerInfoChunk(at index: Int) {
+                        if composite.isDisposed { return }
+                        
+                        if index >= totalChunks {
+                            PrintLog("Upload OwnerInfo COMPLETED")
+                            
+                            observer.onNext(.success)
+                            observer.onCompleted()
+                            composite.dispose()
+                            return
+                        }
+                        
+                        let start = index * chunkSize
+                        let end = min(start + chunkSize, self.uploadOwnerInfoData.count)
+                        let chunkData = self.uploadOwnerInfoData.subdata(in: start..<end)
+                        
+                        PrintLog("Uploading chunk \(index + 1)/\(totalChunks)")
+                        
+                        var payloadChunk = Data()
+                        payloadChunk.reserveCapacity(4 + chunkData.count)
+
+                        // chunk index
+                        payloadChunk.append(contentsOf: [
+                            UInt8((index >> 24) & 0xFF),
+                            UInt8((index >> 16) & 0xFF),
+                            UInt8((index >> 8) & 0xFF),
+                            UInt8(index & 0xFF)
+                        ])
+                        
+                        // data
+                        payloadChunk.append(chunkData)
+                        
+                        let data = self.cmdData(for: cmd.UploadOwnerInfoScreenData, payload: payloadChunk)
+                        
+                        let d = self.peripheral.writeValue(data, for: characteristic, type: .withoutResponse)
+                            .subscribe(onSuccess: { _ in
+                                DispatchQueue.global().asyncAfter(deadline: .now() + 0.01) {
+                                    sendOwnerInfoChunk(at: index + 1)
+                                }
+                            }, onFailure: { error in
+                                observer.onError(error)
+                                composite.dispose()
+                            })
+                        
+                        _ = composite.insert(d)
+                        
+                    }
+                    
+                    // start gửi chunk từ 0
+                    sendOwnerInfoChunk(at: 0)
+                    
+                }, onFailure: { error in
+                    observer.onError(error)
+                })
+            
+            _ = composite.insert(startDisp)
+            
+            return Disposables.create {
+                composite.dispose()
+            }
         }
     }
     
@@ -1734,6 +1858,9 @@ class BluetoothDataManager {
         }
     }
     
+    
+    // MARK: - Utilities
+    
     func splitSamples(from data: Data, diveNo: Int, sampleSize: Int = 32) -> [Data] {
         guard data.count >= sampleSize else { return [] }
         
@@ -1760,8 +1887,6 @@ class BluetoothDataManager {
         return samples
     }
     
-    
-    // MARK: - Utilities
     func dataEncrypt(data: inout Data, value: Int, startIndex: Int, len: Int) {
         var mutableValue = value // Create a mutable copy of value
         

@@ -51,6 +51,10 @@ class SubSettingsViewController: BaseViewController {
                 uploadDateView.isHidden = false
             } else if rowid == "set_owner_info" {
                 deleteView.isHidden = false
+                if let modelId = device.modelId, modelId == C_DAV {
+                    uploadDateView.isHidden = false
+                    uploadDateTimeLb.text = "Upload Owner Info".localized
+                }
             }
             
         } else {
@@ -101,6 +105,9 @@ class SubSettingsViewController: BaseViewController {
         
         searchType = .kSetting
         syncType = .kUploadDateTime
+        if let modelId = device.modelId, modelId == C_DAV {
+            syncType = .kUploadOwnerInfo
+        }
         
         let settings = getPDCSettings()
         
@@ -155,6 +162,58 @@ class SubSettingsViewController: BaseViewController {
                         manager.ModelID = dcInfo[2].toInt()
                     }
                     
+                    if let modelId = device.modelId, modelId == C_DAV {
+                        var ownerName = ""
+                        var ownerPhone = ""
+                        var ownerEmail = ""
+                        var ownerBloodType = ""
+                        var emName = ""
+                        var emPhone = ""
+
+                        // Lặp qua tất cả rows
+                        for row in rows {
+                            switch row.id {
+                            case "owner_name":
+                                ownerName = row.value ?? ""
+                            case "owner_phone":
+                                ownerPhone = row.value ?? ""
+                            case "owner_mail":
+                                ownerEmail = row.value ?? ""
+                            case "owner_blood_type":
+                                ownerBloodType = row.value ?? ""
+                            case "owner_emname":
+                                emName = row.value ?? ""
+                            case "owner_emergency_contact_phone":
+                                emPhone = row.value ?? ""
+                            default:
+                                break
+                            }
+                        }
+
+                        // Tạo struct từ các giá trị vừa lấy
+                        let owner = OwnerInfo(
+                            name: ownerName,
+                            phone: ownerPhone,
+                            email: ownerEmail,
+                            bloodType: ownerBloodType
+                        )
+
+                        let emergency = EmergencyContact(
+                            name: emName,
+                            phone: emPhone
+                        )
+
+                        let ownerInfoView = OwnerInfoCardViewBuilder.build(
+                            owner: owner,
+                            emergency: emergency
+                        )
+                        
+                        let image240 = renderViewToImage(ownerInfoView, size: CGSize(width: 240, height: 240))
+                        
+                        let uploadData = image240.rgb565Data(size: CGSize(width: 240, height: 240)) //imageToUploadData(image240)!
+                        
+                        manager.uploadOwnerInfoData = uploadData
+                    }
                     manager.readAllSettings()
                     
                 }, onError: { [weak self] error in
@@ -294,7 +353,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 keyType = .emailAddress
             }
             
-            InputAlert.show(title: row.title.localized, saveTitle: "SET", currentValue: row.value ?? "", keyboardType: keyType) { action in
+            InputAlert.show(title: row.title.localized, saveTitle: "Set".localized.uppercased(), currentValue: row.value ?? "", keyboardType: keyType) { action in
                 switch action {
                 case .save(let value):
                     self.rows[indexPath.row].value = value?.uppercased()
@@ -564,4 +623,13 @@ func presentTimePicker(from viewController: UIViewController,
     }))
     
     viewController.present(alert, animated: true, completion: nil)
+}
+
+extension SubSettingsViewController {
+    func renderViewToImage(_ view: UIView, size: CGSize) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            view.layer.render(in: context.cgContext)
+        }
+    }
 }

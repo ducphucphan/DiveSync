@@ -61,6 +61,7 @@
 "Weight" = "Poids";
 "State/Province" = "État / Province";
 "Zip/Post Code" = "Code postal";
+"Emergency Contact" = "Contact d'urgence";
 "Emergency Contact Name" = "Nom du contact d’urgence";
 "Emergency Contact Phone" = "Téléphone d’urgence";
 "What is your name?" = "Quel est votre nom ?";
@@ -380,5 +381,8 @@ our products.";
 "Dim to brightness" = "Luminosité après atténuation";
 "Upload Settings" = "Téléverser les paramètres";
 "Upload Date/Time" = "Téléverser la date et l’heure";
+"Upload Owner Info" = "Téléverser les infos propriétaire";
 "Recently deleted" = "Supprimés récemment";
 "Restore" = "Restaurer";
+"Your device's owner info are uploaded" = "Les informations du propriétaire de votre appareil ont été téléchargées";
+"Uploading your owner info..." = "Téléchargement de vos informations de propriétaire...";

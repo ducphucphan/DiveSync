@@ -237,11 +237,12 @@ class LogViewController: BaseViewController {
         altLevelLb.text = getAltitudeLevel()
         
         let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
-        let tlbg = diveLog.stringValue(key: "EndingTlbg").toInt()
+        //let tlbg = diveLog.stringValue(key: "EndingTlbg").toInt()
         var maxTlbg = diveLog.stringValue(key: "MaxTLBG").toInt()
-        if maxTlbg == 0 { maxTlbg = 5 }
-        ltbgValueLb.text = String(format: "%d/%d", ((tlbg == 0) ? 1:tlbg), maxTlbg)
+        if maxTlbg == 0 { maxTlbg = 1 }
+        ltbgValueLb.text = String(format: "%d/5", maxTlbg)
         if isDeco == 1 {
+            maxTlbg = 5
             ltbgValueLb.text = String(format: "%d/%d", maxTlbg, maxTlbg)
         }
         

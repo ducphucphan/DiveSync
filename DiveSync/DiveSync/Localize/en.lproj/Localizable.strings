@@ -61,6 +61,7 @@
 "Weight" = "Weight";
 "State/Province" = "State/Province";
 "Zip/Post Code" = "Zip/Post Code";
+"Emergency Contact" = "Emergency Contact";
 "Emergency Contact Name" = "Emergency Contact Name";
 "Emergency Contact Phone" = "Emergency Contact Phone";
 "What is your name?" = "What is your name?";
@@ -92,7 +93,7 @@
 "Your device’s setting are downloaded" = "Your device’s setting are downloaded";
 "NO NEW LOG TO DOWNLOAD" = "NO NEW LOG TO DOWNLOAD";
 "Your device has been added" = "Your device has been added";
-"You device’s setting are updated" = "You device’s setting are updated";
+"You device’s setting are updated" = "Your device’s setting are updated";
 "Logs from Dive Computer are downloaded" = "Logs from Dive Computer are downloaded";
 "You device’s Date/Time are updated" = "You device’s Date/Time are updated";
 "Firmware upgrade success" = "Firmware upgrade success";
@@ -380,5 +381,8 @@ our products.";
 "Dim to brightness" = "Dim to brightness";
 "Upload Settings" = "Upload Settings";
 "Upload Date/Time" = "Upload Date/Time";
+"Upload Owner Info" = "Upload Owner Info";
 "Recently deleted" = "Recently deleted";
 "Restore" = "Restore";
+"Your device's owner info are uploaded" = "Your device's owner info are uploaded";
+"Uploading your owner info..." = "Uploading your owner info...";

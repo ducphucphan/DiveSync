@@ -61,6 +61,7 @@
 "Weight" = "Ağırlık";
 "State/Province" = "Eyalet/İl";
 "Zip/Post Code" = "Posta Kodu";
+"Emergency Contact" = "Acil Durum İletişim Kişisi";
 "Emergency Contact Name" = "Acil Durum İrtibat Kişisi Adı";
 "Emergency Contact Phone" = "Acil Durum İrtibat Kişisi Telefonu";
 "What is your name?" = "Adınız nedir?";
@@ -378,5 +379,8 @@ our products." = "DiveSync'in ürünlerimizi iyileştirmemize yardımcı olması
 "Dim to brightness" = "Karardıktan sonraki parlaklık";
 "Upload Settings" = "Ayarları yükle";
 "Upload Date/Time" = "Tarih/Saat yükle";
+"Upload Owner Info" = "Sahip Bilgileri yükle";
 "Recently deleted" = "Son silinenler";
 "Restore" = "Geri yükle";
+"Your device's owner info are uploaded" = "Cihazınızın sahibine ait bilgiler yüklendi.";
+"Uploading your owner info..." = "Sahip bilgileriniz yükleniyor...";

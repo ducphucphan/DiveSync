@@ -99,6 +99,7 @@
 		487EEC6D2D08B3A500BFE1A5 /* ShadowStackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487EEC6C2D08B3A500BFE1A5 /* ShadowStackView.swift */; };
 		4885471E2DCE1C5B004D03C2 /* LogSettingsUsedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4885471D2DCE1C5B004D03C2 /* LogSettingsUsedViewController.swift */; };
 		48856BB22D151CC700B32A46 /* RoundedBarChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48856BB12D151CC700B32A46 /* RoundedBarChartRenderer.swift */; };
+		4885A1F72F10EA710056D1EB /* UIImage+Extends.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4885A1F62F10EA710056D1EB /* UIImage+Extends.swift */; };
 		4887C30D2DC5052600742DF3 /* EditProfilePopupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4887C30C2DC5052600742DF3 /* EditProfilePopupManager.swift */; };
 		4887C30F2DC5110100742DF3 /* EditDatePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4887C30E2DC5110100742DF3 /* EditDatePickerViewController.swift */; };
 		4887C3112DC51E0900742DF3 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4887C3102DC51E0900742DF3 /* Colors.xcassets */; };
@@ -144,6 +145,7 @@
 		48B7F04C2CF17AB000518172 /* ChartHighlightMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B7F04B2CF17AB000518172 /* ChartHighlightMarker.swift */; };
 		48BF1EA22DF6C8C6005286A0 /* SetTimeAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */; };
 		48C2FEAD2E7C2AA2003BC694 /* FirmwareURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */; };
+		48C9653D2F10E462007A794D /* OwnerInfoCardViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */; };
 		48CE8DC52DACB9C000A2DF33 /* BottomSheetPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DC42DACB9C000A2DF33 /* BottomSheetPickerViewController.swift */; };
 		48CE8DC82DACFDB100A2DF33 /* DSNormalCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DC62DACFDB100A2DF33 /* DSNormalCell.swift */; };
 		48CE8DC92DACFDB100A2DF33 /* DSNormalCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48CE8DC72DACFDB100A2DF33 /* DSNormalCell.xib */; };
@@ -340,6 +342,7 @@
 		487EEC6C2D08B3A500BFE1A5 /* ShadowStackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowStackView.swift; sourceTree = "<group>"; };
 		4885471D2DCE1C5B004D03C2 /* LogSettingsUsedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSettingsUsedViewController.swift; sourceTree = "<group>"; };
 		48856BB12D151CC700B32A46 /* RoundedBarChartRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedBarChartRenderer.swift; sourceTree = "<group>"; };
+		4885A1F62F10EA710056D1EB /* UIImage+Extends.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extends.swift"; sourceTree = "<group>"; };
 		4887C30C2DC5052600742DF3 /* EditProfilePopupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfilePopupManager.swift; sourceTree = "<group>"; };
 		4887C30E2DC5110100742DF3 /* EditDatePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditDatePickerViewController.swift; sourceTree = "<group>"; };
 		4887C3102DC51E0900742DF3 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
@@ -394,6 +397,7 @@
 		48B7F04B2CF17AB000518172 /* ChartHighlightMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartHighlightMarker.swift; sourceTree = "<group>"; };
 		48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetTimeAlert.swift; sourceTree = "<group>"; };
 		48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareURLBuilder.swift; sourceTree = "<group>"; };
+		48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnerInfoCardViewBuilder.swift; sourceTree = "<group>"; };
 		48CE8DC42DACB9C000A2DF33 /* BottomSheetPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetPickerViewController.swift; sourceTree = "<group>"; };
 		48CE8DC62DACFDB100A2DF33 /* DSNormalCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSNormalCell.swift; sourceTree = "<group>"; };
 		48CE8DC72DACFDB100A2DF33 /* DSNormalCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSNormalCell.xib; sourceTree = "<group>"; };
@@ -544,6 +548,7 @@
 				48CE8DCB2DAD02B300A2DF33 /* DSGasCell.xib */,
 				48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */,
 				48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */,
+				48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -659,6 +664,7 @@
 		48541C532D9BE12400B39977 /* Devices */ = {
 			isa = PBXGroup;
 			children = (
+				4885A1F52F10EA640056D1EB /* OwnerInfoUtils */,
 				48F74D692DA788710063A582 /* models */,
 				480C051D2D9CE3B40036D04E /* cells */,
 				489459E62DBCC3E400D1A03D /* DeviceListViewController.swift */,
@@ -828,6 +834,14 @@
 				483D80F22D191ABB009041E2 /* CustomHighLightRenderer.swift */,
 			);
 			path = ChartRenderers;
+			sourceTree = "<group>";
+		};
+		4885A1F52F10EA640056D1EB /* OwnerInfoUtils */ = {
+			isa = PBXGroup;
+			children = (
+				4885A1F62F10EA710056D1EB /* UIImage+Extends.swift */,
+			);
+			path = OwnerInfoUtils;
 			sourceTree = "<group>";
 		};
 		4887C30B2DC5051500742DF3 /* UserProfile */ = {
@@ -1335,6 +1349,7 @@
 				485A87562E8CD6E800741E77 /* PermissionViewController.swift in Sources */,
 				481226E42DD84CA30094DE24 /* MenuCell.swift in Sources */,
 				48AD3A502EF93033005BDB6A /* LocalizationManager.swift in Sources */,
+				48C9653D2F10E462007A794D /* OwnerInfoCardViewBuilder.swift in Sources */,
 				48E66E472D0C19C6005ACECE /* DropDown.swift in Sources */,
 				48970C402E3776EC00BBAC9E /* DivePhotoManager.swift in Sources */,
 				482675A42DCA49560037E40C /* LogGraphCell.swift in Sources */,
@@ -1415,6 +1430,7 @@
 				48CE9C212E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift in Sources */,
 				48D195572D64462300B21E25 /* BLEConstants.swift in Sources */,
 				48CE8DC52DACB9C000A2DF33 /* BottomSheetPickerViewController.swift in Sources */,
+				4885A1F72F10EA710056D1EB /* UIImage+Extends.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1569,7 +1585,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1612,7 +1628,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

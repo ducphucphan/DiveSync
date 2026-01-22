@@ -61,6 +61,7 @@
 "Weight" = "ウェイト";
 "State/Province" = "州/県";
 "Zip/Post Code" = "郵便番号";
+"Emergency Contact" = "緊急連絡先";
 "Emergency Contact Name" = "緊急連絡先名";
 "Emergency Contact Phone" = "緊急連絡先電話番号";
 "What is your name?" = "お名前は？";
@@ -378,5 +379,8 @@ our products." = "「DiveSyncがダイブコンピュータからデータを収
 "Dim to brightness" = "減光後の明るさ";
 "Upload Settings" = "設定をアップロード";
 "Upload Date/Time" = "日付/時刻をアップロード";
+"Upload Owner Info" = "所有者情報をアップロード";
 "Recently deleted" = "最近削除";
 "Restore" = "復元";
+"Your device's owner info are uploaded" = "デバイスの所有者情報がアップロードされました";
+"Uploading your owner info..." = "所有者情報をアップロードしています...";

@@ -61,6 +61,7 @@
 "Weight" = "중량";
 "State/Province" = "주/도";
 "Zip/Post Code" = "우편번호";
+"Emergency Contact" = "비상 연락처";
 "Emergency Contact Name" = "비상 연락처 이름";
 "Emergency Contact Phone" = "비상 연락처 전화번호";
 "What is your name?" = "이름을 알려주세요.";
@@ -378,5 +379,8 @@ our products." = "DiveSync가 제품 개선을 위해 다이브 컴퓨터에서�
 "Dim to brightness" = "어두워진 후 밝기";
 "Upload Settings" = "설정 업로드";
 "Upload Date/Time" = "날짜/시간 업로드";
+"Upload Owner Info" = "소유자 정보 업로드";
 "Recently deleted" = "최근 삭제";
 "Restore" = "복원";
+"Your device's owner info are uploaded" = "기기 소유자 정보가 업로드되었습니다.";
+"Uploading your owner info..." = "소유자 정보를 업로드하는 중...";

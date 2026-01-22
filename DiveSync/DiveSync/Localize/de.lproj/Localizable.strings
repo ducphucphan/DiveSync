@@ -61,6 +61,7 @@
 "Weight" = "Gewicht";
 "State/Province" = "Bundesland/Provinz";
 "Zip/Post Code" = "Postleitzahl";
+"Emergency Contact" = "Notfallkontakt";
 "Emergency Contact Name" = "Name des Notfallkontakts";
 "Emergency Contact Phone" = "Telefonnummer des Notfallkontakts";
 "What is your name?" = "Wie lautet Ihr Name?";
@@ -378,5 +379,8 @@ our products." = "Erlauben Sie DiveSync, Daten von Ihrem Tauchcomputer zu sammel
 "Dim to brightness" = "Helligkeit nach Abdunkelung";
 "Upload Settings" = "Einstellungen hochladen";
 "Upload Date/Time" = "Datum/Uhrzeit hochladen";
+"Upload Owner Info" = "Besitzer-Info hochladen";
 "Recently deleted" = "Kürzlich gelöscht";
 "Restore" = "Wiederherstellen";
+"Your device's owner info are uploaded" = "Die Besitzerinformationen Ihres Geräts wurden hochgeladen.";
+"Uploading your owner info..." = "Ihre Besitzerinformationen werden hochgeladen...";

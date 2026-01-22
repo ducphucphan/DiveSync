@@ -61,6 +61,7 @@
 "Weight" = "Peso";
 "State/Province" = "Stato/Provincia";
 "Zip/Post Code" = "CAP";
+"Emergency Contact" = "Contatto di emergenza";
 "Emergency Contact Name" = "Nome contatto di emergenza";
 "Emergency Contact Phone" = "Numero di telefono di emergenza";
 "What is your name?" = "Qual è il tuo nome?";
@@ -378,5 +379,8 @@ our products." = "Consenti a DiveSync di raccogliere dati dal tuo computer subac
 "Dim to brightness" = "Luminosità dopo attenuazione";
 "Upload Settings" = "Carica impostazioni";
 "Upload Date/Time" = "Carica data/ora";
+"Upload Owner Info" = "Carica informazioni sul proprietario";
 "Recently deleted" = "Eliminati di recente";
 "Restore" = "Ripristina";
+"Your device's owner info are uploaded" = "Le informazioni sul proprietario del tuo dispositivo sono state caricate";
+"Uploading your owner info..." = "Caricamento delle informazioni sul proprietario in corso...";
