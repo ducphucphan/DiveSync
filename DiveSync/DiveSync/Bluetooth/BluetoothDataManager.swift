@@ -112,6 +112,60 @@ class BluetoothDataManager {
     var completedSampleCount = 0
     
     var uploadOwnerInfoData: Data!
+    
+    let tzArray: [Int8] = [
+        // GMT-12 → GMT-9:30
+        -12, 0,
+        -11, 0,
+        -10, 0,
+        -9, 30,
+
+        // GMT-9 → GMT-1
+        -9, 0,
+        -8, 0,
+        -7, 0,
+        -6, 0,
+        -5, 0,
+        -4, 30,
+        -4, 0,
+        -3, 30,
+        -3, 0,
+        -2, 0,
+        -1, 0,
+
+        // GMT
+        0, 0,
+
+        // GMT+1 → GMT+3
+        1, 0,
+        2, 0,
+        3, 0,
+
+        // GMT+3:30 → GMT+14
+        3, 30,
+        4, 0,
+        4, 30,
+        5, 0,
+        5, 30,
+        5, 45,
+        6, 0,
+        6, 30,
+        7, 0,
+        8, 0,
+        8, 45,
+        9, 0,
+        9, 30,
+        9, 45,
+        10, 0,
+        10, 30,
+        11, 0,
+        11, 30,
+        12, 0,
+        12, 45,
+        13, 0,
+        13, 45,
+        14, 0
+    ]
         
     init(peripheral: Peripheral) {
         self.peripheral = peripheral
@@ -1143,51 +1197,132 @@ class BluetoothDataManager {
         return sendCommandWithResponse(data)
     }
     
-    // MARK: - SET COMMANDS
-    
-    func sendSetGMTTime(newDate: String, newTime: String, dateFormat: UInt8, timeFormat: UInt8) -> Observable<Bool> {
-        var payload: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
+    // ===============================
+    // MARK: - Set GMT Time (UTC-correct)
+    // ===============================
+
+    func sendSetGMTTime(
+        newDate: String,
+        newTime: String,
+        dateFormat: UInt8,
+        timeFormat: UInt8,
+        isSystemDateTime: Bool,
+        deviceTimeZoneIdx: UInt8
+    ) -> Observable<Bool> {
         
-        let dateSelected = "\(newDate) \(newTime)"  // giống String.format("%s %s:30")
-        
-        var dFormat = "dd.MM.yyyy"
-        if dateFormat == 1 {
-            dFormat = "MM.dd.yyyy"
-        }
-        
-        var tFormat = "HH:mm"
-        if timeFormat == 1 {
-            tFormat = "hh:mm a"
-        }
+        // Resolve formats
+        let dFormat = (dateFormat == 1) ? "MM.dd.yyyy" : "dd.MM.yyyy"
+        let tFormat = (timeFormat == 1) ? "hh:mm a" : "HH:mm"
         
         let formatter = DateFormatter()
-        formatter.dateFormat = String(format: "%@ %@", dFormat, tFormat)
-        formatter.locale = Locale.current
+        formatter.dateFormat = "\(dFormat) \(tFormat)"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         
-        guard let date = formatter.date(from: dateSelected) else {
-            PrintLog("Lỗi: Không thể parse date")
+        if isSystemDateTime {
+            formatter.timeZone = TimeZone.current
+        } else {
+            formatter.timeZone = deviceTimeZone(from: deviceTimeZoneIdx)
+        }
+        
+        let dateSelected = "\(newDate) \(newTime)"
+        
+        guard let localDate = formatter.date(from: dateSelected) else {
+            PrintLog("Parse date failed")
             return .just(false)
         }
         
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .second, .minute, .hour, .weekday, .day, .month], from: date)
+        // Convert to UTC depending on mode
+        let utcDate: Date
+        if isSystemDateTime {
+            // Date already represents absolute time
+            utcDate = localDate
+        } else {
+            utcDate = localDate
+        }
         
-        payload[0] = UInt8(0)
-        payload[1] = UInt8(components.minute ?? 0)
-        payload[2] = UInt8((components.hour ?? 1)-1)
-        payload[3] = UInt8((components.weekday ?? 1) - 1) // 0: Sunday, 6: Saturday
-        payload[4] = UInt8(components.day ?? 0)
-        payload[5] = UInt8((components.month ?? 0))
-        payload[6] = UInt8((components.year ?? 0) & 0xFF)
-        payload[7] = UInt8((components.year ?? 0) >> 8 & 0xFF)
+        // Extract UTC components
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(secondsFromGMT: 0)!
         
-        // Tạo gói lệnh
+        let c = utcCal.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second, .weekday],
+            from: utcDate
+        )
+        
+        // Build payload (SetGMTTime expects UTC)
+        var payload: [UInt8] = Array(repeating: 0, count: 8)
+        payload[0] = UInt8(c.second ?? 0)
+        payload[1] = UInt8(c.minute ?? 0)
+        payload[2] = UInt8(c.hour ?? 0)
+        
+        // Device weekday: 1=Mon ... 7=Sun
+        let swiftWeekday = c.weekday ?? 1 // 1=Sunday
+        payload[3] = (swiftWeekday == 1) ? 7 : UInt8(swiftWeekday - 1)
+        
+        payload[4] = UInt8(c.day ?? 1)
+        payload[5] = UInt8(c.month ?? 1)
+        payload[6] = UInt8((c.year ?? 0) & 0xFF)
+        payload[7] = UInt8(((c.year ?? 0) >> 8) & 0xFF)
+        
         let data = self.cmdData(for: cmd.SetGMTTime, payload: Data(payload))
         return self.sendCommandWithBoolResponse(data)
-            .flatMapLatest { ack in
-                return Observable.just(ack)
-            }
     }
+
+
+    // ===============================
+    // MARK: - Helpers
+    // ===============================
+
+    func deviceTimeZone(from idx: UInt8) -> TimeZone {
+        let hour = Int(tzArray[Int(idx) * 2])
+        let minute = Int(tzArray[Int(idx) * 2 + 1])
+        let seconds = hour * 3600 + minute * 60
+        return TimeZone(secondsFromGMT: seconds)!
+    }
+    
+//    func sendSetGMTTime(newDate: String, newTime: String, dateFormat: UInt8, timeFormat: UInt8) -> Observable<Bool> {
+//        var payload: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
+//        
+//        let dateSelected = "\(newDate) \(newTime)"  // giống String.format("%s %s:30")
+//        
+//        var dFormat = "dd.MM.yyyy"
+//        if dateFormat == 1 {
+//            dFormat = "MM.dd.yyyy"
+//        }
+//        
+//        var tFormat = "HH:mm"
+//        if timeFormat == 1 {
+//            tFormat = "hh:mm a"
+//        }
+//        
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = String(format: "%@ %@", dFormat, tFormat)
+//        formatter.locale = Locale.current
+//        
+//        guard let date = formatter.date(from: dateSelected) else {
+//            PrintLog("Lỗi: Không thể parse date")
+//            return .just(false)
+//        }
+//        
+//        let calendar = Calendar.current
+//        let components = calendar.dateComponents([.year, .second, .minute, .hour, .weekday, .day, .month], from: date)
+//        
+//        payload[0] = UInt8(0)
+//        payload[1] = UInt8(components.minute ?? 0)
+//        payload[2] = UInt8((components.hour ?? 1)-1)
+//        payload[3] = UInt8((components.weekday ?? 1) - 1) // 0: Sunday, 6: Saturday
+//        payload[4] = UInt8(components.day ?? 0)
+//        payload[5] = UInt8((components.month ?? 0))
+//        payload[6] = UInt8((components.year ?? 0) & 0xFF)
+//        payload[7] = UInt8((components.year ?? 0) >> 8 & 0xFF)
+//        
+//        // Tạo gói lệnh
+//        let data = self.cmdData(for: cmd.SetGMTTime, payload: Data(payload))
+//        return self.sendCommandWithBoolResponse(data)
+//            .flatMapLatest { ack in
+//                return Observable.just(ack)
+//            }
+//    }
     
     // userInfos dạng: Name|SurName|Phone|Email|Blood|EmName|EmSurName|EmPhone
     func sendSetUserInfo(_ userInfos: String) -> Observable<Bool> {
@@ -1611,7 +1746,8 @@ class BluetoothDataManager {
         
         var newDate = (writeData["SetDate"] as? String) ?? ""
         var newTime = (writeData["SetTime"] as? String) ?? ""
-        
+        PrintLog("newDate \(newDate)")
+        PrintLog("newTime \(newTime)")
         do {
             let deviceID = writeData.uint8(for: "DeviceID")
             let results = try DatabaseManager.shared.fetchData(from: "DeviceSettings",
@@ -1624,21 +1760,39 @@ class BluetoothDataManager {
             systemSettings.timeFormat = row.uint8Value(key: "TimeFormat")
             systemSettings.dateFormat = row.uint8Value(key: "DateFormat")
             
-            if DeviceSettings.shared.useSystemDateTime {
-                newDate = Utilities.getCurrentDateString(format: (systemSettings.dateFormat == 0) ? "dd.MM.yyyy":"MM.dd.yyyy")
-                newTime = Utilities.getCurrentDateString(format: (systemSettings.timeFormat == 0) ? "HH:mm":"hh:mm a")
+            let isSystem = DeviceSettings.shared.useSystemDateTime
+            if isSystem {
+                // Use phone system date/time
+                newDate = Utilities.getCurrentDateString(
+                    format: (systemSettings.dateFormat == 0) ? "dd.MM.yyyy" : "MM.dd.yyyy"
+                )
+                newTime = Utilities.getCurrentDateString(
+                    format: (systemSettings.timeFormat == 0) ? "HH:mm" : "hh:mm a"
+                )
+                
+                // Update device timezone index from phone
+                let idx = currentTimeZoneIndex()
+                if systemSettings.timeZoneIdxLocal != idx {
+                    PrintLog("systemSettings.timeZoneIdxLocal = \(systemSettings.timeZoneIdxLocal)")
+                    PrintLog("currentTimeZoneIndex = \(idx)")
+                    systemSettings.timeZoneIdxLocal = idx
+                }
             }
             
+            // 1) Send system settings first (timezoneIdxLocal may change here)
+            // 2) Then send GMT time computed correctly
             return sendSetSystemSettings(systemSettings: systemSettings)
                 .flatMap { _ in
-                    return self.sendSetGMTTime(newDate: newDate,
-                                               newTime: newTime,
-                                               dateFormat: systemSettings.dateFormat,
-                                               timeFormat: systemSettings.timeFormat)
+                    self.sendSetGMTTime(
+                        newDate: newDate,
+                        newTime: newTime,
+                        dateFormat: systemSettings.dateFormat,
+                        timeFormat: systemSettings.timeFormat,
+                        isSystemDateTime: isSystem,
+                        deviceTimeZoneIdx: systemSettings.timeZoneIdxLocal
+                    )
                 }
-                .map { success in
-                    success ? .success : .failure(error: nil)
-                }
+                .map { $0 ? .success : .failure(error: nil) }
         } catch {
             PrintLog("Failed to fetch data: \(error)")
             return .just(.failure(error: error.localizedDescription))
@@ -1709,7 +1863,8 @@ class BluetoothDataManager {
         //
         divedata["Units"] = settings.systemSettings?.units.decimalString
         divedata["Water"] = settings.systemSettings?.waterDensity.decimalString
-        divedata["Light"] = settings.systemSettings?.backlightLevel.decimalString
+        divedata["Light"] = settings.systemSettings?.backlightLevel.decimalString // Davinci (display percent 10% -> 100%)
+        divedata["backlightDimTime"] = settings.systemSettings?.backlightDimTime_s.decimalString // Skiff / Spirit (display in xx SEC)
         divedata["Sound"] = settings.systemSettings?.buzzerMode.decimalString
         //
         
@@ -2071,6 +2226,25 @@ class BluetoothDataManager {
         }
         
         return result
+    }
+    
+    func currentTimeZoneIndex() -> UInt8 {
+        let tz = TimeZone.current
+        let offsetSeconds = tz.secondsFromGMT(for: Date())
+
+        let totalMinutes = offsetSeconds / 60
+        let hour = Int8(totalMinutes / 60)
+        let minute = Int8(abs(totalMinutes % 60))
+
+        let count = tzArray.count / 2
+        for i in 0..<count {
+            if tzArray[i * 2] == hour &&
+               tzArray[i * 2 + 1] == minute {
+                PrintLog("FOUND TIME ZONE INDEX: \(i)")
+                return UInt8(i)
+            }
+        }
+        return 0
     }
     
 }

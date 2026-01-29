@@ -12,10 +12,8 @@ class LogSettingsUsedViewController: BaseViewController {
 
     @IBOutlet weak var tableView: UITableView!
     
-    let titleData = ["Units", "Light", "Sound", "Water", "Sample Rate", "Safety Stop", "Deep Stop", "Depth Alarm", "Dive Time Alarm", "No Deco Alarm", "Oxtox Alarm"]
-    
-    var profileValues = ["M - °C", "10 SEC", "ON", "SALT", "2 SEC", "3 M - 5 MIN", "OFF", "30 M", "OFF", "10 MIN", "OFF"]
-    
+    var titleData = ["Units", "Light", "Sound", "Water", "Sample Rate", "Safety Stop", "Deep Stop", "Depth Alarm", "Dive Time Alarm", "No Deco Alarm", "Oxtox Alarm"]
+        
     var diveLog: Row!
     
     var unitOfDive: Int = 1
@@ -58,8 +56,21 @@ extension LogSettingsUsedViewController: UITableViewDataSource, UITableViewDeleg
         case 0:
             value = unitOfDive == M ? "M - °C":"FT - °F"
         case 1:
-            let light = diveLog.stringValue(key: "Light").toInt()
-            value = String(format: "%d%%", light)
+            switch diveLog.stringValue(key: "ModelID").toInt() {
+            case C_SKI, C_SPI:
+                let backlightDimTime = diveLog.stringValue(key: "BacklightDimTime").toInt()
+                if backlightDimTime == 0 {
+                    value = OFF
+                } else {
+                    value = String(format: "%02d SEC", backlightDimTime)
+                }
+                break
+            default: // DAV
+                value = String(format: "%d%%", diveLog.stringValue(key: "Light").toInt())
+                titleData[1] = "Brightness"
+                break
+            }
+            
         case 2:
             let sound = diveLog.stringValue(key: "Sound").toInt()
             if sound == 0 {

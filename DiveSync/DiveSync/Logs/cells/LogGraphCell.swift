@@ -9,6 +9,21 @@ import UIKit
 import DGCharts
 import GRDB
 
+enum DiveStrokeState {
+    case normal
+    case ascentFast
+    case deco
+    case viol
+}
+
+struct DiveChartPoint {
+    let entry: ChartDataEntry
+    let alarmId: UInt8
+    let alarmId2: UInt8
+    let errors: UInt8
+    let decoStopDepth: Int
+}
+
 class LogGraphCell: UICollectionViewCell {
     
     @IBOutlet var lineChartView: LineChartView!
@@ -18,7 +33,9 @@ class LogGraphCell: UICollectionViewCell {
     @IBOutlet weak var tempLb: UILabel!
     @IBOutlet weak var startTankLb: UILabel!
     @IBOutlet weak var endTankLb: UILabel!
+    @IBOutlet weak var msgLb: UILabel!
     
+    var diveChartPoints: [DiveChartPoint] = []
     var chartEntries: [ChartDataEntry] = []
     var xAsisValueLabelArray: [Int] = []
     
@@ -44,36 +61,176 @@ class LogGraphCell: UICollectionViewCell {
         
     }
     
+    func strokeState(prev: DiveChartPoint, curr: DiveChartPoint) -> DiveStrokeState {
+        
+        // OR để tránh mất alarm ở biên
+        //let alarm1 = AlarmId1(rawValue: prev.alarmId | curr.alarmId)
+        //let alarm2 = AlarmId2(rawValue: prev.alarmId2 | curr.alarmId2)
+        let alarm1 = AlarmId1(rawValue: curr.alarmId)
+        let errors = DiveErrors(rawValue: prev.errors | curr.errors)
+        
+        // VIOLATION → ascentFast
+        if errors.isViolation {
+            return .viol
+        }
+        
+        // DECO → dựa vào decoStopDepth
+        if curr.decoStopDepth > 0 && curr.decoStopDepth < 0xFFFF {
+            return .deco
+        }
+        
+        
+        // ASCENT SPEED → ascentFast
+        if alarm1.contains(.ascentSpeed) {
+            return .ascentFast
+        }
+        
+        return .normal
+    }
+    
     func updateChartFromDiveProfile() {
         guard !diveProfile.isEmpty else { return }
 
         let unitOfDive = diveLog.stringValue(key: "Units").toInt()
-        chartEntries = diveProfile.compactMap { row in
+        let errors = diveLog.stringValue(key: "Errors").toInt()
+        
+        var diveChartPoints: [DiveChartPoint] = []
+        
+        diveChartPoints = diveProfile.compactMap { row in
             let time = row.stringValue(key: "DiveTime").toDouble()
             var depth = row.stringValue(key: "DepthFT").toDouble() / 10
+            
             if unitOfDive == FT {
                 depth = convertMeter2Feet(depth)
             }
             //let depthM = depthFT * 0.3048 // Feet → meters
-            return ChartDataEntry(x: time, y: depth)
+            
+            let alarmId = row.stringValue(key: "AlarmID").toInt()
+            let alarmId2 = row.stringValue(key: "AlarmID2").toInt()
+            let decoStopDepth = row.stringValue(key: "DecoStopDepthFT").toInt()
+            
+            return DiveChartPoint(
+                entry: ChartDataEntry(x: time, y: depth),
+                alarmId: UInt8(alarmId),
+                alarmId2: UInt8(alarmId2),
+                errors: UInt8(errors),
+                decoStopDepth: decoStopDepth
+            )
         }
-
+        
+        /*
+        diveChartPoints.sort {
+            $0.entry.x < $1.entry.x
+        }
+         */
+        
+        chartEntries.removeAll()
+        chartEntries = diveChartPoints.map { $0.entry }
+        
+        /*
+        for i in 1..<chartEntries.count {
+            if chartEntries[i].x < chartEntries[i - 1].x {
+                print("❌ X not sorted:",
+                      chartEntries[i - 1].x,
+                      "→",
+                      chartEntries[i].x)
+            }
+        }
+        */
+        
         maxTime = chartEntries.map(\.x).max() ?? 0
         maxDepth = chartEntries.map(\.y).max() ?? 0
         
-        let dataSet = LineChartDataSet(entries: chartEntries, label: "")
-        dataSet.mode = .cubicBezier
-        dataSet.drawCirclesEnabled = false
-        dataSet.lineWidth = 1.2
-        dataSet.setColor(UIColor.B_3)
-        dataSet.fillAlpha = 1
-        dataSet.drawFilledEnabled = true
-        dataSet.fillColor = UIColor.B_3
-        dataSet.valueTextColor = .clear
+        let fillSet = LineChartDataSet(entries: chartEntries, label: "")
+        fillSet.mode = .linear
+        fillSet.drawCirclesEnabled = false
+        fillSet.lineWidth = 1.2
+        fillSet.setColor(UIColor.B_3)
+        fillSet.fillAlpha = 1
+        fillSet.drawFilledEnabled = true
+        fillSet.fillColor = UIColor.B_3
+        fillSet.valueTextColor = .clear
+        
+        ///
+        var dataSets: [LineChartDataSet] = []
+        dataSets.append(fillSet)
+
+        // ---- THÊM TỪ ĐÂY ----
+
+        var currentEntries: [ChartDataEntry] = []
+        var currentState: DiveStrokeState?
+
+        func color(for state: DiveStrokeState) -> UIColor {
+            switch state {
+            case .normal:
+                return UIColor.B_3          // giống fill
+            case .ascentFast:
+                return .yellow
+            case .deco:
+                return .red
+            case .viol:
+                return UIColor(red: 0.6, green: 0, blue: 0, alpha: 1) // đỏ đậm
+            }
+        }
+
+        for i in 1..<diveChartPoints.count {
+            let prev = diveChartPoints[i - 1]
+            let curr = diveChartPoints[i]
+
+            let state = strokeState(
+                prev: prev,
+                curr: curr
+            )
+
+            if currentState == nil {
+                currentState = state
+                currentEntries = [prev.entry, curr.entry]
+                continue
+            }
+
+            if state != currentState {
+                /*
+                let set = LineChartDataSet(entries: currentEntries, label: "")
+                set.drawCirclesEnabled = false
+                set.drawValuesEnabled = false
+                set.lineWidth = 1.2
+                set.setColor(color(for: currentState!))
+                dataSets.append(set)
+                */
+                let sets = makeStrokeSets(
+                    entries: currentEntries,
+                    baseColor: color(for: currentState!)
+                )
+                dataSets.append(contentsOf: sets)
+                
+                currentEntries = [prev.entry, curr.entry]
+                currentState = state
+            } else {
+                currentEntries.append(curr.entry)
+            }
+        }
+
+        // append đoạn cuối
+        if let state = currentState {
+            /*
+            let set = LineChartDataSet(entries: currentEntries, label: "")
+            set.drawCirclesEnabled = false
+            set.drawValuesEnabled = false
+            set.drawFilledEnabled = false
+            set.lineWidth = 1.2
+            set.setColor(color(for: state))
+            dataSets.append(set)
+            */
+            let sets = makeStrokeSets(
+                entries: currentEntries,
+                baseColor: color(for: state)
+            )
+            dataSets.append(contentsOf: sets)
+        }
         
         // Gán dữ liệu vào biểu đồ
-        let chartData = LineChartData(dataSet: dataSet)
-        lineChartView.data = chartData
+        lineChartView.data = LineChartData(dataSets: dataSets)
+        //lineChartView.data = LineChartData(dataSet: fillSet)
         
         // Add optional styling
         lineChartView.legend.enabled = false
@@ -188,104 +345,6 @@ class LogGraphCell: UICollectionViewCell {
 // MARK - CHART
 extension LogGraphCell: ChartViewDelegate {
     
-    /*
-    // Hàm cập nhật dữ liệu
-    func configureChart(with data:[(time: Double, depth: Double)]) {
-        maxTime = depthData.map { $0.time }.max() ?? 0
-        maxGas = depthData.map { $0.depth }.max() ?? 0
-        
-        // Create an array of ChartDataEntry from dive data
-        chartEntries = depthData.map { ChartDataEntry(x: $0.time, y: $0.depth) }
-        
-        let dataSet = LineChartDataSet(entries: chartEntries, label: "Gas Used")
-        dataSet.mode = .cubicBezier
-        dataSet.drawCirclesEnabled = false
-        dataSet.lineWidth = 1.2
-        dataSet.setColor(UIColor.B_3)
-        dataSet.fillAlpha = 1
-        dataSet.drawFilledEnabled = true
-        dataSet.fillColor = UIColor.B_3
-        dataSet.valueTextColor = .clear
-        
-        // Gán dữ liệu vào biểu đồ
-        let chartData = LineChartData(dataSet: dataSet)
-        lineChartView.data = chartData
-        
-        // Add optional styling
-        lineChartView.legend.enabled = false
-        
-        // Invert the y-axis if you want depth to increase downwards
-        lineChartView.leftAxis.enabled = false
-        lineChartView.leftAxis.inverted = true
-        lineChartView.rightAxis.enabled = true
-        
-        lineChartView.rightAxis.axisMinimum = 0
-        lineChartView.rightAxis.axisMaximum = maxGas + 10 // Adjust as per max depth
-        lineChartView.rightAxis.inverted = true
-        lineChartView.rightAxis.labelTextColor = .white
-        
-        lineChartView.xAxis.labelPosition = .bottom
-        lineChartView.xAxis.axisMinimum = 0
-        lineChartView.xAxis.axisMaximum = maxTime
-        lineChartView.xAxis.granularityEnabled = true
-        lineChartView.xAxis.granularity = 60 // Mỗi nhãn cách nhau xx giây --> sample rate
-        lineChartView.xAxis.valueFormatter = DefaultAxisValueFormatter { (value, axis) -> String in
-            let minutes = Int(value) / 60
-            return "\(minutes)"
-        }
-        lineChartView.xAxis.labelTextColor = .white
-        
-        // Zoom
-        lineChartView.scaleXEnabled = true        // Cho phép zoom theo trục X
-        lineChartView.scaleYEnabled = false        // Cho phép zoom theo trục Y
-        lineChartView.doubleTapToZoomEnabled = false // Cho phép zoom khi double-tap
-        lineChartView.pinchZoomEnabled = true      // Cho phép zoom bằng 2 ngón tay
-        lineChartView.highlightPerDragEnabled = true // Cho phép highlight khi kéo
-        //
-        
-        // Hide vertical grid lines (X-axis)
-        lineChartView.xAxis.drawGridLinesEnabled = true
-        lineChartView.xAxis.gridColor = .white
-        
-        lineChartView.delegate = self // Set delegate
-        
-        lineChartView.backgroundColor = UIColor.B_3
-        
-        lineChartView.drawGridBackgroundEnabled = true
-        lineChartView.gridBackgroundColor = UIColor.B_1
-        
-        // Cấu hình trục phải
-        lineChartView.rightAxis.enabled = true
-        lineChartView.rightAxis.drawLabelsEnabled = true
-        lineChartView.rightAxis.drawGridLinesEnabled = true
-        lineChartView.rightAxis.gridColor = .white
-        
-        lineChartView.dragEnabled = false
-        lineChartView.highlightPerDragEnabled = false
-        
-        // Tạo đường đứt nét
-        let xAxis = lineChartView.xAxis
-        xAxis.drawGridLinesEnabled = true
-        xAxis.gridColor = .white
-        xAxis.gridLineWidth = 1
-        xAxis.gridLineDashLengths = [4, 2] // 4pt nét, 2pt khoảng trắng
-        
-        // Đứt nét trục Y trái
-        let yAxis = lineChartView.leftAxis
-        yAxis.drawGridLinesEnabled = true
-        yAxis.gridColor = .white
-        yAxis.gridLineDashLengths = [4, 2]
-        
-        // Set Maximum/Minimum zoom
-        lineChartView.viewPortHandler.setMinimumScaleX(1.0) // Minimum zoom level for X-axis
-        lineChartView.viewPortHandler.setMaximumScaleX(5.0) // Maximum zoom in the X direction
-        
-        // Create and set the custom marker
-        let marker = CustomHighLightMarkerView()
-        marker.chartView = lineChartView
-        lineChartView.marker = marker
-    }
-    */
     func chartScaled(_ chartView: ChartViewBase, scaleX: CGFloat, scaleY: CGFloat) {
         PrintLog("Final zoom levels - X: \(chartView.viewPortHandler.scaleX), Y: \(chartView.viewPortHandler.scaleY)")
         
@@ -297,6 +356,13 @@ extension LogGraphCell: ChartViewDelegate {
         if let index = chartEntries.firstIndex(where: { $0.x == entry.x && $0.y == entry.y }) {
             PrintLog("Selected data index: \(index)")
             let selectedRow = diveProfile[index]
+            
+            let alarmString = buildAlarmString(
+                alarmId1: selectedRow.stringValue(key: "ALARMID"),
+                alarmId2: selectedRow.stringValue(key: "ALARMID2")
+            )
+            
+            msgLb.text = alarmString
             
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10
@@ -343,6 +409,34 @@ extension LogGraphCell: ChartViewDelegate {
         startTankLb.text = "---"
         endTankLb.text = "---"
         
+    }
+}
+
+extension LogGraphCell {
+    func makeStrokeSets(
+        entries: [ChartDataEntry],
+        baseColor: UIColor
+    ) -> [LineChartDataSet] {
+
+        // Line nền (nhạt – dày → giả bóng)
+        let soft = LineChartDataSet(entries: entries, label: "")
+        soft.drawCirclesEnabled = false
+        soft.drawValuesEnabled = false
+        soft.drawFilledEnabled = false
+        soft.lineWidth = 3.0
+        soft.mode = .cubicBezier
+        soft.setColor(baseColor.withAlphaComponent(0.33))
+        
+        // Line chính (đậm – mỏng)
+        let sharp = LineChartDataSet(entries: entries, label: "")
+        sharp.drawCirclesEnabled = false
+        sharp.drawValuesEnabled = false
+        sharp.drawFilledEnabled = false
+        sharp.lineWidth = 1.2
+        soft.mode = .cubicBezier
+        sharp.setColor(baseColor)
+
+        return [soft, sharp]
     }
 }
 

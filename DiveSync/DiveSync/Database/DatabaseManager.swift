@@ -126,6 +126,15 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v1_add_column_BacklightDimTime_to_DiveLog") { db in
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "BacklightDimTime" }) {
+
+                try db.alter(table: "DiveLog") { t in
+                    t.add(column: "BacklightDimTime", .text)
+                }
+            }
+        }
+        
         /*
         // 🔹 Migration 2: thêm bảng mới
         migrator.registerMigration("v2_create_table_SyncHistory") { db in

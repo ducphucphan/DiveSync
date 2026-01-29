@@ -141,6 +141,7 @@ struct DiveLogMapper: RowMapper {
         dict["WaterDensity"] = row.stringValue(key: "Water")
         dict["DiveStatus"] = ""
         dict["BacklightLevel"] = row.stringValue(key: "Light")
+        dict["BacklightDimTime"] = row.stringValue(key: "BacklightDimTime")
         
         dict["TankTurnAlarmOn"] = safeValue(row.stringValue(key: "TankTurnAlarmOn"))
         dict["TankEndAlarmOn"] = safeValue(row.stringValue(key: "TankEndAlarmOn"))
@@ -273,6 +274,7 @@ struct DiveLogMapper: RowMapper {
         dbDict["Sound"] = convertToDatabaseValue(json["BuzzerMode"])
         dbDict["Water"] = convertToDatabaseValue(json["WaterDensity"])
         dbDict["Light"] = convertToDatabaseValue(json["BacklightLevel"])
+        dbDict["BacklightDimTime"] = convertToDatabaseValue(json["BacklightDimTime"])
         
         dbDict["TankTurnAlarmOn"] = convertToDatabaseValue(json["TankTurnAlarmOn"])
         dbDict["TankEndAlarmOn"] = convertToDatabaseValue(json["TankEndAlarmOn"])

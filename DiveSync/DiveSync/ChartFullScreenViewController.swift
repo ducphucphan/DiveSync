@@ -12,6 +12,7 @@ class ChartFullScreenViewController: UIViewController {
     @IBOutlet weak var chartViewContent: UIView!
     @IBOutlet weak var bottomView: UIView!
     
+    @IBOutlet weak var msgLb: UILabel!
     @IBOutlet weak var depthLb: UILabel!
     @IBOutlet weak var timeLb: UILabel!
     @IBOutlet weak var tempLb: UILabel!
@@ -74,6 +75,13 @@ extension ChartFullScreenViewController: ChartViewDelegate {
         if let index = chartEntries.firstIndex(where: { $0.x == entry.x && $0.y == entry.y }) {
             PrintLog("Selected data index: \(index)")
             let selectedRow = diveProfile[index]
+            
+            let alarmString = buildAlarmString(
+                alarmId1: selectedRow.stringValue(key: "ALARMID"),
+                alarmId2: selectedRow.stringValue(key: "ALARMID2")
+            )
+            
+            msgLb.text = alarmString
             
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10

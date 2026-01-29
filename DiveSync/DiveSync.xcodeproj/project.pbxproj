@@ -54,6 +54,7 @@
 		48537A842CFFF66500AB116F /* CustomLineChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */; };
 		485718F52E6E818700ADAA25 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485718F42E6E818700ADAA25 /* AppSettings.swift */; };
 		485A87562E8CD6E800741E77 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485A87552E8CD6E800741E77 /* PermissionViewController.swift */; };
+		485B0B342F221B1D00B41BAC /* AlarmDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485B0B332F221B1D00B41BAC /* AlarmDecoder.swift */; };
 		485CE1672E79726800F2D61E /* Data+STM32WBControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1652E79726800F2D61E /* Data+STM32WBControl.swift */; };
 		485CE1682E79726800F2D61E /* Data+STM32WBUpload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1662E79726800F2D61E /* Data+STM32WBUpload.swift */; };
 		485CE16A2E7972C900F2D61E /* MemoryLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485CE1692E7972C900F2D61E /* MemoryLayout.swift */; };
@@ -304,6 +305,7 @@
 		48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLineChartRenderer.swift; sourceTree = "<group>"; };
 		485718F42E6E818700ADAA25 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		485A87552E8CD6E800741E77 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
+		485B0B332F221B1D00B41BAC /* AlarmDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmDecoder.swift; sourceTree = "<group>"; };
 		485CE1652E79726800F2D61E /* Data+STM32WBControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+STM32WBControl.swift"; sourceTree = "<group>"; };
 		485CE1662E79726800F2D61E /* Data+STM32WBUpload.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+STM32WBUpload.swift"; sourceTree = "<group>"; };
 		485CE1692E7972C900F2D61E /* MemoryLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryLayout.swift; sourceTree = "<group>"; };
@@ -798,6 +800,7 @@
 				488F75AB2E5C9373005BE406 /* Logger.swift */,
 				4808428B2E68F63B007F5A11 /* BottomPopupViewController.swift */,
 				4803EF9C2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift */,
+				485B0B332F221B1D00B41BAC /* AlarmDecoder.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -1336,6 +1339,7 @@
 				486F23DB2EA0E50500A655D9 /* APIRequest.swift in Sources */,
 				481404FA2DC8F4D8000489A1 /* LogCell.swift in Sources */,
 				483D80F32D191ABB009041E2 /* CustomHighLightRenderer.swift in Sources */,
+				485B0B342F221B1D00B41BAC /* AlarmDecoder.swift in Sources */,
 				481F49F62D07EA6900EB677F /* ShadowTableViewCell.swift in Sources */,
 				489DE34D2E49D7A5005CF407 /* MDepthInputAlert.swift in Sources */,
 				480C05252D9D2C3E0036D04E /* DeviceSectionHeaderView.swift in Sources */,
@@ -1585,7 +1589,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1608,7 +1612,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1628,7 +1632,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1651,7 +1655,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

@@ -105,7 +105,7 @@ class SubSettingsViewController: BaseViewController {
         
         searchType = .kSetting
         syncType = .kUploadDateTime
-        if let modelId = device.modelId, modelId == C_DAV {
+        if let rowid = rowId, rowid == "set_owner_info", let modelId = device.modelId, modelId == C_DAV {
             syncType = .kUploadOwnerInfo
         }
         
