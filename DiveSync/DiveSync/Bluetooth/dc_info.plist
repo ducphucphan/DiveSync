@@ -56,5 +56,17 @@
 		<string>GRAVITON</string>
 		<string>7182</string>
 	</array>
+	<key>SHERWOOD-Logic+</key>
+	<array>
+		<string>Sherwood</string>
+		<string>LOGIC+</string>
+		<string>7679</string>
+	</array>
+	<key>CENTAURI</key>
+	<array>
+		<string>Genesis</string>
+		<string>CENTAURI</string>
+		<string>6769</string>
+	</array>
 </dict>
 </plist>

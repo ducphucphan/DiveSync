@@ -11,733 +11,733 @@ import RxSwift
 import CoreBluetooth
 import ProgressHUD
 
-struct Constants {
-    static let PKT_SIZE     = 135
-    static let PKT_SIZE_250 = 250
-    static let BLOCK_SIZE   = 256
-    
-    static let HEADER_PAKET_LEN = 5
-    
-    static let HEX_DATA = 0
-    static let HEX_EOF  = 1
-}
-
-struct cmd {
-    static let GetDeviceModel: UInt16       = 0x0010
-    static let GetDeviceSerial: UInt16      = 0x0012
-    static let GetDeviceFw: UInt16          = 0x0014
-    static let GetDeviceBleName: UInt16     = 0x0016
-    
-    static let GetFirmwareLCD: UInt16       = 0x0018
-    
-    static let GetUserName: UInt16          = 0x0300
-    static let GetUserSurName: UInt16       = 0x0302
-    static let GetUserPhone: UInt16         = 0x0304
-    static let GetUser: UInt16              = 0x0300
-    static let GetUserEmail: UInt16         = 0x0306
-    static let GetUserBlood: UInt16         = 0x0308
-    static let GetUserEmName: UInt16        = 0x030A
-    static let GetUserEmSurName: UInt16     = 0x030C
-    static let GetUserEmPhone: UInt16       = 0x030E
-    
-    static let GetSystemSettings: UInt16    = 0x0100
-    
-    static let GetScubaSettings: UInt16     = 0x0400
-    
-    static let GetLastLogID: UInt16         = 0x0600
-    static let GetLog: UInt16               = 0x0601
-    static let GetLogStatistics: UInt16     = 0x0602
-    static let StartProfileDownload: UInt16 = 0x0610
-    static let GetProfileSample: UInt16     = 0x0611
-    static let GetProfileSamples: UInt16    = 0x0612
-    
-    static let SetSystemSettings: UInt16    = 0x0101
-    static let SetScubaSettings: UInt16     = 0x0401
-    static let SetUserName: UInt16          = 0x0301
-    static let SetUserSurName: UInt16       = 0x0303
-    static let SetUserPhone: UInt16         = 0x0305
-    static let SetUserEmail: UInt16         = 0x0307
-    static let SetUserBlood: UInt16         = 0x0309
-    static let SetUserEmName: UInt16        = 0x030B
-    static let SetUserEmSurName: UInt16     = 0x030D
-    static let SetUserEmPhone: UInt16       = 0x030F
-    
-    static let SetGMTTime: UInt16           = 0x0050
-    
-    static let UploadOwnerInfoScreenHeader: UInt16      = 0x0710
-    static let UploadOwnerInfoScreenData: UInt16        = 0x0711
-    
-}
-
-struct DeviceDataSettings {
-    var serialNo: Int?
-    var firmwareRev: String?
-    var firmwareRevLCD: String?
-    var bleName: String?
-    var userInfo: String?
-    var systemSettings: SystemSettings?
-    var scubaSettings: ScubaSettings?
-    var statisticsData: Data?
-}
-
-struct DiveRecord {
-    let diveNo: Int
-    let logData: Data       // raw log data (if needed for parsing later)
-    let profiles: [Data]     // list of 32-byte raw sample blocks
-}
-
-class BluetoothDataManager {
-    let peripheral: Peripheral
-    
-    var disposeBag = DisposeBag()
-    
-    var notifyDisposable: Disposable?
-    
-    private var writeCharacteristic: Characteristic?
-    private var readCharacteristic: Characteristic?
-    private var otaCharacteristic: Characteristic?
-    
-    private var otaControlCharacteristic: Characteristic?
-    private var otaRawDataCharacteristic: Characteristic?
-    private var otaNotificationCharacteristic: Characteristic?
-    
-    var firmwareRev = ""
-    
-    var SerialNo = 0
-    var ModelID = 0
-    
-    var lastLogID: UInt8 = 0x00
-    
-    var totalSampleCount = 0
-    var completedSampleCount = 0
-    
-    var uploadOwnerInfoData: Data!
-    
-    let tzArray: [Int8] = [
-        // GMT-12 → GMT-9:30
-        -12, 0,
-        -11, 0,
-        -10, 0,
-        -9, 30,
-
-        // GMT-9 → GMT-1
-        -9, 0,
-        -8, 0,
-        -7, 0,
-        -6, 0,
-        -5, 0,
-        -4, 30,
-        -4, 0,
-        -3, 30,
-        -3, 0,
-        -2, 0,
-        -1, 0,
-
-        // GMT
-        0, 0,
-
-        // GMT+1 → GMT+3
-        1, 0,
-        2, 0,
-        3, 0,
-
-        // GMT+3:30 → GMT+14
-        3, 30,
-        4, 0,
-        4, 30,
-        5, 0,
-        5, 30,
-        5, 45,
-        6, 0,
-        6, 30,
-        7, 0,
-        8, 0,
-        8, 45,
-        9, 0,
-        9, 30,
-        9, 45,
-        10, 0,
-        10, 30,
-        11, 0,
-        11, 30,
-        12, 0,
-        12, 45,
-        13, 0,
-        13, 45,
-        14, 0
-    ]
+    struct Constants {
+        static let PKT_SIZE     = 135
+        static let PKT_SIZE_250 = 250
+        static let BLOCK_SIZE   = 256
         
-    init(peripheral: Peripheral) {
-        self.peripheral = peripheral
+        static let HEADER_PAKET_LEN = 5
+        
+        static let HEX_DATA = 0
+        static let HEX_EOF  = 1
     }
-    
-    /// Discover services and characteristics needed for communication
-    func discoverServicesAndCharacteristics(servicesUUID: [CBUUID], writeCharUUID: CBUUID, readCharUUID: CBUUID) -> Observable<Void> {
-        return peripheral.discoverServices(servicesUUID)
-            .asObservable() // Chuyển đổi Single thành Observable
-            .flatMap { services -> Observable<[Characteristic]> in
-                PrintLog("🔍 Discovered services:")
-                services.forEach { PrintLog("→ \($0.uuid.uuidString)") }
-                
-                guard let service = services.first else {
-                    return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
-                }
-                return service.discoverCharacteristics([
-                    writeCharUUID,
-                    readCharUUID,
-                    BLEConstants.OTA.reboot
-                ]).asObservable()
-            }
-            .do(onNext: { [weak self] characteristics in
-                PrintLog("✅ Discovered characteristics:")
-                characteristics.forEach { PrintLog("→ \($0.uuid.uuidString)") }
-                
-                self?.writeCharacteristic = characteristics.first { $0.uuid == writeCharUUID }
-                self?.readCharacteristic = characteristics.first { $0.uuid == readCharUUID }
-                self?.otaCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.reboot}
-                
-            })
-            .map { _ in ()} // Đảm bảo trả về Observable<Void>
+
+    struct cmd {
+        static let GetDeviceModel: UInt16       = 0x0010
+        static let GetDeviceSerial: UInt16      = 0x0012
+        static let GetDeviceFw: UInt16          = 0x0014
+        static let GetDeviceBleName: UInt16     = 0x0016
+        
+        static let GetFirmwareLCD: UInt16       = 0x0018
+        
+        static let GetUserName: UInt16          = 0x0300
+        static let GetUserSurName: UInt16       = 0x0302
+        static let GetUserPhone: UInt16         = 0x0304
+        static let GetUser: UInt16              = 0x0300
+        static let GetUserEmail: UInt16         = 0x0306
+        static let GetUserBlood: UInt16         = 0x0308
+        static let GetUserEmName: UInt16        = 0x030A
+        static let GetUserEmSurName: UInt16     = 0x030C
+        static let GetUserEmPhone: UInt16       = 0x030E
+        
+        static let GetSystemSettings: UInt16    = 0x0100
+        
+        static let GetScubaSettings: UInt16     = 0x0400
+        
+        static let GetLastLogID: UInt16         = 0x0600
+        static let GetLog: UInt16               = 0x0601
+        static let GetLogStatistics: UInt16     = 0x0602
+        static let StartProfileDownload: UInt16 = 0x0610
+        static let GetProfileSample: UInt16     = 0x0611
+        static let GetProfileSamples: UInt16    = 0x0612
+        
+        static let SetSystemSettings: UInt16    = 0x0101
+        static let SetScubaSettings: UInt16     = 0x0401
+        static let SetUserName: UInt16          = 0x0301
+        static let SetUserSurName: UInt16       = 0x0303
+        static let SetUserPhone: UInt16         = 0x0305
+        static let SetUserEmail: UInt16         = 0x0307
+        static let SetUserBlood: UInt16         = 0x0309
+        static let SetUserEmName: UInt16        = 0x030B
+        static let SetUserEmSurName: UInt16     = 0x030D
+        static let SetUserEmPhone: UInt16       = 0x030F
+        
+        static let SetGMTTime: UInt16           = 0x0050
+        
+        static let UploadOwnerInfoScreenHeader: UInt16      = 0x0710
+        static let UploadOwnerInfoScreenData: UInt16        = 0x0711
+        
     }
-    
-    func discoverServicesAndCharacteristicsForOTA(servicesUUID: [CBUUID], characteristics:[CBUUID]) -> Observable<Void> {
-        return peripheral.discoverServices(servicesUUID)
-            .asObservable() // Chuyển đổi Single thành Observable
-            .flatMap { services -> Observable<[Characteristic]> in
-                PrintLog("🔍 Discovered services:")
-                services.forEach { PrintLog("→ \($0.uuid.uuidString)") }
-                
-                guard let service = services.first else {
-                    return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
-                }
-                return service.discoverCharacteristics(characteristics).asObservable()
-            }
-            .do(onNext: { [weak self] characteristics in
-                PrintLog("✅ Discovered characteristics:")
-                characteristics.forEach { PrintLog("→ \($0.uuid.uuidString)") }
-                
-                self?.otaControlCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.controlAddress }
-                self?.otaRawDataCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.rawData }
-                self?.otaNotificationCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.notification}
-                
-                if let notificationChar = self?.otaNotificationCharacteristic {
-                    notificationChar.observeValueUpdateAndSetNotification()
-                        .subscribe(onNext: { characteristic in
-                            if let value = characteristic.value {
-                                PrintLog("🔔 OTA Notify value: \(value.hexString)")
-                            }
-                        }, onError: { error in
-                            PrintLog("❌ Enable OTA notification failed: \(error)")
-                        })
-                        .disposed(by: self?.disposeBag ?? DisposeBag())
-                }
-                
-            })
-            .map { _ in ()} // Đảm bảo trả về Observable<Void>
+
+    struct DeviceDataSettings {
+        var serialNo: Int?
+        var firmwareRev: String?
+        var firmwareRevLCD: String?
+        var bleName: String?
+        var userInfo: String?
+        var systemSettings: SystemSettings?
+        var scubaSettings: ScubaSettings?
+        var statisticsData: Data?
     }
-    
-    func waitForResponse() -> Observable<Data?> {
-        guard let readChar = readCharacteristic else {
-            return Observable.error(NSError(domain: "Bluetooth", code: -1,
-                                            userInfo: [NSLocalizedDescriptionKey: "Read characteristic not found"]))
-        }
-        
-        return readChar.readValue() // <- không phải observeValueUpdate
-            .asObservable()
-            .compactMap { $0.value }
+
+    struct DiveRecord {
+        let diveNo: Int
+        let logData: Data       // raw log data (if needed for parsing later)
+        let profiles: [Data]     // list of 32-byte raw sample blocks
     }
-    
-    private func writeDataDone(_ data: Data) throws -> Bool {
-        let bytes = [UInt8](data)
+
+    class BluetoothDataManager {
+        let peripheral: Peripheral
         
-        if bytes.count == 3 && bytes[0] == 0xFF && bytes[1] == 0xEE && bytes[2] == 0xDD {
-            throw NSError(domain: "Bluetooth", code: -9999, userInfo: [NSLocalizedDescriptionKey: "System not ready (FF EE DD)"])
-        }
+        var disposeBag = DisposeBag()
         
-        guard bytes.count >= 6 else {
-            throw NSError(domain: "Bluetooth", code: -2, userInfo: [NSLocalizedDescriptionKey: "Response too short"])
-        }
+        var notifyDisposable: Disposable?
         
-        let statusByte = bytes[4]
+        private var writeCharacteristic: Characteristic?
+        private var readCharacteristic: Characteristic?
+        private var otaCharacteristic: Characteristic?
         
-        if statusByte == 0x06 {
-            return true
-        } else {
-            // Lấy mã lỗi từ byte tiếp theo (bytes[5])
-            if bytes.count > 5 {
-                let errorCode = bytes[5]
-                let error = DCResponseError.from(code: errorCode)
-                throw NSError(
-                    domain: "Bluetooth",
-                    code: Int(errorCode),
-                    userInfo: [NSLocalizedDescriptionKey: error.description]
-                )
-            } else {
-                throw NSError(
-                    domain: "Bluetooth",
-                    code: -3,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing error code byte after status"]
-                )
-            }
-        }
-    }
-    
-    private func parseResponse(_ data: Data) throws -> Data? {
-        let bytes = [UInt8](data)
+        private var otaControlCharacteristic: Characteristic?
+        private var otaRawDataCharacteristic: Characteristic?
+        private var otaNotificationCharacteristic: Characteristic?
         
-        if bytes.count == 3 && bytes[0] == 0xFF && bytes[1] == 0xEE && bytes[2] == 0xDD {
-            throw NSError(domain: "Bluetooth", code: -9999, userInfo: [NSLocalizedDescriptionKey: "System not ready (FF EE DD)"])
-        }
+        var firmwareRev = ""
         
-        guard bytes.count >= 6 else {
-            throw NSError(domain: "Bluetooth", code: -2, userInfo: [NSLocalizedDescriptionKey: "Response too short"])
-        }
+        var SerialNo = 0
+        var ModelID = 0
         
-        let statusByte = bytes[4]
+        var lastLogID: UInt8 = 0x00
         
-        if statusByte == 0x06 {
-            // ✅ OK → lấy frame length từ byte 2 và 3
-            let frameLen = (Int(bytes[2]) << 8) | Int(bytes[3])
-            let headerLen = 5 // 5 bytes header
-            let crcLen = 2 // 2 bytes crc
-            let payloadEnd = frameLen - crcLen
+        var totalSampleCount = 0
+        var completedSampleCount = 0
+        
+        var uploadOwnerInfoData: Data!
+        
+        let tzArray: [Int8] = [
+            // GMT-12 → GMT-9:30
+            -12, 0,
+            -11, 0,
+            -10, 0,
+            -9, 30,
+
+            // GMT-9 → GMT-1
+            -9, 0,
+            -8, 0,
+            -7, 0,
+            -6, 0,
+            -5, 0,
+            -4, 30,
+            -4, 0,
+            -3, 30,
+            -3, 0,
+            -2, 0,
+            -1, 0,
+
+            // GMT
+            0, 0,
+
+            // GMT+1 → GMT+3
+            1, 0,
+            2, 0,
+            3, 0,
+
+            // GMT+3:30 → GMT+14
+            3, 30,
+            4, 0,
+            4, 30,
+            5, 0,
+            5, 30,
+            5, 45,
+            6, 0,
+            6, 30,
+            7, 0,
+            8, 0,
+            8, 45,
+            9, 0,
+            9, 30,
+            9, 45,
+            10, 0,
+            10, 30,
+            11, 0,
+            11, 30,
+            12, 0,
+            12, 45,
+            13, 0,
+            13, 45,
+            14, 0
+        ]
             
-            // Đảm bảo có đủ bytes cho payload + CRC (2 bytes cuối)
-            guard bytes.count >= payloadEnd + 2 else {
-                throw NSError(domain: "Bluetooth", code: -5, userInfo: [NSLocalizedDescriptionKey: "Payload too short or missing CRC"])
-            }
-            
-            return Data(bytes[headerLen..<payloadEnd])
-        } else {
-            // Lấy mã lỗi từ byte tiếp theo (bytes[5])
-            
-            let errorCode = bytes[5]
-            
-            if errorCode == 0x06 {
-                // ✅ Trường hợp bạn muốn coi như "không có payload"
-                return nil
-            }
-            
-            if bytes.count > 5 {
-                
-                // Lấy 2 byte đầu
-                let cmdValue: UInt16 = data.prefix(2).withUnsafeBytes { ptr in
-                    // Giả sử little-endian
-                    return ptr.load(as: UInt16.self).bigEndian
-                }
-                
-                // Kiểm tra
-                var cmdString = ""
-                
-                switch cmdValue {
-                case cmd.GetDeviceModel:
-                    cmdString = "GetDeviceModel \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetDeviceSerial:
-                    cmdString = "GetDeviceSerial \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetDeviceFw:
-                    cmdString = "GetDeviceFw \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetDeviceBleName:
-                    cmdString = "GetDeviceBleName \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetFirmwareLCD:
-                    cmdString = "GetFirmwareLCD \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetUserName:
-                    cmdString = "GetUserName \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetSystemSettings:
-                    cmdString = "GetSystemSettings \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetScubaSettings:
-                    cmdString = "GetScubaSettings \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetLastLogID:
-                    cmdString = "GetLastLogID \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetLog:
-                    cmdString = "GetLog \(data.hexString), LastLogID: \(lastLogID)"
-                case cmd.GetLogStatistics:
-                    cmdString = "GetLogStatistics \(String(format: "0x%04X", cmdValue))"
-                case cmd.StartProfileDownload:
-                    cmdString = "StartProfileDownload \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetProfileSample:
-                    cmdString = "GetProfileSample \(String(format: "0x%04X", cmdValue))"
-                case cmd.GetProfileSamples:
-                    cmdString = "GetProfileSamples \(String(format: "0x%04X", cmdValue))"
-                default:
-                    cmdString = "Unknown command: \(String(format: "0x%04X", cmdValue))"
-                }
-                
-                let error = DCResponseError.from(code: errorCode)
-                throw NSError(
-                    domain: "Bluetooth",
-                    code: Int(errorCode),
-                    userInfo: [NSLocalizedDescriptionKey: error.description + "\n\(cmdString)"]
-                )
-            } else {
-                throw NSError(
-                    domain: "Bluetooth",
-                    code: -3,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing error code byte after status"]
-                )
-            }
-        }
-    }
-    
-    private func cmdData(for command: UInt16) -> Data {
-        var pkbuf: [UInt8] = [0, 0, 0x00, 0x06, 0, 0]
-        pkbuf[0] = UInt8((command >> 8) & 0xFF)
-        pkbuf[1] = UInt8(command & 0xFF)
-        return Data(pkbuf)
-    }
-    
-    private func cmdData(for command: UInt16, payload: Data) -> Data {
-        var packet = Data()
-        
-        // Add command (big endian)
-        packet.append(UInt8((command >> 8) & 0xFF))
-        packet.append(UInt8(command & 0xFF))
-        
-        // Calculate total length: 2 bytes command + 2 bytes length + payload + 2 bytes CRC
-        let totalLength = 2 + 2 + payload.count + 2
-        packet.append(UInt8((totalLength >> 8) & 0xFF)) // Length MSB
-        packet.append(UInt8(totalLength & 0xFF))        // Length LSB
-        
-        // Add payload
-        packet.append(payload)
-        
-        // 2 byte checksum, được tính lại khi send command.
-        packet.append(UInt8(0))
-        packet.append(UInt8(0))
-        
-        return packet
-    }
-    
-    /// Send data to the device
-    func sendCommand(_ data: Data) -> Observable<Void> {
-        guard let characteristic = writeCharacteristic else {
-            return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write characteristic not found"]))
+        init(peripheral: Peripheral) {
+            self.peripheral = peripheral
         }
         
-        // Chuyển Data thành mảng UInt8
-        var pkbuf = [UInt8](data)
-        
-        if pkbuf.count > 2 {
-            let CRC16Val = CRC16(buf: data, len: data.count - 2)
-            pkbuf[data.count - 2] = UInt8(CRC16Val / 256)
-            pkbuf[data.count - 1] = UInt8(CRC16Val % 256)
-        }
-        
-        // Chuyển lại thành Data
-        let cmdData = Data(pkbuf)
-        
-        PrintLog("SEND COMMAND: \(cmdData.hexString)")
-        
-        return peripheral.writeValue(cmdData, for: characteristic, type: .withoutResponse)
-            .asObservable()
-            .map { _ in return () } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
-    }
-    
-    /// Send a command and wait for a response
-    func sendCommandWithResponse(_ data: Data) -> Observable<Data?> {
-        return sendCommand(data)
-        //.delay(.milliseconds(50), scheduler: MainScheduler.instance)
-            .flatMapLatest { _ in
-                self.waitForResponse()
-            }
-            .map { response in
-                guard let response = response else {
-                    throw NSError(domain: "Bluetooth", code: -999, userInfo: [NSLocalizedDescriptionKey: "No response data"])
-                }
-                
-                PrintLog("ResponseCount: \(response.count) - \(response.hexString)")
-                
-                return try self.parseResponse(response)
-            }
-            .retry { errors in
-                errors.enumerated().flatMap { attempt, error -> Observable<Void> in
-                    if let nsError = error as NSError?, nsError.code == -9999, attempt < 3 {
-                        PrintLog("🔁 Retry due to FF EE DD (attempt \(attempt + 1))")
-                        return Observable.just(())
-                            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
-                    } else {
-                        return Observable.error(error)
+        /// Discover services and characteristics needed for communication
+        func discoverServicesAndCharacteristics(servicesUUID: [CBUUID], writeCharUUID: CBUUID, readCharUUID: CBUUID) -> Observable<Void> {
+            return peripheral.discoverServices(servicesUUID)
+                .asObservable() // Chuyển đổi Single thành Observable
+                .flatMap { services -> Observable<[Characteristic]> in
+                    PrintLog("🔍 Discovered services:")
+                    services.forEach { PrintLog("→ \($0.uuid.uuidString)") }
+                    
+                    guard let service = services.first else {
+                        return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
                     }
+                    return service.discoverCharacteristics([
+                        writeCharUUID,
+                        readCharUUID,
+                        BLEConstants.OTA.reboot
+                    ]).asObservable()
                 }
-            }
-    }
-    
-    func sendCommandWithBoolResponse(_ data: Data) -> Observable<Bool> {
-        return sendCommand(data)
-            .delay(.milliseconds(50), scheduler: MainScheduler.instance)
-            .flatMapLatest { _ in
-                self.waitForResponse()
-            }
-            .map { response in
-                guard let response = response else {
-                    throw NSError(domain: "Bluetooth", code: -999, userInfo: [NSLocalizedDescriptionKey: "No response data"])
-                }
-                
-                PrintLog("ResponseCount: \(response.count) - \(response.hexString)")
-                
-                return try self.writeDataDone(response)
-            }
-            .retry { errors in
-                errors.enumerated().flatMap { attempt, error -> Observable<Void> in
-                    if let nsError = error as NSError?, nsError.code == -9999, attempt < 3 {
-                        PrintLog("🔁 Retry due to FF EE DD (attempt \(attempt + 1))")
-                        return Observable.just(())
-                            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
-                    } else {
-                        return Observable.error(error)
+                .do(onNext: { [weak self] characteristics in
+                    PrintLog("✅ Discovered characteristics:")
+                    characteristics.forEach { PrintLog("→ Found \($0.uuid.uuidString)") }
+                    
+                    self?.writeCharacteristic = characteristics.first { $0.uuid == writeCharUUID }
+                    self?.readCharacteristic = characteristics.first { $0.uuid == readCharUUID }
+                    self?.otaCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.reboot}
+                    
+                })
+                .map { _ in ()} // Đảm bảo trả về Observable<Void>
+        }
+        
+        func discoverServicesAndCharacteristicsForOTA(servicesUUID: [CBUUID], characteristics:[CBUUID]) -> Observable<Void> {
+            return peripheral.discoverServices(servicesUUID)
+                .asObservable() // Chuyển đổi Single thành Observable
+                .flatMap { services -> Observable<[Characteristic]> in
+                    PrintLog("🔍 Discovered services:")
+                    services.forEach { PrintLog("→ \($0.uuid.uuidString)") }
+                    
+                    guard let service = services.first else {
+                        return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Service not found"]))
                     }
+                    return service.discoverCharacteristics(characteristics).asObservable()
                 }
+                .do(onNext: { [weak self] characteristics in
+                    PrintLog("✅ Discovered characteristics:")
+                    characteristics.forEach { PrintLog("→ \($0.uuid.uuidString)") }
+                    
+                    self?.otaControlCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.controlAddress }
+                    self?.otaRawDataCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.rawData }
+                    self?.otaNotificationCharacteristic = characteristics.first { $0.uuid == BLEConstants.OTA.notification}
+                    
+                    if let notificationChar = self?.otaNotificationCharacteristic {
+                        notificationChar.observeValueUpdateAndSetNotification()
+                            .subscribe(onNext: { characteristic in
+                                if let value = characteristic.value {
+                                    PrintLog("🔔 OTA Notify value: \(value.hexString)")
+                                }
+                            }, onError: { error in
+                                PrintLog("❌ Enable OTA notification failed: \(error)")
+                            })
+                            .disposed(by: self?.disposeBag ?? DisposeBag())
+                    }
+                    
+                })
+                .map { _ in ()} // Đảm bảo trả về Observable<Void>
+        }
+        
+        func waitForResponse() -> Observable<Data?> {
+            guard let readChar = readCharacteristic else {
+                return Observable.error(NSError(domain: "Bluetooth", code: -1,
+                                                userInfo: [NSLocalizedDescriptionKey: "Read characteristic not found"]))
             }
-    }
-    
-    // MARK: - UPDATE FIRMWARE
-    func sendRebootOta(fileURL: URL) -> Observable<Bool> {
-        let sector = getSectorToDelete()
-        let nSector = getNSectorToDelete(fileURL: fileURL)
-        let data = [REBOOT_OTA_MODE, UInt8(sector & 0xFF), UInt8(nSector & 0xFF)]
-        
-        guard let characteristic = otaCharacteristic else {
-            return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write OTA characteristic not found"]))
+            
+            return readChar.readValue() // <- không phải observeValueUpdate
+                .asObservable()
+                .compactMap { $0.value }
         }
         
-        print("\(Data(data).hexString) - \(characteristic.uuid)")
-        
-        return peripheral.writeValue(Data(data),
-                                     for: characteristic,
-                                     type: .withoutResponse)
-        .asObservable()
-        .map { _ in true } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
-    }
-    
-    func sendFirmware(fileURL: URL, progress: @escaping (Double) -> Void) -> Observable<Bool> {
-        // 0. Kiểm tra characteristic
-        guard let controlChar = otaControlCharacteristic,
-              let dataChar = otaRawDataCharacteristic else {
-            return Observable.error(
-                NSError(domain: "Bluetooth",
-                        code: -1,
-                        userInfo: [NSLocalizedDescriptionKey: "OTA characteristic not found"])
-            )
-        }
-        
-        // 1. Đọc file
-        guard let fileData = try? Data(contentsOf: fileURL) else {
-            return Observable.error(
-                NSError(domain: "Bluetooth",
-                        code: -2,
-                        userInfo: [NSLocalizedDescriptionKey: "Cannot read firmware file"])
-            )
-        }
-        
-        // bạn có thể set theo MTU: peripheral.maximumWriteValueLength(for: .withoutResponse)
-        let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
-        print("MTU Size: %i", mtu)
-        let fileSize = fileData.count
-        let chunkSize = mtu
-        let chunks: [Data] = stride(from: 0, to: fileSize, by: chunkSize).map {
-            fileData.subdata(in: $0 ..< min($0 + chunkSize, fileSize))
-        }
-        let totalChunks = chunks.count
-        
-        // nếu không có chunk (file rỗng) -> trả true luôn
-        if totalChunks == 0 {
-            return Observable.just(false)
-        }
-        
-        // 2. Tạo startCommand (theo code bạn có)
-        guard let startCommand = Data.startUpload(type: .application(board: .wb55),
-                                                  fileLength: fileSize) else {
-            return Observable.error(
-                NSError(domain: "Bluetooth",
+        private func writeDataDone(_ data: Data) throws -> Bool {
+            let bytes = [UInt8](data)
+            
+            if bytes.count == 3 && bytes[0] == 0xFF && bytes[1] == 0xEE && bytes[2] == 0xDD {
+                throw NSError(domain: "Bluetooth", code: -9999, userInfo: [NSLocalizedDescriptionKey: "System not ready (FF EE DD)"])
+            }
+            
+            guard bytes.count >= 6 else {
+                throw NSError(domain: "Bluetooth", code: -2, userInfo: [NSLocalizedDescriptionKey: "Response too short"])
+            }
+            
+            let statusByte = bytes[4]
+            
+            if statusByte == 0x06 {
+                return true
+            } else {
+                // Lấy mã lỗi từ byte tiếp theo (bytes[5])
+                if bytes.count > 5 {
+                    let errorCode = bytes[5]
+                    let error = DCResponseError.from(code: errorCode)
+                    throw NSError(
+                        domain: "Bluetooth",
+                        code: Int(errorCode),
+                        userInfo: [NSLocalizedDescriptionKey: error.description]
+                    )
+                } else {
+                    throw NSError(
+                        domain: "Bluetooth",
                         code: -3,
-                        userInfo: [NSLocalizedDescriptionKey: "Cannot create start command"])
-            )
+                        userInfo: [NSLocalizedDescriptionKey: "Missing error code byte after status"]
+                    )
+                }
+            }
         }
         
-        // 3. Tạo Observable thủ công, thực hiện start rồi gửi chunk tuần tự
-        return Observable.create { [weak self] observer in
-            guard let self = self else {
-                observer.onError(NSError(domain: "Bluetooth", code: -999, userInfo: nil))
-                return Disposables.create()
+        private func parseResponse(_ data: Data) throws -> Data? {
+            let bytes = [UInt8](data)
+            
+            if bytes.count == 3 && bytes[0] == 0xFF && bytes[1] == 0xEE && bytes[2] == 0xDD {
+                throw NSError(domain: "Bluetooth", code: -9999, userInfo: [NSLocalizedDescriptionKey: "System not ready (FF EE DD)"])
             }
             
-            let composite = CompositeDisposable()
+            guard bytes.count >= 6 else {
+                throw NSError(domain: "Bluetooth", code: -2, userInfo: [NSLocalizedDescriptionKey: "Response too short"])
+            }
             
-            // 3.1 Gửi startCommand (Single)
-            let startDisp = self.peripheral
-                .writeValue(startCommand, for: controlChar, type: .withoutResponse)
-                .subscribe(onSuccess: { _ in
-                    // khi start thành công -> bắt đầu gửi chunk tuần tự
-                    func sendChunk(at index: Int) {
-                        // nếu đã dispose thì dừng
-                        if composite.isDisposed { return }
-                        
-                        if index >= totalChunks {
-                            // 🔚 Hết chunks -> gửi finishCommand
-                            let finishCommand = Data.uploadFinished()
+            let statusByte = bytes[4]
+            
+            if statusByte == 0x06 {
+                // ✅ OK → lấy frame length từ byte 2 và 3
+                let frameLen = (Int(bytes[2]) << 8) | Int(bytes[3])
+                let headerLen = 5 // 5 bytes header
+                let crcLen = 2 // 2 bytes crc
+                let payloadEnd = frameLen - crcLen
+                
+                // Đảm bảo có đủ bytes cho payload + CRC (2 bytes cuối)
+                guard bytes.count >= payloadEnd + 2 else {
+                    throw NSError(domain: "Bluetooth", code: -5, userInfo: [NSLocalizedDescriptionKey: "Payload too short or missing CRC"])
+                }
+                
+                return Data(bytes[headerLen..<payloadEnd])
+            } else {
+                // Lấy mã lỗi từ byte tiếp theo (bytes[5])
+                
+                let errorCode = bytes[5]
+                
+                if errorCode == 0x06 {
+                    // ✅ Trường hợp bạn muốn coi như "không có payload"
+                    return nil
+                }
+                
+                if bytes.count > 5 {
+                    
+                    // Lấy 2 byte đầu
+                    let cmdValue: UInt16 = data.prefix(2).withUnsafeBytes { ptr in
+                        // Giả sử little-endian
+                        return ptr.load(as: UInt16.self).bigEndian
+                    }
+                    
+                    // Kiểm tra
+                    var cmdString = ""
+                    
+                    switch cmdValue {
+                    case cmd.GetDeviceModel:
+                        cmdString = "GetDeviceModel \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetDeviceSerial:
+                        cmdString = "GetDeviceSerial \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetDeviceFw:
+                        cmdString = "GetDeviceFw \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetDeviceBleName:
+                        cmdString = "GetDeviceBleName \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetFirmwareLCD:
+                        cmdString = "GetFirmwareLCD \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetUserName:
+                        cmdString = "GetUserName \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetSystemSettings:
+                        cmdString = "GetSystemSettings \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetScubaSettings:
+                        cmdString = "GetScubaSettings \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetLastLogID:
+                        cmdString = "GetLastLogID \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetLog:
+                        cmdString = "GetLog \(data.hexString), LastLogID: \(lastLogID)"
+                    case cmd.GetLogStatistics:
+                        cmdString = "GetLogStatistics \(String(format: "0x%04X", cmdValue))"
+                    case cmd.StartProfileDownload:
+                        cmdString = "StartProfileDownload \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetProfileSample:
+                        cmdString = "GetProfileSample \(String(format: "0x%04X", cmdValue))"
+                    case cmd.GetProfileSamples:
+                        cmdString = "GetProfileSamples \(String(format: "0x%04X", cmdValue))"
+                    default:
+                        cmdString = "Unknown command: \(String(format: "0x%04X", cmdValue))"
+                    }
+                    
+                    let error = DCResponseError.from(code: errorCode)
+                    throw NSError(
+                        domain: "Bluetooth",
+                        code: Int(errorCode),
+                        userInfo: [NSLocalizedDescriptionKey: error.description + "\n\(cmdString)"]
+                    )
+                } else {
+                    throw NSError(
+                        domain: "Bluetooth",
+                        code: -3,
+                        userInfo: [NSLocalizedDescriptionKey: "Missing error code byte after status"]
+                    )
+                }
+            }
+        }
+        
+        private func cmdData(for command: UInt16) -> Data {
+            var pkbuf: [UInt8] = [0, 0, 0x00, 0x06, 0, 0]
+            pkbuf[0] = UInt8((command >> 8) & 0xFF)
+            pkbuf[1] = UInt8(command & 0xFF)
+            return Data(pkbuf)
+        }
+        
+        private func cmdData(for command: UInt16, payload: Data) -> Data {
+            var packet = Data()
+            
+            // Add command (big endian)
+            packet.append(UInt8((command >> 8) & 0xFF))
+            packet.append(UInt8(command & 0xFF))
+            
+            // Calculate total length: 2 bytes command + 2 bytes length + payload + 2 bytes CRC
+            let totalLength = 2 + 2 + payload.count + 2
+            packet.append(UInt8((totalLength >> 8) & 0xFF)) // Length MSB
+            packet.append(UInt8(totalLength & 0xFF))        // Length LSB
+            
+            // Add payload
+            packet.append(payload)
+            
+            // 2 byte checksum, được tính lại khi send command.
+            packet.append(UInt8(0))
+            packet.append(UInt8(0))
+            
+            return packet
+        }
+        
+        /// Send data to the device
+        func sendCommand(_ data: Data) -> Observable<Void> {
+            guard let characteristic = writeCharacteristic else {
+                return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write characteristic not found"]))
+            }
+            
+            // Chuyển Data thành mảng UInt8
+            var pkbuf = [UInt8](data)
+            
+            if pkbuf.count > 2 {
+                let CRC16Val = CRC16(buf: data, len: data.count - 2)
+                pkbuf[data.count - 2] = UInt8(CRC16Val / 256)
+                pkbuf[data.count - 1] = UInt8(CRC16Val % 256)
+            }
+            
+            // Chuyển lại thành Data
+            let cmdData = Data(pkbuf)
+            
+            PrintLog("SEND COMMAND: \(cmdData.hexString)")
+            
+            return peripheral.writeValue(cmdData, for: characteristic, type: .withoutResponse)
+                .asObservable()
+                .map { _ in return () } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
+        }
+        
+        /// Send a command and wait for a response
+        func sendCommandWithResponse(_ data: Data) -> Observable<Data?> {
+            return sendCommand(data)
+            //.delay(.milliseconds(50), scheduler: MainScheduler.instance)
+                .flatMapLatest { _ in
+                    self.waitForResponse()
+                }
+                .map { response in
+                    guard let response = response else {
+                        throw NSError(domain: "Bluetooth", code: -999, userInfo: [NSLocalizedDescriptionKey: "No response data"])
+                    }
+                    
+                    PrintLog("ResponseCount: \(response.count) - \(response.hexString)")
+                    
+                    return try self.parseResponse(response)
+                }
+                .retry { errors in
+                    errors.enumerated().flatMap { attempt, error -> Observable<Void> in
+                        if let nsError = error as NSError?, nsError.code == -9999, attempt < 3 {
+                            PrintLog("🔁 Retry due to FF EE DD (attempt \(attempt + 1))")
+                            return Observable.just(())
+                                .delay(.milliseconds(100), scheduler: MainScheduler.instance)
+                        } else {
+                            return Observable.error(error)
+                        }
+                    }
+                }
+        }
+        
+        func sendCommandWithBoolResponse(_ data: Data) -> Observable<Bool> {
+            return sendCommand(data)
+                .delay(.milliseconds(50), scheduler: MainScheduler.instance)
+                .flatMapLatest { _ in
+                    self.waitForResponse()
+                }
+                .map { response in
+                    guard let response = response else {
+                        throw NSError(domain: "Bluetooth", code: -999, userInfo: [NSLocalizedDescriptionKey: "No response data"])
+                    }
+                    
+                    PrintLog("ResponseCount: \(response.count) - \(response.hexString)")
+                    
+                    return try self.writeDataDone(response)
+                }
+                .retry { errors in
+                    errors.enumerated().flatMap { attempt, error -> Observable<Void> in
+                        if let nsError = error as NSError?, nsError.code == -9999, attempt < 3 {
+                            PrintLog("🔁 Retry due to FF EE DD (attempt \(attempt + 1))")
+                            return Observable.just(())
+                                .delay(.milliseconds(100), scheduler: MainScheduler.instance)
+                        } else {
+                            return Observable.error(error)
+                        }
+                    }
+                }
+        }
+        
+        // MARK: - UPDATE FIRMWARE
+        func sendRebootOta(fileURL: URL) -> Observable<Bool> {
+            let sector = getSectorToDelete()
+            let nSector = getNSectorToDelete(fileURL: fileURL)
+            let data = [REBOOT_OTA_MODE, UInt8(sector & 0xFF), UInt8(nSector & 0xFF)]
+            
+            guard let characteristic = otaCharacteristic else {
+                return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write OTA characteristic not found"]))
+            }
+            
+            print("\(Data(data).hexString) - \(characteristic.uuid)")
+            
+            return peripheral.writeValue(Data(data),
+                                         for: characteristic,
+                                         type: .withoutResponse)
+            .asObservable()
+            .map { _ in true } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
+        }
+        
+        func sendFirmware(fileURL: URL, progress: @escaping (Double) -> Void) -> Observable<Bool> {
+            // 0. Kiểm tra characteristic
+            guard let controlChar = otaControlCharacteristic,
+                  let dataChar = otaRawDataCharacteristic else {
+                return Observable.error(
+                    NSError(domain: "Bluetooth",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "OTA characteristic not found"])
+                )
+            }
+            
+            // 1. Đọc file
+            guard let fileData = try? Data(contentsOf: fileURL) else {
+                return Observable.error(
+                    NSError(domain: "Bluetooth",
+                            code: -2,
+                            userInfo: [NSLocalizedDescriptionKey: "Cannot read firmware file"])
+                )
+            }
+            
+            // bạn có thể set theo MTU: peripheral.maximumWriteValueLength(for: .withoutResponse)
+            let mtu = peripheral.maximumWriteValueLength(for: .withoutResponse)
+            print("MTU Size: %i", mtu)
+            let fileSize = fileData.count
+            let chunkSize = mtu
+            let chunks: [Data] = stride(from: 0, to: fileSize, by: chunkSize).map {
+                fileData.subdata(in: $0 ..< min($0 + chunkSize, fileSize))
+            }
+            let totalChunks = chunks.count
+            
+            // nếu không có chunk (file rỗng) -> trả true luôn
+            if totalChunks == 0 {
+                return Observable.just(false)
+            }
+            
+            // 2. Tạo startCommand (theo code bạn có)
+            guard let startCommand = Data.startUpload(type: .application(board: .wb55),
+                                                      fileLength: fileSize) else {
+                return Observable.error(
+                    NSError(domain: "Bluetooth",
+                            code: -3,
+                            userInfo: [NSLocalizedDescriptionKey: "Cannot create start command"])
+                )
+            }
+            
+            // 3. Tạo Observable thủ công, thực hiện start rồi gửi chunk tuần tự
+            return Observable.create { [weak self] observer in
+                guard let self = self else {
+                    observer.onError(NSError(domain: "Bluetooth", code: -999, userInfo: nil))
+                    return Disposables.create()
+                }
+                
+                let composite = CompositeDisposable()
+                
+                // 3.1 Gửi startCommand (Single)
+                let startDisp = self.peripheral
+                    .writeValue(startCommand, for: controlChar, type: .withoutResponse)
+                    .subscribe(onSuccess: { _ in
+                        // khi start thành công -> bắt đầu gửi chunk tuần tự
+                        func sendChunk(at index: Int) {
+                            // nếu đã dispose thì dừng
+                            if composite.isDisposed { return }
+                            
+                            if index >= totalChunks {
+                                // 🔚 Hết chunks -> gửi finishCommand
+                                let finishCommand = Data.uploadFinished()
+                                let d = self.peripheral
+                                    .writeValue(finishCommand, for: controlChar, type: .withoutResponse)
+                                    .subscribe(onSuccess: { _ in
+                                        observer.onNext(true)
+                                        observer.onCompleted()
+                                    }, onFailure: { error in
+                                        observer.onError(error)
+                                        composite.dispose()
+                                    })
+                                _ = composite.insert(d)
+                                return
+                            }
+                            
+                            // gửi chunk[index]
+                            let chunk = chunks[index]
                             let d = self.peripheral
-                                .writeValue(finishCommand, for: controlChar, type: .withoutResponse)
+                                .writeValue(chunk, for: dataChar, type: .withoutResponse)
                                 .subscribe(onSuccess: { _ in
-                                    observer.onNext(true)
-                                    observer.onCompleted()
+                                    // update progress trên main thread
+                                    let p = Double(index + 1) / Double(totalChunks)
+                                    DispatchQueue.main.async {
+                                        progress(p)
+                                    }
+                                    // gửi tiếp
+                                    sendChunk(at: index + 1)
                                 }, onFailure: { error in
+                                    // nếu lỗi khi gửi chunk -> gửi lỗi ra observer và huỷ luôn
                                     observer.onError(error)
                                     composite.dispose()
                                 })
+                            
+                            // thêm disposable của writeValue vào composite để quản lý hủy
                             _ = composite.insert(d)
-                            return
                         }
                         
-                        // gửi chunk[index]
-                        let chunk = chunks[index]
-                        let d = self.peripheral
-                            .writeValue(chunk, for: dataChar, type: .withoutResponse)
-                            .subscribe(onSuccess: { _ in
-                                // update progress trên main thread
-                                let p = Double(index + 1) / Double(totalChunks)
-                                DispatchQueue.main.async {
-                                    progress(p)
-                                }
-                                // gửi tiếp
-                                sendChunk(at: index + 1)
-                            }, onFailure: { error in
-                                // nếu lỗi khi gửi chunk -> gửi lỗi ra observer và huỷ luôn
-                                observer.onError(error)
-                                composite.dispose()
-                            })
+                        // start gửi chunk từ 0
+                        sendChunk(at: 0)
                         
-                        // thêm disposable của writeValue vào composite để quản lý hủy
-                        _ = composite.insert(d)
-                    }
-                    
-                    // start gửi chunk từ 0
-                    sendChunk(at: 0)
-                    
-                }, onFailure: { error in
-                    // lỗi khi gửi start command
-                    observer.onError(error)
-                })
-            
-            // thêm start disposable vào composite
-            _ = composite.insert(startDisp)
-            
-            // khi outer subscriber dispose -> dispose composite (hủy mọi write)
-            return Disposables.create {
-                composite.dispose()
+                    }, onFailure: { error in
+                        // lỗi khi gửi start command
+                        observer.onError(error)
+                    })
+                
+                // thêm start disposable vào composite
+                _ = composite.insert(startDisp)
+                
+                // khi outer subscriber dispose -> dispose composite (hủy mọi write)
+                return Disposables.create {
+                    composite.dispose()
+                }
             }
         }
-    }
-    
-    func updateFirmware() -> Observable<Bool> {
-        guard let fwrUrl = Utilities.firstBinFile() else {
-            return Observable.just(false)
-        }
         
-        let subject = PublishSubject<Bool>()
-        
-        if self.peripheral.isOta {
-            DialogViewController.showProcess(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task: {_ in
-                    self.sendFirmware(fileURL: fwrUrl) { progress in
-                        DialogViewController.updateProgress(Float(progress))
-                    }
-                    .subscribe(onNext: { success in
-                        subject.onNext(success)
-                        subject.onCompleted()
-                        //DialogViewController.finish(success: success)
-                    }, onError: { error in
-                        subject.onNext(false)
-                        subject.onCompleted()
-                        DialogViewController.finish(success: false)
-                    })
-                    .disposed(by: self.disposeBag)
-                }
-            );
-        } else {
-            DialogViewController.showLoading(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task:  {_ in
-                self.sendRebootOta(fileURL: fwrUrl)
-                    .subscribe(onNext: { success in
-                        subject.onNext(success)
-                        subject.onCompleted()
-                        //DialogViewController.finish(success: success)
-                    }, onError: { error in
-                        subject.onNext(false)
-                        subject.onCompleted()
-                        DialogViewController.finish(success: false)
-                    })
-                    .disposed(by: self.disposeBag)
-            });
-        }
-        
-        return subject.asObservable()
-    }
-    
-    // MARK: - GET COMMANDS
-    
-    func sendGetDeviceSerial() -> Observable<Data?> {
-        var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
-        pkbuf[0] = UInt8((cmd.GetDeviceSerial >> 8) & 0xFF)
-        pkbuf[1] = UInt8(cmd.GetDeviceSerial & 0xFF)
-        
-        let data = Data(pkbuf)
-        return sendCommandWithResponse(data)
-    }
-    
-    func sendGetDeviceFwVersion() -> Observable<Data?> {
-        var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
-        pkbuf[0] = UInt8((cmd.GetDeviceFw >> 8) & 0xFF)
-        pkbuf[1] = UInt8(cmd.GetDeviceFw & 0xFF)
-        
-        let data = Data(pkbuf)
-        return sendCommandWithResponse(data)
-    }
-    
-    func sendGetDeviceBleName() -> Observable<Data?> {
-        var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
-        pkbuf[0] = UInt8((cmd.GetDeviceBleName >> 8) & 0xFF)
-        pkbuf[1] = UInt8(cmd.GetDeviceBleName & 0xFF)
-        
-        let data = Data(pkbuf)
-        return sendCommandWithResponse(data)
-    }
-    
-    func sendGetFirmwareLCD() -> Observable<Data?> {
-        var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
-        pkbuf[0] = UInt8((cmd.GetFirmwareLCD >> 8) & 0xFF)
-        pkbuf[1] = UInt8(cmd.GetFirmwareLCD & 0xFF)
-        
-        let data = Data(pkbuf)
-        return sendCommandWithResponse(data)
-    }
-    
-    func sendGetUserInfo() -> Observable<String> {
-        let commands: [UInt16] = [
-            cmd.GetUserName,
-            cmd.GetUserSurName,
-            cmd.GetUserPhone,
-            cmd.GetUserEmail,
-            cmd.GetUserBlood,
-            cmd.GetUserEmName,
-            cmd.GetUserEmSurName,
-            cmd.GetUserEmPhone
-        ]
-        
-        // Hàm hỗ trợ tạo từng observable một
-        let observables = commands.map { command -> Observable<String> in
-            let data = self.cmdData(for: command)
-            return self.sendCommandWithResponse(data)
-                .flatMapLatest { res in
-                    return Observable.just(self.extractPayloadString(from: res) ?? "")
-                }
-        }
-        
-        // Chuỗi tuần tự
-        return observables
-            .reduce(Observable.just([String]())) { acc, next in
-                acc.flatMapLatest { results in
-                    next.map { results + [$0] }
-                }
+        func updateFirmware() -> Observable<Bool> {
+            guard let fwrUrl = Utilities.firstBinFile() else {
+                return Observable.just(false)
             }
-            .map { $0.joined(separator: "|") }
-    }
+            
+            let subject = PublishSubject<Bool>()
+            
+            if self.peripheral.isOta {
+                DialogViewController.showProcess(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task: {_ in
+                        self.sendFirmware(fileURL: fwrUrl) { progress in
+                            DialogViewController.updateProgress(Float(progress))
+                        }
+                        .subscribe(onNext: { success in
+                            subject.onNext(success)
+                            subject.onCompleted()
+                            //DialogViewController.finish(success: success)
+                        }, onError: { error in
+                            subject.onNext(false)
+                            subject.onCompleted()
+                            DialogViewController.finish(success: false)
+                        })
+                        .disposed(by: self.disposeBag)
+                    }
+                );
+            } else {
+                DialogViewController.showLoading(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task:  {_ in
+                    self.sendRebootOta(fileURL: fwrUrl)
+                        .subscribe(onNext: { success in
+                            subject.onNext(success)
+                            subject.onCompleted()
+                            //DialogViewController.finish(success: success)
+                        }, onError: { error in
+                            subject.onNext(false)
+                            subject.onCompleted()
+                            DialogViewController.finish(success: false)
+                        })
+                        .disposed(by: self.disposeBag)
+                });
+            }
+            
+            return subject.asObservable()
+        }
+        
+        // MARK: - GET COMMANDS
+        
+        func sendGetDeviceSerial() -> Observable<Data?> {
+            var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
+            pkbuf[0] = UInt8((cmd.GetDeviceSerial >> 8) & 0xFF)
+            pkbuf[1] = UInt8(cmd.GetDeviceSerial & 0xFF)
+            
+            let data = Data(pkbuf)
+            return sendCommandWithResponse(data)
+        }
+        
+        func sendGetDeviceFwVersion() -> Observable<Data?> {
+            var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
+            pkbuf[0] = UInt8((cmd.GetDeviceFw >> 8) & 0xFF)
+            pkbuf[1] = UInt8(cmd.GetDeviceFw & 0xFF)
+            
+            let data = Data(pkbuf)
+            return sendCommandWithResponse(data)
+        }
+        
+        func sendGetDeviceBleName() -> Observable<Data?> {
+            var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
+            pkbuf[0] = UInt8((cmd.GetDeviceBleName >> 8) & 0xFF)
+            pkbuf[1] = UInt8(cmd.GetDeviceBleName & 0xFF)
+            
+            let data = Data(pkbuf)
+            return sendCommandWithResponse(data)
+        }
+        
+        func sendGetFirmwareLCD() -> Observable<Data?> {
+            var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
+            pkbuf[0] = UInt8((cmd.GetFirmwareLCD >> 8) & 0xFF)
+            pkbuf[1] = UInt8(cmd.GetFirmwareLCD & 0xFF)
+            
+            let data = Data(pkbuf)
+            return sendCommandWithResponse(data)
+        }
+        
+        func sendGetUserInfo() -> Observable<String> {
+            let commands: [UInt16] = [
+                cmd.GetUserName,
+                cmd.GetUserSurName,
+                cmd.GetUserPhone,
+                cmd.GetUserEmail,
+                cmd.GetUserBlood,
+                cmd.GetUserEmName,
+                cmd.GetUserEmSurName,
+                cmd.GetUserEmPhone
+            ]
+            
+            // Hàm hỗ trợ tạo từng observable một
+            let observables = commands.map { command -> Observable<String> in
+                let data = self.cmdData(for: command)
+                return self.sendCommandWithResponse(data)
+                    .flatMapLatest { res in
+                        return Observable.just(self.extractPayloadString(from: res) ?? "")
+                    }
+            }
+            
+            // Chuỗi tuần tự
+            return observables
+                .reduce(Observable.just([String]())) { acc, next in
+                    acc.flatMapLatest { results in
+                        next.map { results + [$0] }
+                    }
+                }
+                .map { $0.joined(separator: "|") }
+        }
     
     func sendGetSystemSettings() -> Observable<SystemSettings?> {
         var pkbuf: [UInt8] = [0, 0, 0x0, 0x6, 0, 0]
@@ -1612,6 +1612,15 @@ class BluetoothDataManager {
     }
     
     func U_UploadOwnerInfoScreen() -> Observable<DeviceReadResult> {
+        
+        let path = (HomeDirectory().appendingFormat("%@", PDC_DATA) as NSString).appendingPathComponent("settingToWrite.plist")
+        let url = URL(fileURLWithPath: path)
+        
+        guard let data = try? Data(contentsOf: url), let writeData = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else {
+            return .just(.failure(error: nil))
+        }
+        
+        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: writeData)
         
         let chunkSize = 128
         let totalChunks = Int(

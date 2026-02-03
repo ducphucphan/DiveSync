@@ -19,6 +19,10 @@ class ChartFullScreenViewController: UIViewController {
     @IBOutlet weak var startTankLb: UILabel!
     @IBOutlet weak var endTankLb: UILabel!
     
+    private var alarmTimer: Timer?
+    private var alarmIndex = 0
+    private var currentAlarms: [String] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.B_3
@@ -71,17 +75,43 @@ class ChartFullScreenViewController: UIViewController {
 // MARK - CHART
 extension ChartFullScreenViewController: ChartViewDelegate {
     
+    func showAlarms(_ alarms: [String]) {
+        alarmTimer?.invalidate()
+        alarmTimer = nil
+        alarmIndex = 0
+        currentAlarms = alarms
+
+        guard !alarms.isEmpty else {
+            msgLb.text = ""
+            return
+        }
+
+        // Chỉ 1 alarm → hiển thị luôn
+        if alarms.count == 1 {
+            msgLb.text = alarms[0]
+            return
+        }
+
+        // Nhiều alarm → flash mỗi 1s
+        msgLb.text = alarms[0]
+
+        alarmTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.alarmIndex = (self.alarmIndex + 1) % self.currentAlarms.count
+            self.msgLb.text = self.currentAlarms[self.alarmIndex]
+        }
+    }
+    
     func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
         if let index = chartEntries.firstIndex(where: { $0.x == entry.x && $0.y == entry.y }) {
             PrintLog("Selected data index: \(index)")
             let selectedRow = diveProfile[index]
             
-            let alarmString = buildAlarmString(
+            let alarms = buildAlarmString(
                 alarmId1: selectedRow.stringValue(key: "ALARMID"),
                 alarmId2: selectedRow.stringValue(key: "ALARMID2")
             )
-            
-            msgLb.text = alarmString
+            showAlarms(alarms)
             
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10

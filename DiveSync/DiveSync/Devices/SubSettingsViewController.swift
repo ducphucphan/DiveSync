@@ -70,35 +70,62 @@ class SubSettingsViewController: BaseViewController {
     }
     
     func getPDCSettings() -> [String: Any] {
-        var dateTimeSetting: [String: Any] = [:]
-        
-        dateTimeSetting["DeviceID"] = device.deviceId
-        
-        for row in rows {
-            var index = 0
-            let value = row.value ?? ""
+        if let modelId = device.modelId, modelId == C_DAV {
+            var ownerSettings: [String: Any] = [:]
+            ownerSettings["DeviceID"] = device.deviceId
             
-            let options = row.options
-            if options != nil {
-                index = options!.firstIndex(of: value) ?? 0
+            for row in rows {
+                let value = row.value ?? ""
+                switch row.id {
+                case "owner_name":
+                    ownerSettings["Name"] = value
+                case "owner_phone":
+                    ownerSettings["Phone"] = value
+                case "owner_mail":
+                    ownerSettings["Email"] = value
+                case "owner_blood_type":
+                    ownerSettings["Blood"] = value
+                case "owner_emname":
+                    ownerSettings["EmName"] = value
+                case "owner_emergency_contact_phone":
+                    ownerSettings["EmPhone"] = value
+                default:
+                    break
+                }
             }
             
-            switch row.id {
-                // System Settings
-            case "hour":
-                dateTimeSetting["TimeFormat"] = index
-            case "dates":
-                dateTimeSetting["DateFormat"] = index
-            case "set_date":
-                dateTimeSetting["SetDate"] = value
-            case "set_time":
-                dateTimeSetting["SetTime"] = value
-            default:
-                break
+            return ownerSettings
+        } else {
+            var dateTimeSetting: [String: Any] = [:]
+            
+            dateTimeSetting["DeviceID"] = device.deviceId
+            
+            for row in rows {
+                var index = 0
+                let value = row.value ?? ""
+                
+                let options = row.options
+                if options != nil {
+                    index = options!.firstIndex(of: value) ?? 0
+                }
+                
+                switch row.id {
+                    // System Settings
+                case "hour":
+                    dateTimeSetting["TimeFormat"] = index
+                case "dates":
+                    dateTimeSetting["DateFormat"] = index
+                case "set_date":
+                    dateTimeSetting["SetDate"] = value
+                case "set_time":
+                    dateTimeSetting["SetTime"] = value
+                default:
+                    break
+                }
             }
+            
+            return dateTimeSetting
         }
-        
-        return dateTimeSetting
     }
     
     @IBAction func uploadTapped(_ sender: Any) {

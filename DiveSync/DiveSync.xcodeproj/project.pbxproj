@@ -155,7 +155,6 @@
 		48CE8DD92DAD198000A2DF33 /* DSToggleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */; };
 		48CE8DDA2DAD198000A2DF33 /* DSToggleCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */; };
 		48CE9C212E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE9C202E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift */; };
-		48D195562D64462300B21E25 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D195542D64462300B21E25 /* BluetoothManager.swift */; };
 		48D195572D64462300B21E25 /* BLEConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D195552D64462300B21E25 /* BLEConstants.swift */; };
 		48D1955A2D64463A00B21E25 /* RxBluetoothKit2 in Frameworks */ = {isa = PBXBuildFile; productRef = 48D195592D64463A00B21E25 /* RxBluetoothKit2 */; };
 		48D1955C2D64465300B21E25 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 48D1955B2D64465300B21E25 /* RxCocoa */; };
@@ -408,7 +407,6 @@
 		48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSToggleCell.swift; sourceTree = "<group>"; };
 		48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSToggleCell.xib; sourceTree = "<group>"; };
 		48CE9C202E73CD8B003581C2 /* SearchDiveSpotsResultsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDiveSpotsResultsViewController.swift; sourceTree = "<group>"; };
-		48D195542D64462300B21E25 /* BluetoothManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 		48D195552D64462300B21E25 /* BLEConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BLEConstants.swift; sourceTree = "<group>"; };
 		48D21DD72D0D3EBC004E8018 /* HelveticaNeueLTProHvIt.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HelveticaNeueLTProHvIt.otf; sourceTree = "<group>"; };
 		48D21DD82D0D3EBC004E8018 /* HelveticaNeueLTProLtCnO.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HelveticaNeueLTProLtCnO.otf; sourceTree = "<group>"; };
@@ -957,7 +955,6 @@
 				485CE1642E79725A00F2D61E /* STM32OTA */,
 				48D195552D64462300B21E25 /* BLEConstants.swift */,
 				48221AA52E77CFDC006D6324 /* FwrConstants.swift */,
-				48D195542D64462300B21E25 /* BluetoothManager.swift */,
 				4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */,
 				48DD82332E618C5A00557367 /* BluetoothDeviceCoordinator.swift */,
 				48DAC06E2D6C825200308F39 /* dc_info.plist */,
@@ -1388,7 +1385,6 @@
 				4826021D2E938A2B00BB887E /* Set2ValueSettingAlert2.swift in Sources */,
 				486F23D72EA0E4BF00A655D9 /* APIError.swift in Sources */,
 				487DFC012DCE551D00C53D18 /* InputAlert.swift in Sources */,
-				48D195562D64462300B21E25 /* BluetoothManager.swift in Sources */,
 				483CCA792DBE523A00E8138A /* StatisticsViewController.swift in Sources */,
 				486427662DC905770001892E /* LogViewController.swift in Sources */,
 				48FD81B62D8963DC005C3374 /* Data+Extension.swift in Sources */,
@@ -1589,7 +1585,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1632,7 +1628,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

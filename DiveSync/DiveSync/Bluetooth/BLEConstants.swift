@@ -104,13 +104,17 @@ struct BLEConstants {
             "DAVINCI",
             "DAV",
             "SKI",
-            "SPI"
+            "SPI",
+            "SHERWOOD-Logic+",
+            //"CENTAURI"
         ]
     }
     
     struct SERVICES {
         static let list = [
-            CBUUID(string: "03d97288-001f-11ee-be56-0242ac120002")
+            CBUUID(string: "03d97288-001f-11ee-be56-0242ac120002"),
+            //CBUUID(string: "f000ffe0-ab12-45ec-84c8-46483f4626e9") // CENTAURI - CR-4
+            CBUUID(string: "f000ffe0-ab12-45ec-84c8-46483f4626e9") // Log+ - CR-1
         ]
         
         static let otaServices = [
@@ -121,6 +125,9 @@ struct BLEConstants {
     struct RWChar {
         static let read = CBUUID(string: "03d97d1e-001f-11ee-be56-0242ac120002")
         static let write = CBUUID(string: "03d97c10-001f-11ee-be56-0242ac120002")
+        
+        //static let readCR4 = CBUUID(string: "f000ffe1-ab12-45ec-84c8-46483f4626e9")
+        //static let writeCR4 = CBUUID(string: "f000ffe2-ab12-45ec-84c8-46483f4626e9")
     }
     
     struct OTA {

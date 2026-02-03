@@ -42,6 +42,10 @@ class LogGraphCell: UICollectionViewCell {
     var didSelectedChartEntryPoint: ((_ row: Row) -> Void)?
     var didShowDetail:(() -> Void)?
         
+    private var alarmTimer: Timer?
+    private var alarmIndex = 0
+    private var currentAlarms: [String] = []
+    
     var maxTime = 0.0
     var maxDepth = 0.0
         
@@ -60,28 +64,53 @@ class LogGraphCell: UICollectionViewCell {
         updateChartFromDiveProfile()
         
     }
+
+    func showAlarms(_ alarms: [String]) {
+        alarmTimer?.invalidate()
+        alarmTimer = nil
+        alarmIndex = 0
+        currentAlarms = alarms
+
+        guard !alarms.isEmpty else {
+            msgLb.text = ""
+            return
+        }
+
+        // Chỉ 1 alarm → hiển thị luôn
+        if alarms.count == 1 {
+            msgLb.text = alarms[0]
+            return
+        }
+
+        // Nhiều alarm → flash mỗi 1s
+        msgLb.text = alarms[0]
+
+        alarmTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.alarmIndex = (self.alarmIndex + 1) % self.currentAlarms.count
+            self.msgLb.text = self.currentAlarms[self.alarmIndex]
+        }
+    }
     
     func strokeState(prev: DiveChartPoint, curr: DiveChartPoint) -> DiveStrokeState {
         
         // OR để tránh mất alarm ở biên
-        //let alarm1 = AlarmId1(rawValue: prev.alarmId | curr.alarmId)
-        //let alarm2 = AlarmId2(rawValue: prev.alarmId2 | curr.alarmId2)
         let alarm1 = AlarmId1(rawValue: curr.alarmId)
-        let errors = DiveErrors(rawValue: prev.errors | curr.errors)
+        let alarm2 = AlarmId2(rawValue: curr.alarmId2)
         
         // VIOLATION → ascentFast
-        if errors.isViolation {
+        if alarm2.isViolation {
             return .viol
         }
         
         // DECO → dựa vào decoStopDepth
-        if curr.decoStopDepth > 0 && curr.decoStopDepth < 0xFFFF {
+        if alarm1.isDeco {
             return .deco
         }
         
         
         // ASCENT SPEED → ascentFast
-        if alarm1.contains(.ascentSpeed) {
+        if alarm1.isAscentSpeed {
             return .ascentFast
         }
         
@@ -165,11 +194,11 @@ class LogGraphCell: UICollectionViewCell {
             case .normal:
                 return UIColor.B_3          // giống fill
             case .ascentFast:
-                return .yellow
-            case .deco:
                 return .red
+            case .deco:
+                return .orange
             case .viol:
-                return UIColor(red: 0.6, green: 0, blue: 0, alpha: 1) // đỏ đậm
+                return .red // đỏ đậm
             }
         }
 
@@ -357,12 +386,11 @@ extension LogGraphCell: ChartViewDelegate {
             PrintLog("Selected data index: \(index)")
             let selectedRow = diveProfile[index]
             
-            let alarmString = buildAlarmString(
+            let alarms = buildAlarmString(
                 alarmId1: selectedRow.stringValue(key: "ALARMID"),
                 alarmId2: selectedRow.stringValue(key: "ALARMID2")
             )
-            
-            msgLb.text = alarmString
+            showAlarms(alarms)
             
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10

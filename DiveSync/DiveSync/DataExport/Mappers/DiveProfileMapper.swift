@@ -25,7 +25,7 @@ struct DiveProfileMapper: RowMapper {
         dict["GfLocalPercent"] = row.stringValue(key: "GfLocalPercent")
         dict["Tlbg"] = row.stringValue(key: "Tlbg")
         dict["OxToxPercent"] = row.stringValue(key: "OxToxPercent")
-        dict["AlarmID1"] = alarmId1ToText(row.stringValue(key: "AlarmID").toInt())
+        dict["AlarmID1"] = row.stringValue(key: "AlarmID")
         dict["PpO2Barx100"] = row.stringValue(key: "PpO2Barx100")
         dict["CurrentUsedMixIdx"] = row.stringValue(key: "CurrentUsedMixIdx")
         dict["SwitchMixFlag"] = row.stringValue(key: "SwitchMixFlag")
@@ -35,7 +35,7 @@ struct DiveProfileMapper: RowMapper {
         dict["TankPSI"] = row.stringValue(key: "TankPSI")
         dict["TankAtrMin"] = safeValue(row.stringValue(key: "TankAtrMin"))
         dict["ActualTankID"] = safeValue(row.stringValue(key: "ActualTankID"))
-        dict["AlarmID2"] = alarmId2ToText(safeValue(row.stringValue(key: "AlarmID2")).toInt())
+        dict["AlarmID2"] = safeValue(row.stringValue(key: "AlarmID2"))
         
         return dict
     }
@@ -169,8 +169,7 @@ struct DiveProfileMapper: RowMapper {
         map("OxToxPercent")
         
         if let alarmString = json["AlarmID1"] as? String {
-            // Dạng "ASCENT ALARM, MAX DEPTH ALARM"
-            dbDict["AlarmID"] = alarmTextToId1(alarmString)
+            dbDict["AlarmID"] = alarmString
         } else if let intVal = json["AlarmID1"] as? Int {
             // Đã là số bitmask
             dbDict["AlarmID"] = intVal
@@ -187,16 +186,7 @@ struct DiveProfileMapper: RowMapper {
         map("TankPSI")
         map("TankAtrMin")
         map("ActualTankID")
-        
-        if let alarmString = json["AlarmID2"] as? String {
-            // Dạng "ASCENT ALARM, MAX DEPTH ALARM"
-            dbDict["AlarmID2"] = alarmTextToId2(alarmString)
-        } else if let intVal = json["AlarmID2"] as? Int {
-            // Đã là số bitmask
-            dbDict["AlarmID2"] = intVal
-        } else {
-            dbDict["AlarmID2"] = 0
-        }
+        map("AlarmID2")
         
         return dbDict
     }

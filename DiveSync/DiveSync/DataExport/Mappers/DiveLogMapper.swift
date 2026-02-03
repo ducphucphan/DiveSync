@@ -140,8 +140,11 @@ struct DiveLogMapper: RowMapper {
         dict["BuzzerMode"] = row.stringValue(key: "Sound")
         dict["WaterDensity"] = row.stringValue(key: "Water")
         dict["DiveStatus"] = ""
-        dict["BacklightLevel"] = row.stringValue(key: "Light")
-        dict["BacklightDimTime"] = row.stringValue(key: "BacklightDimTime")
+        if row.stringValue(key: "ModelID").toInt() == C_DAV {
+            dict["BacklightLevel"] = row.stringValue(key: "BacklightDimTime")
+        } else {
+            dict["BacklightLevel"] = row.stringValue(key: "Light")
+        }
         
         dict["TankTurnAlarmOn"] = safeValue(row.stringValue(key: "TankTurnAlarmOn"))
         dict["TankEndAlarmOn"] = safeValue(row.stringValue(key: "TankEndAlarmOn"))
@@ -177,10 +180,12 @@ struct DiveLogMapper: RowMapper {
         
         let modelId = json["ModelID"] as! String
         
+        let modelID = modelIDImport(modelId: modelId.toInt())
+        
         // Map tất cả các field ngược lại
         dbDict["UserID"] = convertToDatabaseValue(json["UserID"])
         dbDict["DiveSiteID"] = convertToDatabaseValue(json["DiveSiteID"])
-        dbDict["ModelID"] = convertToDatabaseValue(modelIDImport(modelId: modelId.toInt()))
+        dbDict["ModelID"] = convertToDatabaseValue(modelID)
         dbDict["SerialNo"] = convertToDatabaseValue(json["SerialNo"])
         dbDict["DeviceName"] = convertToDatabaseValue(json["DeviceName"])
         dbDict["AddressID"] = convertToDatabaseValue(json["AddressID"])
@@ -273,8 +278,12 @@ struct DiveLogMapper: RowMapper {
         dbDict["IsFavorite"] = convertToDatabaseValue(json["Favorites"])
         dbDict["Sound"] = convertToDatabaseValue(json["BuzzerMode"])
         dbDict["Water"] = convertToDatabaseValue(json["WaterDensity"])
-        dbDict["Light"] = convertToDatabaseValue(json["BacklightLevel"])
-        dbDict["BacklightDimTime"] = convertToDatabaseValue(json["BacklightDimTime"])
+        
+        if modelID == C_DAV {
+            dbDict["BacklightDimTime"] = convertToDatabaseValue(json["BacklightLevel"])
+        } else {
+            dbDict["Light"] = convertToDatabaseValue(json["BacklightLevel"])
+        }
         
         dbDict["TankTurnAlarmOn"] = convertToDatabaseValue(json["TankTurnAlarmOn"])
         dbDict["TankEndAlarmOn"] = convertToDatabaseValue(json["TankEndAlarmOn"])

@@ -536,28 +536,46 @@ class LogViewController: BaseViewController {
                 ProgressHUD.dismiss()
                 
                 // In ra JSON string để xem nội dung
-                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    if let status = json["status"] as? String {
-                        if status == "success" {
-                            let message = json["message"] as? String ?? ""
-                            let diveID = json["DiveID"] as? Int
-                            let shareLink = json["share_link"] as? String
-                            
-                            print("✅ Thành công: \(message)")
-                            print("DiveID:", diveID ?? 0)
-                            print("Share link:", shareLink ?? "")
-                            if let shareLink = shareLink, !shareLink.isEmpty {
-                                Utilities.share(items: [shareLink], from: self)
-                            }
-                            
-                        } else {
-                            let message = json["message"] as? String ?? "Unknown error"
-                            showAlert(on: self, message: message)
+                do {
+                    
+                    if let rawString = String(data: data, encoding: .utf8) {
+                        print("📦 Raw response:")
+                        print(rawString)
+                    } else {
+                        print("❌ Không convert được data sang UTF-8 String")
+                    }
+                    
+                    let obj = try JSONSerialization.jsonObject(with: data)
+                    
+                    guard let json = obj as? [String: Any] else {
+                        print("⚠️ JSON không phải dạng dictionary")
+                        return
+                    }
+
+                    let status = json["status"] as? String ?? ""
+
+                    if status == "success" {
+                        let message = json["message"] as? String ?? ""
+                        let diveID = json["DiveID"] as? Int
+                        let shareLink = json["share_link"] as? String
+
+                        print("✅ Thành công:", message)
+                        print("DiveID:", diveID ?? 0)
+                        print("Share link:", shareLink ?? "")
+
+                        if let shareLink = shareLink, !shareLink.isEmpty {
+                            Utilities.share(items: [shareLink], from: self)
                         }
                     } else {
-                        print("⚠️ Response không đúng định dạng JSON")
+                        let message = json["message"] as? String ?? "Unknown error"
+                        showAlert(on: self, message: message)
                     }
+
+                } catch {
+                    print("❌ JSON parse error:", error.localizedDescription)
+                    showAlert(on: self, message: "Dữ liệu trả về không hợp lệ")
                 }
+
             } catch {
                 ProgressHUD.dismiss()
                 print("API Error:", error.localizedDescription)

@@ -16,10 +16,6 @@ struct DiveErrors: OptionSet {
     static let longDive         = DiveErrors(rawValue: 1 << 5)
     static let violUnderwater   = DiveErrors(rawValue: 1 << 6)
     static let violSurface      = DiveErrors(rawValue: 1 << 7)
-
-    var isViolation: Bool {
-        contains(.violUnderwater) || contains(.violSurface)
-    }
 }
 
 struct AlarmId1: OptionSet {
@@ -36,15 +32,23 @@ struct AlarmId1: OptionSet {
 
     var descriptions: [String] {
         var result: [String] = []
-        if contains(.ascentSpeed)   { result.append("ASCENT SPEED ALARM") }
-        if contains(.ndl)           { result.append("NDL ALARM") }
-        if contains(.depth)         { result.append("DEPTH ALARM") }
-        if contains(.time)          { result.append("TIME ALARM") }
-        if contains(.mod)           { result.append("MOD ALARM") }
-        if contains(.oxTox)         { result.append("OXTOX ALARM") }
-        if contains(.oxTox100)      { result.append("OXTOX 100 ALARM") }
-        if contains(.decoStopMissed){ result.append("DECO STOP MISSED ALARM") }
+        if contains(.ascentSpeed)   { result.append("ASCENT") }
+        if contains(.ndl)           { result.append("DECO") }
+        if contains(.depth)         { result.append("DEPTH") }
+        if contains(.time)          { result.append("EDT") }
+        if contains(.mod)           { result.append("MOD") }
+        if contains(.oxTox)         { result.append("OXTOX") }
+        if contains(.oxTox100)      { result.append("OXTOX 100%M") }
+        if contains(.decoStopMissed){ result.append("MISSED DECO STOP") }
         return result
+    }
+    
+    var isAscentSpeed: Bool {
+        contains(.ascentSpeed)
+    }
+    
+    var isDeco: Bool {
+        contains(.ndl)
     }
 }
 
@@ -62,19 +66,18 @@ struct AlarmId2: OptionSet {
 
     var descriptions: [String] {
         var result: [String] = []
-        if contains(.depthRange) { result.append("DEPTH RANGE ALARM") }
-        if contains(.longDive)   { result.append("LONG DIVE ALARM") }
-        if contains(.deco200ft)  { result.append("DECO STOP 200FT ALARM") }
-        if contains(.batWarning) { result.append("BAT WARNING") }
-        if contains(.batAlarm)   { result.append("BAT ALARM") }
-        if contains(.tankTurn)  { result.append("TANK TURN ALARM") }
-        if contains(.tankEnd)   { result.append("TANK END ALARM") }
-        if contains(.tankDtr)   { result.append("TANK DTR ALARM") }
+        if contains(.deco200ft)  { result.append("DECO STOP 200FT") }
+        if contains(.batWarning) { result.append("BAT LOW") }
+        if contains(.batAlarm)   { result.append("BATTERY TOO LOW") }
         return result
+    }
+    
+    var isViolation: Bool {
+        contains(.deco200ft)
     }
 }
 
-func buildAlarmString(alarmId1: String?, alarmId2: String?) -> String {
+func buildAlarmString(alarmId1: String?, alarmId2: String?) -> [String] {
     var result: [String] = []
     
     if let v1 = alarmId1.flatMap(UInt8.init) {
@@ -87,6 +90,6 @@ func buildAlarmString(alarmId1: String?, alarmId2: String?) -> String {
         result.append(contentsOf: alarms2.descriptions)
     }
     
-    return result.joined(separator: ", ")
+    return result
 }
 
