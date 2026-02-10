@@ -384,3 +384,5 @@ our products." = "Erlauben Sie DiveSync, Daten von Ihrem Tauchcomputer zu sammel
 "Restore" = "Wiederherstellen";
 "Your device's owner info are uploaded" = "Die Besitzerinformationen Ihres Geräts wurden hochgeladen.";
 "Uploading your owner info..." = "Ihre Besitzerinformationen werden hochgeladen...";
+"Select All" = "Alles auswählen";
+"Long press an item to select or deselect it" = "Lange tippen zum Aus- oder Abwählen";

@@ -13,6 +13,7 @@ import RxBluetoothKit
 
 class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var headerTableView: UIView!
     
     @IBOutlet weak var addView: UIView!
     @IBOutlet weak var recycleView: UIView!
@@ -29,6 +30,11 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     @IBOutlet weak var cancelLb: UILabel!
     @IBOutlet weak var sortLb: UILabel!
     @IBOutlet weak var searchLb: UILabel!
+    
+    @IBOutlet weak var selectAllBtn: UIButton!
+    @IBOutlet weak var selectAllImv: UIImageView!
+    @IBOutlet weak var selectAllLb: UILabel!
+    @IBOutlet weak var longPressLb: UILabel!
     
     var diveList:[Row] = []
     
@@ -54,6 +60,8 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         cancelLb.text = "Cancel".localized
         sortLb.text = "Sort".localized
         searchLb.text = "Search".localized
+        selectAllLb.text = "Select All".localized
+        longPressLb.text = "Long press an item to select or deselect it".localized
         
         // Register the default cell
         tableView.backgroundColor = .clear
@@ -85,26 +93,73 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         
     }
     
+    private func updateSelectAllButton() {
+        let imageName = isAllSelected
+            ? "checked"
+            : "uncheck1"
+        
+        selectAllImv.image = UIImage(named: imageName)
+    }
+    
+    private var isAllSelected: Bool {
+        return !diveList.isEmpty && selectedIndexes.count == diveList.count
+    }
+    
+    @IBAction func selectAllAction(_ sender: Any) {
+
+        // 1. Nếu chưa vào delete mode → bật delete mode
+        if !isDeleteMode {
+            isDeleteMode = true
+            selectedIndexes.removeAll()
+        }
+
+        // 2. Toggle select all / deselect all
+        if selectedIndexes.count == diveList.count {
+            // Deselect all
+            selectedIndexes.removeAll()
+        } else {
+            // Select all
+            selectedIndexes = Set(0..<diveList.count)
+        }
+
+        // 3. Update UI
+        updateUIForDeleteMode()
+    }
+    
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         guard gestureRecognizer.state == .began else { return }
-        
+
         let point = gestureRecognizer.location(in: tableView)
-        
-        if let indexPath = tableView.indexPathForRow(at: point) {
-            if !isDeleteMode {
-                // Bắt đầu chế độ xóa khi long tap
-                isDeleteMode = true
-                selectedIndexes.removeAll()
-                updateUIForDeleteMode()
+        guard let indexPath = tableView.indexPathForRow(at: point) else { return }
+
+        if !isDeleteMode {
+            // 1️⃣ Bật delete mode
+            isDeleteMode = true
+
+            // 2️⃣ Clear toàn bộ selection → tất cả unchecked
+            selectedIndexes.removeAll()
+
+            // 3️⃣ Reload table để hiện checkbox (unchecked)
+            tableView.reloadData()
+
+            // 4️⃣ Chỉ check row đang long-press
+            selectedIndexes.insert(indexPath.row)
+
+            // 5️⃣ Reload riêng row đó
+            tableView.reloadRows(at: [indexPath], with: .fade)
+
+            // 6️⃣ Update header / select all
+            updateSelectAllButton()
+        } else {
+            // Đã ở delete mode → toggle bình thường
+            if selectedIndexes.contains(indexPath.row) {
+                selectedIndexes.remove(indexPath.row)
             } else {
-                // Nếu đang ở chế độ xóa, toggle chọn
-                if selectedIndexes.contains(indexPath.row) {
-                    selectedIndexes.remove(indexPath.row)
-                } else {
-                    selectedIndexes.insert(indexPath.row)
-                }
-                tableView.reloadRows(at: [indexPath], with: .fade)
+                selectedIndexes.insert(indexPath.row)
             }
+
+            tableView.reloadRows(at: [indexPath], with: .fade)
+            updateSelectAllButton()
         }
     }
     
@@ -166,6 +221,8 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     @IBAction func cancelButtonTapped(_ sender: UIButton) {
         isDeleteMode = false
         selectMode = false
+        
+        selectedIndexes.removeAll()
         
         updateUIForDeleteMode()
     }
@@ -244,10 +301,12 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     func updateUIForDeleteMode(indexPaths:[IndexPath]? = nil) {
         if diveList.count == 0 {
             tableView.isHidden = true
+            headerTableView.isHidden = true
             noDivesLb.isHidden = false
             isDeleteMode = false
         } else {
             tableView.isHidden = false
+            headerTableView.isHidden = false
             noDivesLb.isHidden = true
         }
         
@@ -281,6 +340,8 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         } else {
             tableView.reloadData()
         }
+        
+        updateSelectAllButton()
     }
     
     func deleteSelectedItems() {
@@ -318,10 +379,13 @@ extension LogsViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "LogCell", for: indexPath) as! LogCell
         
         // Hiện checkbox nếu đang ở chế độ xóa
-        cell.checkbox.isHidden = !isDeleteMode
-        cell.checkbox.isSelected = selectedIndexes.contains(indexPath.row)
+        cell.checkboxImv.isHidden = !isDeleteMode
         
         cell.bindData(row: diveList[indexPath.row])
+        cell.updateCheckbox(
+                isVisible: isDeleteMode,
+                isChecked: selectedIndexes.contains(indexPath.row)
+            )
         
         cell.onFavoriteTapped = {[weak self] isFavorite in
             guard let self = self else { return }

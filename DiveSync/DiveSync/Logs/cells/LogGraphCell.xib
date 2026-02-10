@@ -32,6 +32,13 @@
                         <color key="textColor" name="BottomBarColor"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="alarm_icon" translatesAutoresizingMaskIntoConstraints="NO" id="xto-wL-Tsw">
+                        <rect key="frame" x="8" y="166" width="20" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="ISn-1U-FUV"/>
+                            <constraint firstAttribute="width" constant="20" id="tu5-3F-JTv"/>
+                        </constraints>
+                    </imageView>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XKS-qO-d73">
                         <rect key="frame" x="0.0" y="191" width="245" height="70"/>
                         <subviews>
@@ -183,7 +190,9 @@
             </view>
             <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
             <constraints>
+                <constraint firstItem="xto-wL-Tsw" firstAttribute="centerY" secondItem="gh2-kt-VNB" secondAttribute="centerY" id="219-AP-szV"/>
                 <constraint firstAttribute="trailing" secondItem="XKS-qO-d73" secondAttribute="trailing" id="8OI-vB-fOk"/>
+                <constraint firstItem="xto-wL-Tsw" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="8" id="Cog-kK-y3K"/>
                 <constraint firstItem="gh2-kt-VNB" firstAttribute="top" secondItem="tNd-wy-LHK" secondAttribute="bottom" id="J0U-dk-0hc"/>
                 <constraint firstItem="XKS-qO-d73" firstAttribute="top" secondItem="tNd-wy-LHK" secondAttribute="bottom" id="d35-Ka-aQV"/>
                 <constraint firstAttribute="trailing" secondItem="tNd-wy-LHK" secondAttribute="trailing" id="d6l-yY-OLP"/>
@@ -209,11 +218,13 @@
                 <outlet property="startTankLb" destination="OIM-AK-cke" id="Xtb-LJ-jDC"/>
                 <outlet property="tempLb" destination="Bw8-LZ-Lmf" id="m0r-di-CYz"/>
                 <outlet property="timeLb" destination="sMA-rX-lhw" id="OFd-yG-mCh"/>
+                <outlet property="warningImv" destination="xto-wL-Tsw" id="cDS-ri-TFq"/>
             </connections>
             <point key="canvasLocation" x="130.53435114503816" y="4.5774647887323949"/>
         </collectionViewCell>
     </objects>
     <resources>
+        <image name="alarm_icon" width="73" height="65"/>
         <image name="bottom_time_icon" width="75" height="72"/>
         <image name="max_depth_icon" width="70" height="72"/>
         <image name="single_tank_icon" width="30" height="72"/>

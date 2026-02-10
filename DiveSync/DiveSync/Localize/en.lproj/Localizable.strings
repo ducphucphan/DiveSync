@@ -386,3 +386,5 @@ our products.";
 "Restore" = "Restore";
 "Your device's owner info are uploaded" = "Your device's owner info are uploaded";
 "Uploading your owner info..." = "Uploading your owner info...";
+"Select All" = "Select All";
+"Long press an item to select or deselect it" = "Long press an item to select or deselect it";

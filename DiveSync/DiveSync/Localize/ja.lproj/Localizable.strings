@@ -384,3 +384,6 @@ our products." = "「DiveSyncがダイブコンピュータからデータを収
 "Restore" = "復元";
 "Your device's owner info are uploaded" = "デバイスの所有者情報がアップロードされました";
 "Uploading your owner info..." = "所有者情報をアップロードしています...";
+"Select All" = "すべて選択";
+"Long press an item to select or deselect it" = "長押しで選択／解除";
+

@@ -35,7 +35,7 @@ struct AlarmId1: OptionSet {
         if contains(.ascentSpeed)   { result.append("ASCENT") }
         if contains(.ndl)           { result.append("DECO") }
         if contains(.depth)         { result.append("DEPTH") }
-        if contains(.time)          { result.append("EDT") }
+        if contains(.time)          { result.append("DIVE TIME") }
         if contains(.mod)           { result.append("MOD") }
         if contains(.oxTox)         { result.append("OXTOX") }
         if contains(.oxTox100)      { result.append("OXTOX 100%M") }

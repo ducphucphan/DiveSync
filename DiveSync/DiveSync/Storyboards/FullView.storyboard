@@ -183,6 +183,13 @@
                                                 <color key="textColor" name="BottomBarColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="alarm_icon" translatesAutoresizingMaskIntoConstraints="NO" id="lGE-4d-vWg">
+                                                <rect key="frame" x="8" y="5" width="20" height="20"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="20" id="GMI-gQ-M3m"/>
+                                                    <constraint firstAttribute="height" constant="20" id="ufA-F8-gVh"/>
+                                                </constraints>
+                                            </imageView>
                                         </subviews>
                                         <color key="backgroundColor" name="B2"/>
                                         <constraints>
@@ -191,7 +198,9 @@
                                             <constraint firstItem="8lz-bH-HiF" firstAttribute="top" secondItem="EY3-DZ-a5h" secondAttribute="top" id="SEv-9q-wYj"/>
                                             <constraint firstAttribute="height" constant="80" id="XoN-RZ-fR3"/>
                                             <constraint firstItem="KsQ-vt-fZL" firstAttribute="top" secondItem="EY3-DZ-a5h" secondAttribute="top" id="Xpi-Rj-hRH"/>
+                                            <constraint firstItem="lGE-4d-vWg" firstAttribute="centerY" secondItem="8lz-bH-HiF" secondAttribute="centerY" id="fHh-ZH-HZK"/>
                                             <constraint firstAttribute="trailing" secondItem="KsQ-vt-fZL" secondAttribute="trailing" id="jFn-KU-2Df"/>
+                                            <constraint firstItem="lGE-4d-vWg" firstAttribute="leading" secondItem="EY3-DZ-a5h" secondAttribute="leading" constant="8" id="kqy-0Z-Gco"/>
                                             <constraint firstItem="KsQ-vt-fZL" firstAttribute="top" secondItem="8lz-bH-HiF" secondAttribute="bottom" id="lOM-dD-MFn"/>
                                             <constraint firstItem="KsQ-vt-fZL" firstAttribute="leading" secondItem="EY3-DZ-a5h" secondAttribute="leading" id="uT7-Es-5Mo"/>
                                             <constraint firstItem="8lz-bH-HiF" firstAttribute="leading" secondItem="EY3-DZ-a5h" secondAttribute="leading" id="wM0-cS-OLH"/>
@@ -239,6 +248,7 @@
                         <outlet property="startTankLb" destination="gHH-q6-sp3" id="eLF-2Y-0xw"/>
                         <outlet property="tempLb" destination="Rve-4S-6gc" id="7X2-wR-YmN"/>
                         <outlet property="timeLb" destination="FOJ-V7-LoE" id="Eet-49-NOf"/>
+                        <outlet property="warningImv" destination="lGE-4d-vWg" id="saH-uU-Pbm"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -247,6 +257,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="alarm_icon" width="73" height="65"/>
         <image name="bottom_time_icon" width="75" height="72"/>
         <image name="max_depth_icon" width="70" height="72"/>
         <image name="single_tank_icon" width="30" height="72"/>

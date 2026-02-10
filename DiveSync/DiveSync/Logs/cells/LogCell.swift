@@ -10,7 +10,7 @@ import GRDB
 
 class LogCell: UITableViewCell {
     
-    @IBOutlet weak var checkbox: UIButton!
+    @IBOutlet weak var checkboxImv: UIImageView!
     @IBOutlet weak var favoriteBtn: UIButton!
     
     @IBOutlet weak var locLb: UILabel!
@@ -26,29 +26,32 @@ class LogCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        checkbox.setImage(UIImage(systemName: "circle"), for: .normal)
-        checkbox.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
-        checkbox.isUserInteractionEnabled = false
         
         // Xóa background (nếu có)
-        checkbox.backgroundColor = .clear
-        checkbox.isHidden = true
-        
-        // Xử lý update khi selected
-        checkbox.configurationUpdateHandler = { button in
-            var updatedConfig = button.configuration
-            let isSelected = button.isSelected
-            updatedConfig?.image = UIImage(systemName: isSelected ? "checkmark.circle" : "circle")
-            updatedConfig?.baseBackgroundColor = .clear
-            updatedConfig?.background.backgroundColor = .clear
-            button.configuration = updatedConfig
-        }
+        checkboxImv.backgroundColor = .clear
+        checkboxImv.isHidden = true
+        checkboxImv.image = UIImage(named: isSelected ? "checked" : "unchecked1")
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         
         // Configure the view for the selected state
+    }
+    
+    func updateCheckbox(isVisible: Bool, isChecked: Bool) {
+        checkboxImv.isHidden = !isVisible
+
+        UIView.transition(
+            with: checkboxImv,
+            duration: 0.15,
+            options: .transitionCrossDissolve,
+            animations: {
+                self.checkboxImv.image = UIImage(
+                    named: isChecked ? "checked" : "uncheck1"
+                )
+            }
+        )
     }
     
     func bindData(row: Row) {

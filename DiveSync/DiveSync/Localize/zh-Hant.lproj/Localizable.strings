@@ -384,3 +384,5 @@ our products." = "允許DiveSync從您的潜水電腦收集數據，以幫助我
 "Restore" = "還原";
 "Your device's owner info are uploaded" = "您的裝置所有者資訊已上傳。";
 "Uploading your owner info..." = "正在上傳您的車主資訊…";
+"Select All" = "全选";
+"Long press an item to select or deselect it" = "长按项目以选择或取消选择";

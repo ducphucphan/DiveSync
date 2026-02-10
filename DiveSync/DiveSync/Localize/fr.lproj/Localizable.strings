@@ -386,3 +386,5 @@ our products.";
 "Restore" = "Restaurer";
 "Your device's owner info are uploaded" = "Les informations du propriétaire de votre appareil ont été téléchargées";
 "Uploading your owner info..." = "Téléchargement de vos informations de propriétaire...";
+"Select All" = "Tout sélectionner";
+"Long press an item to select or deselect it" = "Appui long pour sélectionner ou désélectionner";

@@ -70,7 +70,7 @@ class SubSettingsViewController: BaseViewController {
     }
     
     func getPDCSettings() -> [String: Any] {
-        if let modelId = device.modelId, modelId == C_DAV {
+        if let rowid = rowId, rowid == "set_owner_info", let modelId = device.modelId, modelId == C_DAV {
             var ownerSettings: [String: Any] = [:]
             ownerSettings["DeviceID"] = device.deviceId
             

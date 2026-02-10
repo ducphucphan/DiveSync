@@ -384,3 +384,6 @@ our products." = "DiveSync가 제품 개선을 위해 다이브 컴퓨터에서�
 "Restore" = "복원";
 "Your device's owner info are uploaded" = "기기 소유자 정보가 업로드되었습니다.";
 "Uploading your owner info..." = "소유자 정보를 업로드하는 중...";
+"Select All" = "모두 선택";
+"Long press an item to select or deselect it" = "길게 눌러 선택/해제";
+

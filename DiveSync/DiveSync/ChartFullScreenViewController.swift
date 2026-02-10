@@ -13,6 +13,7 @@ class ChartFullScreenViewController: UIViewController {
     @IBOutlet weak var bottomView: UIView!
     
     @IBOutlet weak var msgLb: UILabel!
+    @IBOutlet weak var warningImv: UIImageView!
     @IBOutlet weak var depthLb: UILabel!
     @IBOutlet weak var timeLb: UILabel!
     @IBOutlet weak var tempLb: UILabel!
@@ -29,6 +30,8 @@ class ChartFullScreenViewController: UIViewController {
         
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(self, selector: #selector(deviceDidRotate), name: UIDevice.orientationDidChangeNotification, object: nil)
+        
+        warningImv.isHidden = true
 
         // Add chart view if available
         if let chartView = chartView {
@@ -80,6 +83,8 @@ extension ChartFullScreenViewController: ChartViewDelegate {
         alarmTimer = nil
         alarmIndex = 0
         currentAlarms = alarms
+        
+        warningImv.isHidden = alarms.isEmpty
 
         guard !alarms.isEmpty else {
             msgLb.text = ""

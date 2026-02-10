@@ -21,6 +21,12 @@ class RecycleViewController: BaseViewController {
     
     @IBOutlet weak var noDivesLb: UILabel!
     
+    @IBOutlet weak var headerTableView: UIView!
+    @IBOutlet weak var selectAllBtn: UIButton!
+    @IBOutlet weak var selectAllImv: UIImageView!
+    @IBOutlet weak var selectAllLb: UILabel!
+    @IBOutlet weak var longPressLb: UILabel!
+    
     var diveList:[Row] = []
     
     var selectMode = false
@@ -47,6 +53,8 @@ class RecycleViewController: BaseViewController {
         noDivesLb.text = "No Logs".localized
         deleteLb.text = "Delete".localized
         restoreLb.text = "Restore".localized
+        selectAllLb.text = "Select All".localized
+        longPressLb.text = "Long press an item to select or deselect it".localized
         
         // Register the default cell
         tableView.backgroundColor = .clear
@@ -87,6 +95,39 @@ class RecycleViewController: BaseViewController {
                 tableView.reloadRows(at: [indexPath], with: .fade)
             }
         }
+    }
+    
+    private func updateSelectAllButton() {
+        let imageName = isAllSelected
+            ? "checked"
+            : "uncheck1"
+        
+        selectAllImv.image = UIImage(named: imageName)
+    }
+    
+    private var isAllSelected: Bool {
+        return !diveList.isEmpty && selectedIndexes.count == diveList.count
+    }
+    
+    @IBAction func selectAllAction(_ sender: Any) {
+
+        // 1. Nếu chưa vào delete mode → bật delete mode
+        if !isDeleteMode {
+            isDeleteMode = true
+            selectedIndexes.removeAll()
+        }
+
+        // 2. Toggle select all / deselect all
+        if selectedIndexes.count == diveList.count {
+            // Deselect all
+            selectedIndexes.removeAll()
+        } else {
+            // Select all
+            selectedIndexes = Set(0..<diveList.count)
+        }
+
+        // 3. Update UI
+        updateUIForDeleteMode()
     }
     
     @IBAction func deleteButtonTapped(_ sender: UIButton) {
@@ -132,10 +173,12 @@ class RecycleViewController: BaseViewController {
     func updateUIForDeleteMode(indexPaths:[IndexPath]? = nil) {
         if diveList.count == 0 {
             tableView.isHidden = true
+            headerTableView.isHidden = true
             noDivesLb.isHidden = false
             isDeleteMode = false
         } else {
             tableView.isHidden = false
+            headerTableView.isHidden = false
             noDivesLb.isHidden = true
         }
         
@@ -150,6 +193,8 @@ class RecycleViewController: BaseViewController {
         } else {
             tableView.reloadData()
         }
+        
+        updateSelectAllButton()
     }
     
     func deleteSelectedItems() {
@@ -199,10 +244,13 @@ extension RecycleViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "LogCell", for: indexPath) as! LogCell
         
         // Hiện checkbox nếu đang ở chế độ xóa
-        cell.checkbox.isHidden = !isDeleteMode
-        cell.checkbox.isSelected = selectedIndexes.contains(indexPath.row)
+        cell.checkboxImv.isHidden = !isDeleteMode
         
         cell.bindData(row: diveList[indexPath.row])
+        cell.updateCheckbox(
+                isVisible: isDeleteMode,
+                isChecked: selectedIndexes.contains(indexPath.row)
+            )
         
         cell.onFavoriteTapped = {[weak self] isFavorite in
             guard let self = self else { return }

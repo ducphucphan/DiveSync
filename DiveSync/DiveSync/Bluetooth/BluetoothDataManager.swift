@@ -1255,15 +1255,23 @@ import ProgressHUD
         payload[1] = UInt8(c.minute ?? 0)
         payload[2] = UInt8(c.hour ?? 0)
         
+        // Swift: 1=Sunday ... 7=Saturday
+        let swiftWeekday = c.weekday ?? 1
+        
+        // Firmware: 0=Sunday ... 6=Saturday
+        let deviceWeekday = UInt8(swiftWeekday - 1)
+        
+        payload[3] = deviceWeekday
+        
         // Device weekday: 1=Mon ... 7=Sun
-        let swiftWeekday = c.weekday ?? 1 // 1=Sunday
-        payload[3] = (swiftWeekday == 1) ? 7 : UInt8(swiftWeekday - 1)
+        //let swiftWeekday = c.weekday ?? 1 // 1=Sunday
+        //payload[3] = (swiftWeekday == 1) ? 7 : UInt8(swiftWeekday - 1)
         
         payload[4] = UInt8(c.day ?? 1)
         payload[5] = UInt8(c.month ?? 1)
         payload[6] = UInt8((c.year ?? 0) & 0xFF)
         payload[7] = UInt8(((c.year ?? 0) >> 8) & 0xFF)
-        
+        PrintLog(payload)
         let data = self.cmdData(for: cmd.SetGMTTime, payload: Data(payload))
         return self.sendCommandWithBoolResponse(data)
     }
@@ -1448,16 +1456,18 @@ import ProgressHUD
         dcSettings["EcompassDeclination"] = systemSettings.ecompassDeclination_deg.decimalString
         dcSettings["Language"] = systemSettings.language.decimalString
         
-        let info = userInfo.components(separatedBy: "|").map { String($0) }
-        if info.count == 8 {
-            dcSettings["Name"] = info[0]
-            dcSettings["SurName"] = info[1]
-            dcSettings["Phone"] = info[2]
-            dcSettings["Email"] = info[3]
-            dcSettings["Blood"] = info[4]
-            dcSettings["EmName"] = info[5]
-            dcSettings["EmSurName"] = info[6]
-            dcSettings["EmPhone"] = info[7]
+        if self.ModelID != C_DAV {
+            let info = userInfo.components(separatedBy: "|").map { String($0) }
+            if info.count == 8 {
+                dcSettings["Name"] = info[0]
+                dcSettings["SurName"] = info[1]
+                dcSettings["Phone"] = info[2]
+                dcSettings["Email"] = info[3]
+                dcSettings["Blood"] = info[4]
+                dcSettings["EmName"] = info[5]
+                dcSettings["EmSurName"] = info[6]
+                dcSettings["EmPhone"] = info[7]
+            }
         }
         
         // GAS

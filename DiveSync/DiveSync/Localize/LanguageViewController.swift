@@ -20,7 +20,8 @@ class LanguageViewController: BaseViewController {
         ("🇰🇷 한국어", "ko"),
         ("🇹🇼 繁體中文", "zh-Hant"),
         ("🇯🇵 日本語", "ja"),
-        ("🇪🇸 Spanish", "es")
+        ("🇪🇸 Spanish", "es"),
+        ("🇵🇹 Portuguese", "pt-PT")
     ]
     
     override func viewDidLoad() {

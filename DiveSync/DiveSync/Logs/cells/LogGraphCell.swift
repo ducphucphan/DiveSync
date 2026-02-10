@@ -34,6 +34,7 @@ class LogGraphCell: UICollectionViewCell {
     @IBOutlet weak var startTankLb: UILabel!
     @IBOutlet weak var endTankLb: UILabel!
     @IBOutlet weak var msgLb: UILabel!
+    @IBOutlet weak var warningImv: UIImageView!
     
     var diveChartPoints: [DiveChartPoint] = []
     var chartEntries: [ChartDataEntry] = []
@@ -61,6 +62,8 @@ class LogGraphCell: UICollectionViewCell {
         super.awakeFromNib()
         // Initialization code
         
+        warningImv.isHidden = true
+        
         updateChartFromDiveProfile()
         
     }
@@ -71,6 +74,8 @@ class LogGraphCell: UICollectionViewCell {
         alarmIndex = 0
         currentAlarms = alarms
 
+        warningImv.isHidden = alarms.isEmpty
+        
         guard !alarms.isEmpty else {
             msgLb.text = ""
             return

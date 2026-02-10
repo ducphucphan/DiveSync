@@ -384,3 +384,5 @@ our products." = "DiveSync'in ürünlerimizi iyileştirmemize yardımcı olması
 "Restore" = "Geri yükle";
 "Your device's owner info are uploaded" = "Cihazınızın sahibine ait bilgiler yüklendi.";
 "Uploading your owner info..." = "Sahip bilgileriniz yükleniyor...";
+"Select All" = "Tümünü seç";
+"Long press an item to select or deselect it" = "Seçmek veya kaldırmak için uzun basın";
