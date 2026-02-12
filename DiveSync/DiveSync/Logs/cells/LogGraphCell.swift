@@ -457,7 +457,7 @@ extension LogGraphCell {
         soft.drawValuesEnabled = false
         soft.drawFilledEnabled = false
         soft.lineWidth = 3.0
-        soft.mode = .cubicBezier
+        soft.mode = .linear
         soft.setColor(baseColor.withAlphaComponent(0.33))
         
         // Line chính (đậm – mỏng)
@@ -466,7 +466,7 @@ extension LogGraphCell {
         sharp.drawValuesEnabled = false
         sharp.drawFilledEnabled = false
         sharp.lineWidth = 1.2
-        soft.mode = .cubicBezier
+        soft.mode = .linear
         sharp.setColor(baseColor)
 
         return [soft, sharp]
