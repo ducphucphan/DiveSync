@@ -180,71 +180,36 @@ class SubSettingsViewController: BaseViewController {
             BluetoothDeviceCoordinator.shared
                 .connect(to: matchedDevice.peripheral, discover: true)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] manager in
+                .subscribe(onNext: { [weak self] session in
                     guard let self = self else { return }
                     
-                    // Set ModelID nếu cần
+                    // 1. Ép kiểu về Protocol chung để xử lý logic cơ bản
+                    let manager: BluetoothManagerProtocol
+                    switch session {
+                    case .normalSession(let m): manager = m
+                    case .crSession(let m): manager = m
+                    }
+                    
+                    // 2. Logic Set ModelID (Viết 1 lần cho cả 2)
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
                     
+                    // 3. Xử lý riêng cho Owner Info bằng cách kiểm tra ép kiểu
                     if let modelId = device.modelId, modelId == C_DAV {
-                        var ownerName = ""
-                        var ownerPhone = ""
-                        var ownerEmail = ""
-                        var ownerBloodType = ""
-                        var emName = ""
-                        var emPhone = ""
-
-                        // Lặp qua tất cả rows
-                        for row in rows {
-                            switch row.id {
-                            case "owner_name":
-                                ownerName = row.value ?? ""
-                            case "owner_phone":
-                                ownerPhone = row.value ?? ""
-                            case "owner_mail":
-                                ownerEmail = row.value ?? ""
-                            case "owner_blood_type":
-                                ownerBloodType = row.value ?? ""
-                            case "owner_emname":
-                                emName = row.value ?? ""
-                            case "owner_emergency_contact_phone":
-                                emPhone = row.value ?? ""
-                            default:
-                                break
-                            }
+                        let uploadData = self.generateOwnerUploadData()
+                        
+                        // Kiểm tra xem manager hiện tại có hỗ trợ uploadOwnerInfoData không
+                        if let dataManager = manager as? BluetoothDataManager {
+                            dataManager.uploadOwnerInfoData = uploadData
                         }
-
-                        // Tạo struct từ các giá trị vừa lấy
-                        let owner = OwnerInfo(
-                            name: ownerName,
-                            phone: ownerPhone,
-                            email: ownerEmail,
-                            bloodType: ownerBloodType
-                        )
-
-                        let emergency = EmergencyContact(
-                            name: emName,
-                            phone: emPhone
-                        )
-
-                        let ownerInfoView = OwnerInfoCardViewBuilder.build(
-                            owner: owner,
-                            emergency: emergency
-                        )
-                        
-                        let image240 = renderViewToImage(ownerInfoView, size: CGSize(width: 240, height: 240))
-                        
-                        let uploadData = image240.rgb565Data(size: CGSize(width: 240, height: 240)) //imageToUploadData(image240)!
-                        
-                        manager.uploadOwnerInfoData = uploadData
                     }
-                    manager.readAllSettings()
                     
+                    // 4. Luôn gọi readAllSettings sau cùng (vì thuộc Protocol chung)
+                    manager.readAllSettings(completion: nil)
                 }, onError: { [weak self] error in
-                    guard let self = self else { return }
+                    guard self != nil else { return }
                     
                     ProgressHUD.dismiss()
                     
@@ -266,6 +231,59 @@ class SubSettingsViewController: BaseViewController {
             row.value = ""
         }
         self.tableview.reloadData()
+    }
+    
+    private func generateOwnerUploadData() -> Data {
+        var ownerName = ""
+        var ownerPhone = ""
+        var ownerEmail = ""
+        var ownerBloodType = ""
+        var emName = ""
+        var emPhone = ""
+        
+        // Lặp qua tất cả rows
+        for row in rows {
+            switch row.id {
+            case "owner_name":
+                ownerName = row.value ?? ""
+            case "owner_phone":
+                ownerPhone = row.value ?? ""
+            case "owner_mail":
+                ownerEmail = row.value ?? ""
+            case "owner_blood_type":
+                ownerBloodType = row.value ?? ""
+            case "owner_emname":
+                emName = row.value ?? ""
+            case "owner_emergency_contact_phone":
+                emPhone = row.value ?? ""
+            default:
+                break
+            }
+        }
+        
+        // Tạo struct từ các giá trị vừa lấy
+        let owner = OwnerInfo(
+            name: ownerName,
+            phone: ownerPhone,
+            email: ownerEmail,
+            bloodType: ownerBloodType
+        )
+        
+        let emergency = EmergencyContact(
+            name: emName,
+            phone: emPhone
+        )
+        
+        let ownerInfoView = OwnerInfoCardViewBuilder.build(
+            owner: owner,
+            emergency: emergency
+        )
+        
+        let image240 = renderViewToImage(ownerInfoView, size: CGSize(width: 240, height: 240))
+        
+        let uploadData = image240.rgb565Data(size: CGSize(width: 240, height: 240)) //imageToUploadData(image240)!
+        
+        return uploadData!
     }
 }
 
@@ -304,7 +322,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath) as! SettingCell
-            cell.bindRow(row: row)
+            cell.bindRow(row: row, modelId: device.modelId ?? 0)
             return cell
         }
     }
@@ -451,7 +469,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             var optionsToUse: [String] = []
 
             if let id = row.id {
-                if id == "mdepth" {
+                if id == "mdepth" || id == "log_start_depth" {
                     if DeviceSettings.shared.unit == 0 {
                         if let opts = row.options, !opts.isEmpty {
                             optionsToUse = opts
@@ -571,7 +589,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                         case "hour":
                             var fromFormat: String = "HH:mm"
                             var toFormat: String = "hh:mm a"
-                            if index == 0 {
+                            if value == "24 H" {
                                 fromFormat = "hh:mm a"
                                 toFormat = "HH:mm"
                             }
@@ -585,6 +603,26 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                             }
                             
                             reloadAll = true
+                        case "dive_mode":
+                            if value != "NITROX" {
+                                for row in rows {
+                                    if ["fo2"].contains(row.id) {
+                                        row.value = "21"
+                                        break
+                                    }
+                                }
+                                reloadAll = true
+                            }
+                        case "fo2":
+                            if value.toInt() > 21 {
+                                for row in rows {
+                                    if ["dive_mode"].contains(row.id) {
+                                        row.value = "NITROX"
+                                        break
+                                    }
+                                }
+                                reloadAll = true
+                            }
                         default:
                             break
                         }

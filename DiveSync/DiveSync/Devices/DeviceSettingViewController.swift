@@ -44,7 +44,18 @@ class DeviceSettingViewController: BaseViewController {
         tableview.delegate = self
         tableview.dataSource = self
         
-        applyValues()
+        loadSettings()
+        
+    }
+    
+    private func loadSettings() {
+        switch Int(device.modelId ?? 0) {
+        case C_LOG:
+            applyLogicDeciceValues()
+        default: // DAV
+            applyValues()
+            break
+        }
     }
     
     override func updateTexts() {
@@ -358,6 +369,147 @@ class DeviceSettingViewController: BaseViewController {
         }
     }
     
+    func applyLogicDeciceValues() {
+        if let sections = loadSettingsSections(from: "Logic_device"), sections.count > 0 {
+            //settings = sections[0].rows
+            
+            var excludedIDsForModel: [String] = []
+            let rows = sections[0].rows
+            let filtered = rows.filter { row in
+                !excludedIDsForModel.contains(row.id ?? "")
+            }
+            settings = filtered
+            
+            var dbSettings: [String:String] = [:]
+            do {
+                let dcSettings = try DatabaseManager.shared.fetchData(from: "DeviceSettings",
+                                                                      where: "DeviceID=?",
+                                                                      arguments: [device.deviceId])
+                guard let row = dcSettings.first else { return }
+                dbSettings = Utilities.convertRowToMap(row)
+            } catch {
+                PrintLog("Failed to fetch certificates data: \(error)")
+            }
+            
+            if dbSettings.count <= 0 { return }
+            
+            
+            for i in 0..<settings.count {
+                if let subRows = settings[i].subRows {
+                    // Xử lý row ở đây
+                    for row in subRows {
+                        
+                        let options = row.options
+                        let options_ft = row.options_ft
+                        
+                        switch row.id {
+                        case "hour":
+                            if let tf = dbSettings["TimeFormat"]?.toInt() {
+                                row.value = options?[tf]
+                            }
+                        case "set_date":
+                            if let df = dbSettings["DateFormat"]?.toInt(), df == 0 { // M.D
+                                row.value = Utilities.getDateTime(Date.now, "MM.dd.yyyy")
+                            } else {
+                                row.value = Utilities.getDateTime(Date.now, "dd.MM.yyyy")
+                            }
+                        case "set_time":
+                            if let tf = dbSettings["TimeFormat"]?.toInt(), tf == 0 { // 12H
+                                row.value = Utilities.getDateTime(Date.now, "hh:mm a")
+                            } else {
+                                row.value = Utilities.getDateTime(Date.now, "HH:mm")
+                            }
+                            
+                        // Alarms
+                        case "mdepth":
+                            let mdepth = dbSettings["DepthAlarmM"]?.toInt() ?? 0
+                            let idx = Int((mdepth - 9) / 3) + 1
+                            
+                            if mdepth == 0 || idx == 0 {
+                                row.value = OFF
+                            } else {
+                                if DeviceSettings.shared.unit == M {
+                                    row.value = options?[idx]
+                                } else {
+                                    row.value = options_ft?[idx]
+                                }
+                            }
+                        case "time_alarm":
+                            let diveTime = dbSettings["DiveTimeAlarmMin"]?.toInt() ?? 0
+                            row.value = (diveTime == 0) ? OFF : String(format: "%d:%02d", diveTime / 60, diveTime % 60)
+                        //
+                       
+                        case "deep_stop":
+                            if let deepStop = dbSettings["DeepStopOn"]?.toInt() {
+                                row.value = options?[deepStop]
+                            }
+                        case "water":
+                            if let water = dbSettings["WaterDensity"]?.toInt() {
+                                if water == 103 { // SEA
+                                    row.value = options?[0]
+                                } else { // FRESH
+                                    row.value = options?[1]
+                                }
+                            }
+                        case "conservatism":
+                            if let conservatism = dbSettings["Conservatism"]?.toInt() {
+                                row.value = options?[conservatism]
+                            }
+                        case "dive_mode":
+                            if let diveMode = dbSettings["DiveMode"]?.toInt() {
+                                row.value = options?[diveMode-1]
+                            }
+                        case "fo2":
+                            if let fo2 = dbSettings["FO2"]?.toInt() {
+                                row.value = options?[fo2-21]
+                            }
+                        case "po2":
+                            if let po2 = dbSettings["PO2"], let index = options?.firstIndex(of: po2) {
+                                row.value = options?[index]
+                            }
+                        case "log_start_depth":
+                            let depth = dbSettings["LogStartDepth"]?.toInt() ?? 0
+                            let idx = Int((depth - 10) / 5)
+                            
+                            if DeviceSettings.shared.unit == M {
+                                row.value = options?[idx]
+                            } else {
+                                row.value = options_ft?[idx]
+                            }
+                        case "log_stop_time":
+                            if let logStopTime = dbSettings["LogStopTime"], let index = options?.firstIndex(where: {
+                                   $0.replacingOccurrences(of: " MIN", with: "") == logStopTime
+                               }) {
+                                row.value = options?[index]
+                            }
+                        case "sample_rate":
+                            if let sample = dbSettings["DiveLogSamplingTime"]?.toInt() {
+                                row.value = String(format: "%d SEC", sample)
+                            }
+                            
+                        
+                        default:
+                            break
+                        }
+                    }
+                } else {
+                    let row = settings[i]
+                    let options = row.options
+                    switch row.id {
+                    case "units":
+                        if let unit = dbSettings["Units"]?.toInt() {
+                            row.value = options?[unit]
+                            DeviceSettings.shared.unit = unit
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+            
+        }
+    }
+    
     func getPDCSettings() -> [String: Any] {
         var dcSettings: [String: Any] = [:]
         
@@ -553,6 +705,131 @@ class DeviceSettingViewController: BaseViewController {
         return dcSettings
     }
     
+    func printAllSettings(rows: [SettingsRow], level: Int = 0) {
+        // Tạo khoảng trắng thụt đầu dòng để dễ phân biệt cấp độ cha-con
+        let indentation = String(repeating: "    ", count: level)
+        
+        for row in rows {
+            // Lấy giá trị id và value, nếu nil thì in ra chuỗi "nil"
+            let idString = row.id ?? "nil (Title: \(row.title ?? "No Title"))"
+            
+            // Xử lý hiển thị value (vì value có thể là String hoặc Object)
+            var displayValue = "nil"
+            if let val = row.value {
+                displayValue = "\(val)"
+            }
+            
+            // In ra thông tin của row hiện tại
+            print("\(indentation)▶️ ID: \(idString) | Value: \(displayValue)")
+            
+            // KIỂM TRA ĐỆ QUY: Nếu có subRows, tiếp tục in tất cả bên trong
+            if let children = row.subRows, !children.isEmpty {
+                printAllSettings(rows: children, level: level + 1)
+            }
+        }
+    }
+    
+    func getLogicSettings() -> [String: Any] {
+        var dcSettings: [String: Any] = [:]
+        
+        dcSettings["DeviceID"] = device.deviceId
+        
+        //printAllSettings(rows: settings)
+        
+        for i in 0..<settings.count {
+            if let subRows = settings[i].subRows {
+                // Xử lý row ở đây
+                for row in subRows {
+                    var index = 0
+                    let value = row.value ?? ""
+                    
+                    let options = row.options
+                    if options != nil {
+                        index = options!.firstIndex(of: value) ?? 0
+                    }
+                    
+                    switch row.id {
+                    // System Settings
+                    case "hour":
+                        dcSettings["TimeFormat"] = index
+                        
+                    // Scuba Settings
+                    case "mdepth":
+                        
+                        let options = row.options
+                        let options_ft = row.options_ft
+                        
+                        if DeviceSettings.shared.unit == M {
+                            dcSettings["DepthAlarmM"] = value.toInt()
+                        } else {
+                            if let idx = options_ft?.firstIndex(of: value) {
+                                dcSettings["DepthAlarmM"] = options?[idx].toInt()
+                            }
+                        }
+                        
+                    case "time_alarm":
+                        dcSettings["DiveTimeAlarmMin"] = Utilities.parseTimeToMins(from: value)
+                        
+                    case "water":
+                        dcSettings["WaterDensity"] = (index == 0) ? 103:100
+                        
+                    case "dive_mode":
+                        dcSettings["DiveMode"] = index+1
+                        
+                    case "fo2":
+                        dcSettings["FO2"] = value
+                    case "po2":
+                        dcSettings["PO2"] = value
+                        
+                    case "conservatism":
+                        dcSettings["Conservatism"] = index
+                        
+                    case "log_start_depth":
+                        let options = row.options
+                        let options_ft = row.options_ft
+                        
+                        if DeviceSettings.shared.unit == M {
+                            dcSettings["LogStartDepth"] = value.toInt()
+                        } else {
+                            if let idx = options_ft?.firstIndex(of: value) {
+                                dcSettings["LogStartDepth"] = options?[idx].toInt()
+                            }
+                        }
+                        
+                    case "log_stop_time":
+                        dcSettings["LogStopTime"] = value.toInt()
+                        
+                    case "sample_rate":
+                        dcSettings["DiveLogSamplingTime"] = value.toInt()
+                        
+                    case "deep_stop":
+                        dcSettings["DeepStopOn"] = index
+                    default:
+                        break
+                    }
+                }
+            } else {
+                let row = settings[i]
+                var index = 0
+                let value = row.value ?? ""
+                
+                let options = row.options
+                if options != nil {
+                    index = options!.firstIndex(of: value) ?? 0
+                }
+                
+                switch row.id {
+                case "units":
+                    dcSettings["Units"] = index
+                default:
+                    break
+                }
+            }
+        }
+        
+        return dcSettings
+    }
+    
     @IBAction func downloadTapped(_ sender: Any) {
         searchType = .kSetting
         syncType = .kDownloadSetting
@@ -571,7 +848,15 @@ class DeviceSettingViewController: BaseViewController {
         searchType = .kSetting
         syncType = .kUploadSetting
         
-        let settings = getPDCSettings()
+        var settings:[String: Any] = [:]
+        
+        switch Int(device.modelId ?? 0) {
+        case C_LOG:
+            settings = getLogicSettings()
+        default: // DAV
+            settings = getPDCSettings()
+            break
+        }
         
         let basePath = HomeDirectory().appendingFormat("%@", PDC_DATA)
 
@@ -619,19 +904,23 @@ class DeviceSettingViewController: BaseViewController {
             BluetoothDeviceCoordinator.shared
                 .connect(to: matchedDevice.peripheral, discover: true)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] manager in
-                    guard let self = self else { return }
+                .subscribe(onNext: { [weak self] session in
+                    guard self != nil else { return }
                     
-                    // Set ModelID nếu cần
+                    let manager: BluetoothManagerProtocol
+                    switch session {
+                    case .normalSession(let m): manager = m
+                    case .crSession(let m): manager = m
+                    }
+                    
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
-                    
-                    manager.readAllSettings()
+                    manager.readAllSettings(completion: nil)
                     
                 }, onError: { [weak self] error in
-                    guard let self = self else { return }
+                    guard self != nil else { return }
                     
                     ProgressHUD.dismiss()
                     if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
@@ -664,7 +953,7 @@ extension DeviceSettingViewController: BluetoothDeviceCoordinatorDelegate {
     func didConnectToDevice(message: String?) {
         if let msg = message {
             showAlert(on: self, message: msg, okHandler: {
-                self.applyValues()
+                self.loadSettings()
                 self.tableview.reloadData()
             })
         }
@@ -689,7 +978,7 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = settings[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath) as! SettingCell
-        cell.bindRow(row: row)
+        cell.bindRow(row: row, modelId: device.modelId ?? 0)
         return cell
     }
     

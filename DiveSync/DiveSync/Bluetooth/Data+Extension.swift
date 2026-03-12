@@ -28,3 +28,42 @@ extension Data {
         }
     }
 }
+
+extension Data {
+    func u8(_ offset: Int) -> Int {
+        guard offset < self.count else { return 0 }
+        return Int(self[offset])
+    }
+    
+    func u16(_ offset: Int) -> Int {
+        guard offset + 2 <= self.count else { return 0 }
+        let value = self.subdata(in: offset..<offset+2).withUnsafeBytes {
+            $0.load(as: UInt16.self)
+        }
+        return Int(UInt16(bigEndian: value))
+    }
+    
+    func u32(_ offset: Int) -> Int {
+        guard offset + 4 <= self.count else { return 0 }
+        let value = self.subdata(in: offset..<offset+4).withUnsafeBytes {
+            $0.load(as: UInt32.self)
+        }
+        return Int(UInt32(bigEndian: value))
+    }
+    
+    func u16LE(_ offset: Int) -> Int {
+        guard offset + 2 <= self.count else { return 0 }
+        let value = self.subdata(in: offset..<offset+2).withUnsafeBytes {
+            $0.load(as: UInt16.self)
+        }
+        return Int(UInt16(littleEndian: value))
+    }
+    
+    func u32LE(_ offset: Int) -> Int {
+        guard offset + 4 <= self.count else { return 0 }
+        let value = self.subdata(in: offset..<offset+4).withUnsafeBytes {
+            $0.load(as: UInt32.self)
+        }
+        return Int(UInt32(littleEndian: value))
+    }
+}

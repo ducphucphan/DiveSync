@@ -19,6 +19,16 @@ enum ScanMode {
     case all             // hiển thị tất cả
 }
 
+enum ConnectedDeviceType {
+    case normal
+    case cr // CR-1, CR-4, CR-5 (3 device làm riêng từ app Dive Story)
+}
+
+enum ConnectedSession {
+    case normalSession(BluetoothDataManager)
+    case crSession(BluetoothDeviceCRManager)
+}
+
 protocol BluetoothDeviceCoordinatorDelegate: AnyObject {
     func didConnectToDevice(message: String?)
 }
@@ -43,6 +53,8 @@ final class BluetoothDeviceCoordinator {
     private(set) var connectedPeripheral: Peripheral?
     private(set) var activeDataManager: BluetoothDataManager?
     
+    private(set) var crDeviceManager: BluetoothDeviceCRManager?
+    
     private var didAutoSyncOnce = false
     private var isManualSyncing = false
     
@@ -52,6 +64,22 @@ final class BluetoothDeviceCoordinator {
     
     var isExpectedDisconnect = false
         
+    private func detectDeviceType(peripheral: Peripheral) -> ConnectedDeviceType {
+        
+        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+           let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+            let ModelID = dcInfo[2].toInt()
+            switch ModelID {
+            case C_CEN, C_GRA, C_LOG:
+                return .cr
+            default:
+                return .normal
+            }
+        }
+        
+        return .normal
+    }
+    
     // MARK: - Observe BLE state
     private func observeCentralState() {
         central.observeState()
@@ -78,7 +106,7 @@ final class BluetoothDeviceCoordinator {
         
         scanningDisposable = central.scanForPeripherals(withServices: nil)
             .filter { scanned in
-                //print("\(scanned.peripheral.name) - \(scanned.advertisementData.localName)")
+                print("\(scanned.peripheral.name) - \(scanned.advertisementData.localName)")
                 guard let name = scanned.advertisementData.localName else { return false }
                 
                 let matched = BLEConstants.BLEDeviceNames.list.contains { name.hasPrefix($0) }
@@ -190,6 +218,11 @@ final class BluetoothDeviceCoordinator {
     }
     
     private func tryAutoConnectKnown(from devices: [ScannedPeripheral]) {
+        guard crDeviceManager == nil else {
+            PrintLog("⛔ Skip autosync: CR device active")
+            return
+        }
+        
         guard !didAutoSyncOnce,
               !isManualSyncing,
               connectedPeripheral == nil,
@@ -214,8 +247,13 @@ final class BluetoothDeviceCoordinator {
         
         _ = connect(to: first.peripheral, discover: true)
             .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] manager in
+            .subscribe(onNext: { [weak self] session in
                 // Auto-sync settings sau khi connect
+                
+                guard case let .normalSession(manager) = session else {
+                    PrintLog("⛔ Skip autosync: CR device")
+                    return
+                }
                 
                 searchType = .kAddDive
                 syncType = .kDownloadDiveData
@@ -223,10 +261,18 @@ final class BluetoothDeviceCoordinator {
                 manager.readAllSettings()
                 
                 self?.didAutoSyncOnce = true
-            }, onError: { _ in ProgressHUD.dismiss() })
+            }, onError: { _ in
+                ProgressHUD.dismiss()
+            })
     }
     
     private func tryReconnectAfterUpdatingDevice(from devices: [ScannedPeripheral]) {
+        
+        guard crDeviceManager == nil else {
+            PrintLog("⛔ Skip autosync: CR device active")
+            return
+        }
+        
         guard syncType == .kRedownloadSetting else { return }
         guard let deviceOtaAddress = deviceOtaAddress else { return }
         
@@ -246,7 +292,13 @@ final class BluetoothDeviceCoordinator {
         
         _ = connect(to: target.peripheral, discover: true)
             .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] manager in
+            .subscribe(onNext: { [weak self] session in
+                
+                guard case let .normalSession(manager) = session else {
+                    PrintLog("⛔ Skip autosync: CR device")
+                    return
+                }
+                
                 manager.readAllSettings()
                 self?.deviceOtaAddress = nil
             })
@@ -257,7 +309,7 @@ final class BluetoothDeviceCoordinator {
                  discover: Bool = true,
                  services: [CBUUID] = BLEConstants.SERVICES.list,
                  writeChar: CBUUID = BLEConstants.RWChar.write,
-                 readChar: CBUUID = BLEConstants.RWChar.read) -> Observable<BluetoothDataManager> {
+                 readChar: CBUUID = BLEConstants.RWChar.read) -> Observable<ConnectedSession> {
         
         stopScan()   // ⛔ stop scan ngay khi bắt đầu connect
         
@@ -269,24 +321,53 @@ final class BluetoothDeviceCoordinator {
         let connectObs = central.establishConnection(peripheral)
             .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
                 onDispose: {
-                    PrintLog("🔌 Disconnected")
-                    self.resumeScanIfNeeded()   // 👈 resume scan ngay khi disconnect
-                })
-            .flatMap { [weak self] connected -> Observable<BluetoothDataManager> in
+                PrintLog("🔌 Disconnected")
+                self.resumeScanIfNeeded()   // 👈 resume scan ngay khi disconnect
+            })
+            .flatMap { [weak self] connected -> Observable<ConnectedSession> in
                 guard let self = self else { return .error(NSError(domain: "BLE", code: -99)) }
                 
                 self.connectedPeripheral = connected
                 
-                let manager = BluetoothDataManager(peripheral: connected)
-                self.activeDataManager = manager
-                
-                guard discover else {
-                    ProgressHUD.dismiss()
-                    return .just(manager)
+                let deviceType = self.detectDeviceType(peripheral: connected)
+                switch deviceType {
+                case .normal:
+                    let manager = BluetoothDataManager(peripheral: connected)
+                    self.activeDataManager = manager
+                    
+                    guard discover else {
+                        ProgressHUD.dismiss()
+                        return .just(.normalSession(manager))
+                    }
+                    
+                    return manager
+                        .discoverServicesAndCharacteristics(
+                            servicesUUID: services,
+                            writeCharUUID: writeChar,
+                            readCharUUID: readChar
+                        )
+                        .map {
+                            return .normalSession(manager)
+                        }
+                case .cr:
+                    let crManager = BluetoothDeviceCRManager(peripheral: connected)
+                    self.crDeviceManager = crManager
+                    
+                    guard discover else {
+                        ProgressHUD.dismiss()
+                        return .just(.crSession(crManager))
+                    }
+                    
+                    return crManager
+                        .discoverServicesAndCharacteristics(
+                            servicesUUID: BLEConstants.SERVICES.logic,
+                            writeCharUUID: BLEConstants.RWCharLogic.write,
+                            readCharUUID: BLEConstants.RWCharLogic.read
+                        )
+                        .map {
+                            return .crSession(crManager)
+                        }
                 }
-                return manager
-                    .discoverServicesAndCharacteristics(servicesUUID: services, writeCharUUID: writeChar, readCharUUID: readChar)
-                    .map { manager }
             }
             .share(replay: 1, scope: .forever)
         
@@ -299,9 +380,9 @@ final class BluetoothDeviceCoordinator {
     }
     
     func connect2OtaDevice(to device: ScannedPeripheral,
-                 discover: Bool = true,
-                 services: [CBUUID] = BLEConstants.SERVICES.otaServices,
-                 characteristics:[CBUUID]) -> Observable<BluetoothDataManager> {
+                           discover: Bool = true,
+                           services: [CBUUID] = BLEConstants.SERVICES.otaServices,
+                           characteristics:[CBUUID]) -> Observable<BluetoothDataManager> {
         
         stopScan()   // ⛔ stop scan ngay khi bắt đầu connect
         

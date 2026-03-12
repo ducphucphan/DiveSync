@@ -176,15 +176,20 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
         BluetoothDeviceCoordinator.shared
             .connect(to: scanned.peripheral, discover: true) // ← discover ngay
             .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { manager in
-                // Set ModelID nếu cần
+            .subscribe(onNext: { session in
+                
+                let manager: BluetoothManagerProtocol
+                switch session {
+                case .normalSession(let m): manager = m
+                case .crSession(let m): manager = m
+                }
+                
                 if let (bleName, _) = scanned.peripheral.peripheral.splitDeviceName(),
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                     manager.ModelID = dcInfo[2].toInt()
                 }
+                manager.readAllSettings(completion: nil)
                 
-                // Kết nối xong thì đọc settings luôn
-                manager.readAllSettings()
             }, onError: { error in
                 ProgressHUD.dismiss()
                 PrintLog("❌ Error: \(error.localizedDescription)")

@@ -209,9 +209,11 @@ class LogViewController: BaseViewController {
         
         PrintLog(diveLog)
         
+        let modelID = diveLog.stringValue(key: "ModelID").toInt()
+        
         diveOfTheDayLb.text = "#" + diveLog.stringValue(key: "DiveOfTheDay")
         if (diveLog.stringValue(key: "DiveOfTheDay").isEmpty) {
-            diveOfTheDayLb.text = "#1"
+            diveOfTheDayLb.text = ""
         }
         
         spotNameLb.text = diveLog.stringValue(key: "SpotName")
@@ -220,7 +222,15 @@ class LogViewController: BaseViewController {
         }
         
         if manualDive == false {
-            diveNameLb.text = String(format: "%@, %@: %05d", diveLog.stringValue(key: "DeviceName"), "SN".localized, diveLog.stringValue(key: "SerialNo").toInt())
+            var deviceSerialNo = ""
+            switch modelID {
+            case C_LOG:
+                deviceSerialNo = diveLog.stringValue(key: "SerialNo")
+            default:
+                deviceSerialNo = String(format: "%05d", diveLog.stringValue(key: "SerialNo").toInt())
+                break
+            }
+            diveNameLb.text = String(format: "%@, %@: %@", diveLog.stringValue(key: "DeviceName"), "SN".localized, deviceSerialNo)
         } else {
             diveNameLb.text = String(format: "%@", diveLog.stringValue(key: "DeviceName"))
         }

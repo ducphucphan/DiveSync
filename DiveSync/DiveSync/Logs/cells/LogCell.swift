@@ -55,19 +55,28 @@ class LogCell: UITableViewCell {
     }
     
     func bindData(row: Row) {
+        let modelID = row.stringValue(key: "ModelID").toInt()
+        
         locLb.text = row.stringValue(key: "SpotName")
         if row.stringValue(key: "SpotName").isEmpty {
             locLb.text = "---"
         }
-                
+        
         let deviceNameStr = row.stringValue(key: "DeviceName")
-        let deviceSerialNo = row.stringValue(key: "SerialNo").toInt()
+        var deviceSerialNo = ""
+        switch modelID {
+        case C_LOG:
+            deviceSerialNo = row.stringValue(key: "SerialNo")
+        default:
+            deviceSerialNo = String(format: "%05d", row.stringValue(key: "SerialNo").toInt())
+            break
+        }
         
         let diveMode = row.stringValue(key: "DiveMode").toInt()
         if diveMode >= 100 { // Manual
             deviceNameLb.text = deviceNameStr.isEmpty ? "N/A":deviceNameStr
         } else {
-            deviceNameLb.text = String(format: "%@, %@: %05d", deviceNameStr, "SN".localized, deviceSerialNo)
+            deviceNameLb.text = String(format: "%@, %@: %@", deviceNameStr, "SN".localized, deviceSerialNo)
         }
         
         let diveDateTime = row.stringValue(key: "DiveStartLocalTime")
@@ -80,7 +89,7 @@ class LogCell: UITableViewCell {
         diveTimeLb.text = diveTime
         
         diveOfTheDayLb.text = "#\(diveOfTheDay)"
-        if diveMode >= 100 { // Manual
+        if diveMode >= 100 || diveOfTheDay.isEmpty { // Manual
             diveOfTheDayLb.text = ""
         }
         

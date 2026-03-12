@@ -49,8 +49,19 @@ final class DeviceCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(with item: Devices) {
-        imageView.image = UIImage(named: "\(item.modelId ?? 0)") ?? UIImage(systemName: "8682")
-        nameLabel.text = String(format: "%@-%05d", item.ModelName ?? "Unknown".localized, item.SerialNo?.toInt() ?? 0)
+        
+        let modelId = Int(item.modelId ?? 0)
+        var deviceSerialNo = ""
+        switch modelId {
+        case C_LOG:
+            deviceSerialNo = item.SerialNo ?? ""
+        default:
+            deviceSerialNo = String(format: "%05d", item.SerialNo?.toInt() ?? 0)
+            break
+        }
+        
+        imageView.image = UIImage(named: "\(modelId)") ?? UIImage(systemName: "8682")
+        nameLabel.text = String(format: "%@-%@", item.ModelName ?? "Unknown".localized, deviceSerialNo)
         
         // Kiểm tra kết nối từ BluetoothDeviceCoordinator
         if let active = BluetoothDeviceCoordinator.shared.activeDataManager,

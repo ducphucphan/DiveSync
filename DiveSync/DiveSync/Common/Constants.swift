@@ -69,6 +69,12 @@ func convertMeter2Feet(_ m: Double) -> Double {
     return m * CONST_M_TO_FT
 }
 
+func convertMeterToFeetRounded(_ meter: Double) -> Int {
+    let feet = meter * CONST_M_TO_FT
+    let roundedTo10 = (feet / 10.0).rounded() * 10
+    return Int(roundedTo10)
+}
+
 func convertCUFT2L(_ cuft: Double) -> Double {
     return cuft * CONST_CUFT_TO_LITER
 }

@@ -269,13 +269,29 @@ class LogGraphCell: UICollectionViewCell {
         // Add optional styling
         lineChartView.legend.enabled = false
         
+        // MARK: - CẤU HÌNH TRỤC Y (FIX LỖI LƯNG CHỪNG)
+        // Đồng bộ cả 2 trục để Transformer tính toán chính xác tuyệt đối
+        let paddingFactor = 1.05 // Thêm 5% khoảng trống ở đáy
+        let calculatedMax = maxDepth * paddingFactor
+
+        [lineChartView.leftAxis, lineChartView.rightAxis].forEach { axis in
+            axis.inverted = true
+            axis.axisMinimum = 0
+            axis.spaceTop = 0
+            
+            // Thay vì dùng spaceBottom, ta gán trực tiếp giá trị đã tính toán
+            axis.axisMaximum = calculatedMax
+        }
+        
         // Invert the y-axis if you want depth to increase downwards
         lineChartView.leftAxis.enabled = false
         lineChartView.leftAxis.inverted = true
         
         lineChartView.rightAxis.enabled = true
         lineChartView.rightAxis.axisMinimum = 0
-        lineChartView.rightAxis.axisMaximum = ceil(maxDepth) // Adjust as per max depth
+        
+        //lineChartView.rightAxis.axisMaximum = ceil(maxDepth) // Adjust as per max depth
+        
         lineChartView.rightAxis.inverted = true
         lineChartView.rightAxis.labelTextColor = .white
         

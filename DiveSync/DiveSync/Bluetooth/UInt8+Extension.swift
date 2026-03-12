@@ -70,3 +70,18 @@ extension UInt32 {
     }
     
 }
+
+extension Data {
+    func uint8(at index: Int) -> UInt8? {
+        guard count > index else { return nil }
+        return self[index]
+    }
+    
+    var asciiString: String? {
+        String(data: self, encoding: .ascii)
+    }
+    
+    var utf8String: String? {
+        String(data: self, encoding: .utf8)
+    }
+}

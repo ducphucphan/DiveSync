@@ -7,17 +7,65 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "E100D2F4-5276-43AD-86B7-706803DECA45"
-            shouldBeEnabled = "Yes"
+            uuid = "33ED2BDC-6103-448A-8EA0-426C7E120666"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/Bluetooth/BluetoothDataManager.swift"
+            filePath = "DiveSync/Bluetooth/BluetoothDeviceCoordinator.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "365"
-            endingLineNumber = "365"
-            landmarkName = "parseResponse(_:)"
+            startingLineNumber = "110"
+            endingLineNumber = "110"
+            landmarkName = "scanLoop()"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A3BE9D2C-C177-479D-B044-1259F2FC0ADC"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DiveSync/Bluetooth/BluetoothDeviceCoordinator.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "118"
+            endingLineNumber = "118"
+            landmarkName = "scanLoop()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "A3BE9D2C-C177-479D-B044-1259F2FC0ADC - adcd3358875a779"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #2 (Swift.Array&lt;RxBluetoothKit.ScannedPeripheral&gt;, RxBluetoothKit.ScannedPeripheral) -&gt; Swift.Array&lt;RxBluetoothKit.ScannedPeripheral&gt; in DiveSync.BluetoothDeviceCoordinator.scanLoop() -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source_Old/DiveSync/DiveSync/Bluetooth/BluetoothDeviceCoordinator.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "118"
+                  endingLineNumber = "118"
+                  offsetFromSymbolStart = "200">
+               </Location>
+               <Location
+                  uuid = "A3BE9D2C-C177-479D-B044-1259F2FC0ADC - 7e20a4d456fe2bab"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (RxBluetoothKit.ScannedPeripheral) -&gt; Swift.String in closure #2 (Swift.Array&lt;RxBluetoothKit.ScannedPeripheral&gt;, RxBluetoothKit.ScannedPeripheral) -&gt; Swift.Array&lt;RxBluetoothKit.ScannedPeripheral&gt; in DiveSync.BluetoothDeviceCoordinator.scanLoop() -&gt; ()"
+                  moduleName = "DiveSync"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/phucpd/Documents/Workspaces/Projects/Mike%20Hollis/Source_Old/DiveSync/DiveSync/Bluetooth/BluetoothDeviceCoordinator.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "118"
+                  endingLineNumber = "118"
+                  offsetFromSymbolStart = "44">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -25,11 +25,11 @@ class SettingCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func bindRow(row: SettingsRow) {
+    func bindRow(row: SettingsRow, modelId: Int64) {
         titleLb.text = row.title.localized
         valueLb.text = row.value
         
-        if let value = row.value, row.id == "conservatism" {
+        if let value = row.value, row.id == "conservatism", modelId != C_LOG {
             if value.toInt() == 0 {
                 valueLb.text = value + " (GF: 90 - 90)"
             } else if value.toInt() == 1 {

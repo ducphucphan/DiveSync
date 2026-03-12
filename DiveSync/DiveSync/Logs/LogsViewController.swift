@@ -531,15 +531,20 @@ extension LogsViewController: AddLogsPopupDelegate {
             BluetoothDeviceCoordinator.shared
                 .connect(to: matchedDevice.peripheral, discover: true)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] manager in
-                    guard let self = self else { return }
+                .subscribe(onNext: { [weak self] session in
+                    guard self != nil else { return }
+                    
+                    let manager: BluetoothManagerProtocol
+                    switch session {
+                    case .normalSession(let m): manager = m
+                    case .crSession(let m): manager = m
+                    }
                     
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
-                    
-                    manager.readAllSettings()
+                    manager.readAllSettings(completion: nil)
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()

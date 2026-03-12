@@ -62,6 +62,12 @@
 		<string>LOGIC+</string>
 		<string>7679</string>
 	</array>
+	<key>GENESIS-Graviton</key>
+	<array>
+		<string>Genesis</string>
+		<string>GRAVITON</string>
+		<string>7182</string>
+	</array>
 	<key>CENTAURI</key>
 	<array>
 		<string>Genesis</string>

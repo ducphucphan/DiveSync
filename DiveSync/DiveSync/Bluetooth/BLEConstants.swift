@@ -106,28 +106,35 @@ struct BLEConstants {
             "SKI",
             "SPI",
             "SHERWOOD-Logic+",
+            "GENESIS-Graviton"
             //"CENTAURI"
         ]
     }
     
     struct SERVICES {
         static let list = [
-            CBUUID(string: "03d97288-001f-11ee-be56-0242ac120002"),
-            //CBUUID(string: "f000ffe0-ab12-45ec-84c8-46483f4626e9") // CENTAURI - CR-4
-            CBUUID(string: "f000ffe0-ab12-45ec-84c8-46483f4626e9") // Log+ - CR-1
+            CBUUID(string: "03d97288-001f-11ee-be56-0242ac120002")
         ]
         
         static let otaServices = [
             CBUUID(string: "0000FE20-CC7A-482A-984A-7F2ED5B3E58F") //SPP_OTA_SERVICE_UUID
+        ]
+        
+        ///
+        static let logic = [
+            CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E1001"), // Log+ Primary 1
+            CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2011")  // Log+ Primary 2
         ]
     }
     
     struct RWChar {
         static let read = CBUUID(string: "03d97d1e-001f-11ee-be56-0242ac120002")
         static let write = CBUUID(string: "03d97c10-001f-11ee-be56-0242ac120002")
-        
-        //static let readCR4 = CBUUID(string: "f000ffe1-ab12-45ec-84c8-46483f4626e9")
-        //static let writeCR4 = CBUUID(string: "f000ffe2-ab12-45ec-84c8-46483f4626e9")
+    }
+    
+    struct RWCharLogic {
+        static let write = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2012")
+        static let read = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E0002")
     }
     
     struct OTA {

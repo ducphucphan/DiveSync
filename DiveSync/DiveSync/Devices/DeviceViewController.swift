@@ -231,6 +231,9 @@ class DeviceViewController: BaseViewController {
         
         deviceName.text = device.ModelName ?? ""
         serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
+        if Int(device.modelId ?? 0) == C_LOG {
+            serialNoLb.text = "Serial Number".localized + ": \(device.SerialNo ?? "")"
+        }
         
         var versionText = "Firmware Version".localized + ": \(device.Firmware ?? "")"
         if let lcd = device.LCDFirmware, !lcd.isEmpty {
@@ -245,6 +248,14 @@ class DeviceViewController: BaseViewController {
         }
         
         // Stats
+        
+        statsTotalDivesValueLb.text = "---"
+        statsTotalDiveTimeValueLb.text = "---"
+        statsMdepthValueLb.text = "---"
+        statsAvgDepthValueLb.text = "---"
+        statsMinTempValueLb.text = "---"
+        statsAltLevelValueLb.text = "---"
+        
         if let StatsLogTotalDives = device.StatsLogTotalDives,
            let StatsTotalDiveSecond = device.StatsTotalDiveSecond,
            let StatsMaxDepthFT = device.StatsMaxDepthFT,
@@ -403,18 +414,21 @@ class DeviceViewController: BaseViewController {
         BluetoothDeviceCoordinator.shared
             .connect(to: matchedDevice.peripheral, discover: true)
             .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] manager in
+            .subscribe(onNext: { [weak self] session in
                 guard self != nil else { return }
                 
                 // Set ModelID nếu cần
-                if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
-                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
-                    manager.ModelID = dcInfo[2].toInt()
-                }
-                
-                manager.readAllSettings() {
-                    //self.updateDeviceStateUI()
-                    completion(.success(manager))
+                if case let .normalSession(manager) = session {
+                    // Set ModelID nếu cần
+                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                       let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                        manager.ModelID = dcInfo[2].toInt()
+                    }
+                    
+                    manager.readAllSettings() {
+                        //self.updateDeviceStateUI()
+                        completion(.success(manager))
+                    }
                 }
                 
             }, onError: { error in
@@ -473,20 +487,25 @@ class DeviceViewController: BaseViewController {
             BluetoothDeviceCoordinator.shared
                 .connect(to: matchedDevice.peripheral, discover: true)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] manager in
+                .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
                     
                     //ProgressHUD.dismiss()
                     
-                    // Set ModelID nếu cần
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
-                       let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
-                        manager.ModelID = dcInfo[2].toInt()
+                    if case let .normalSession(manager) = session {
+                        
+                        //ProgressHUD.dismiss()
+                        
+                        // Set ModelID nếu cần
+                        if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                           let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                            manager.ModelID = dcInfo[2].toInt()
+                        }
+                        
+                        manager.readAllSettings()
+                        
+                        //self.updateDeviceStateUI()
                     }
-                    
-                    manager.readAllSettings()
-                    
-                    //self.updateDeviceStateUI()
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()
@@ -530,19 +549,20 @@ class DeviceViewController: BaseViewController {
             BluetoothDeviceCoordinator.shared
                 .connect(to: matchedDevice.peripheral, discover: true)
                 .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak self] manager in
-                    
+                .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
                     
-                    // Set ModelID nếu cần
+                    let manager: BluetoothManagerProtocol
+                    switch session {
+                    case .normalSession(let m): manager = m
+                    case .crSession(let m): manager = m
+                    }
+                    
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
-                    
-                    //self.updateDeviceStateUI()
-                    
-                    manager.readAllSettings()
+                    manager.readAllSettings(completion: nil)
                     
                 }, onError: { error in
                     ProgressHUD.dismiss()

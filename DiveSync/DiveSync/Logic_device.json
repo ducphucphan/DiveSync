@@ -1,0 +1,154 @@
+[
+    {
+        "title": "Device Settings",
+        "rows": [
+            {
+                "id": "set_date_time",
+                "type": "subSection",
+                "title": "Set Date - Time",
+                "icon": "set_date_time",
+                "subRows": [
+                    {
+                        "id": "hour",
+                        "type": "modeSelector",
+                        "title": "Set Time Format",
+                        "value": "12 H",
+                        "options": ["12 H", "24 H"]
+                    },
+                    {
+                        "id": "set_date",
+                        "type": "date",
+                        "title": "Set Date",
+                        "value": "01.06.2025"
+                    },
+                    {
+                        "id": "set_time",
+                        "type": "time",
+                        "title": "Set Time",
+                        "value": "10:48"
+                    },
+                    {
+                        "type": "toggle",
+                        "title": "Use the system Date and Time"
+                    }
+                ]
+            },
+            {
+                "id": "units",
+                "type": "modeSelector",
+                "title": "Set Units",
+                "icon": "set_units",
+                "value": "M - °C",
+                "options": ["M - °C", "FT - °F"]
+            },
+            {
+                "type": "subSection",
+                "title": "Set Alarms",
+                "icon": "set_alarms",
+                "subRows": [
+                    {
+                        "id": "mdepth",
+                        "type": "modeSelector",
+                        "title": "Depth Alarm",
+                        "value": "OFF",
+                        "options": ["OFF", "9 M","12 M","15 M","18 M","21 M","24 M","27 M","30 M","33 M","36 M",
+                            "39 M","42 M","45 M","48 M","51 M","54 M","57 M","60 M","63 M","66 M",
+                            "69 M","72 M","75 M","78 M","81 M","84 M","87 M","90 M","93 M","96 M","99 M"],
+                        "options_ft": ["OFF", "30 FT","40 FT","50 FT","60 FT","70 FT","80 FT","90 FT","100 FT","110 FT","120 FT",
+                            "130 FT","140 FT","150 FT","160 FT","170 FT","180 FT","190 FT","200 FT","210 FT","220 FT",
+                            "230 FT","240 FT","250 FT","260 FT","270 FT","280 FT","290 FT","300 FT","310 FT","320 FT","330 FT"]
+                    },
+                    {
+                        "id": "time_alarm",
+                        "type": "modeSelector",
+                        "title": "Time Alarm",
+                        "value": "OFF",
+                        "options": ["OFF", "0:10","0:15","0:20","0:25","0:30","0:35","0:40","0:45","0:50","0:55",
+                            "1:00","1:05","1:10","1:15","1:20","1:25","1:30","1:35","1:40","1:45","1:50","1:55",
+                            "2:00","2:05","2:10","2:15","2:20","2:25","2:30","2:35","2:40","2:45","2:50","2:55",
+                        "3:00"]
+                    }
+                ]
+            },
+            {
+                "type": "subSection",
+                "title": "Dive Settings",
+                "icon": "dive_settings",
+                "subRows": [
+                    {
+                        "id": "water",
+                        "type": "modeSelector",
+                        "title": "Water",
+                        "value": "Salt",
+                        "options": ["Salt", "Fresh"]
+                    },
+                    {
+                        "id": "dive_mode",
+                        "type": "modeSelector",
+                        "title": "Dive Mode",
+                        "value": "AIR",
+                        "options": ["AIR", "NITROX", "GAUGE"]
+                    },
+                    {
+                        "id": "fo2",
+                        "type": "modeSelector",
+                        "title": "O2",
+                        "value": "21",
+                        "options": ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+                            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+                            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+                            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+                            "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+                            "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+                            "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
+                            "91", "92", "93", "94", "95", "96", "97", "98", "99"]
+                    },
+                    {
+                        "id": "po2",
+                        "type": "modeSelector",
+                        "title": "PO2",
+                        "value": "100",
+                        "options": ["100", "110", "120", "130", "140", "150", "160", "170", "180"]
+                    },
+                    {
+                        "id": "conservatism",
+                        "type": "modeSelector",
+                        "title": "Conservatism",
+                        "value": "CF1",
+                        "options": ["CF1", "CF2", "CF3"]
+                    },
+                    {
+                        "id": "log_start_depth",
+                        "type": "modeSelector",
+                        "title": "Log Start Depth",
+                        "value": "10 M",
+                        "options": ["10 M", "15 M", "20 M", "25 M", "30 M"],
+                        "options_ft": ["32 FT", "49 FT", "65 FT", "82 FT", "98 FT"]
+                    },
+                    
+                    {
+                        "id": "log_stop_time",
+                        "type": "modeSelector",
+                        "title": "Log Stop Time",
+                        "value": "1 MIN",
+                        "options": ["1 MIN", "2 MIN", "5 MIN", "10 MIN"]
+                    },
+                    {
+                        "id": "sample_rate",
+                        "type": "modeSelector",
+                        "title": "Sample Rate",
+                        "value": "15 SEC",
+                        "options": ["15 SEC", "30 SEC", "60 SEC"]
+                    },
+                    {
+                        "id": "deep_stop",
+                        "type": "modeSelector",
+                        "title": "Deep Stop",
+                        "value": "OFF",
+                        "options": ["OFF", "ON"]
+                    }
+                ]
+            }
+        ]
+    }
+]

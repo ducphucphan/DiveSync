@@ -950,7 +950,7 @@ import ProgressHUD
                 }
                 
                 // Lưu DB
-                if DatabaseManager.shared.isExistDevice(modelId: m.ModelID, serialNo: m.SerialNo) {
+                if DatabaseManager.shared.isExistDevice(modelId: m.ModelID, serialNo: String(m.SerialNo)) {
                     let cond = "where ModelID=\(m.ModelID) and SerialNo=\(m.SerialNo)"
                     DatabaseManager.shared.updateTable(tableName: "devices", params: props, conditions: cond)
                 } else {
@@ -1093,7 +1093,7 @@ import ProgressHUD
                 
                 // Kiểm tra xem diveNo đã tồn tại trong database chưa, nếu rồi thì không cần download.
                 let diveNo = self.dataDecrypt(data: logData, startIndex: 0, len: 4)
-                if DatabaseManager.shared.isExistDiveLog(diveNo: diveNo, modelId: self.ModelID, serialNo: self.SerialNo) {
+                if DatabaseManager.shared.isExistDiveLog(diveNo: diveNo, modelId: self.ModelID, serialNo: "\(self.SerialNo)") {
                     return Observable<DiveRecord?>.just(nil)
                 }
                 
@@ -1420,7 +1420,7 @@ import ProgressHUD
         var dcSettings: [String: Any] = [:]
         var dcGasSettings: [String: Any] = [:]
         
-        dcSettings["DeviceID"] = DatabaseManager.shared.lastDevicID(modelId: ModelID, serialNo: serialNo)
+        dcSettings["DeviceID"] = DatabaseManager.shared.lastDevicID(modelId: ModelID, serialNo: String(serialNo))
         dcSettings["RecordTimeStamp"] = scubaSettings.recordTimeStamp_s.decimalString
         dcSettings["LastStopFt"] = scubaSettings.lastStopFt.decimalString
         dcSettings["LastStopM"] = scubaSettings.lastStopM.decimalString
@@ -1490,7 +1490,7 @@ import ProgressHUD
         //
         
         DatabaseManager.shared.saveGasSettings(dcGasSettings: dcGasSettings)
-        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: dcSettings)
+        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: String(self.SerialNo), dcSettings: dcSettings)
         
         return .just(.success)
     }
@@ -1519,7 +1519,7 @@ import ProgressHUD
         let remainingSettings = writeData.filter { $0.key != "GasMixes" } // phần còn lại
         
         DatabaseManager.shared.saveGasSettings(dcGasSettings: gasMixes)
-        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: remainingSettings)
+        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: String(self.SerialNo), dcSettings: remainingSettings)
         
         do {
             let deviceID = writeData.uint8(for: "DeviceID")
@@ -1630,7 +1630,7 @@ import ProgressHUD
             return .just(.failure(error: nil))
         }
         
-        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: writeData)
+        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: String(self.SerialNo), dcSettings: writeData)
         
         let chunkSize = 128
         let totalChunks = Int(
@@ -1761,7 +1761,7 @@ import ProgressHUD
             $0.key != "SetDate" && $0.key != "SetTime"
         }
         
-        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: remainingSettings)
+        DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: String(self.SerialNo), dcSettings: remainingSettings)
         
         var newDate = (writeData["SetDate"] as? String) ?? ""
         var newTime = (writeData["SetTime"] as? String) ?? ""

@@ -135,6 +135,19 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v1_add_column_to_DeviceSettings") { db in
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "LogStopTime" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    // Do 3 fields này được thêm cùng thời điểm nên không cần check contains từng field.
+                    t.add(column: "LogStopTime", .text)
+                    t.add(column: "LogStartDepth", .text)
+                    t.add(column: "FO2", .text)
+                    t.add(column: "PO2", .text)
+                    t.add(column: "Conservatism", .text)
+                }
+            }
+        }
+        
         /*
         // 🔹 Migration 2: thêm bảng mới
         migrator.registerMigration("v2_create_table_SyncHistory") { db in
@@ -248,7 +261,7 @@ extension DatabaseManager {
         }
     }
     
-    func isExistDevice(modelId: Int, serialNo: Int) -> Bool {
+    func isExistDevice(modelId: Int, serialNo: String) -> Bool {
         let dbQueue = DatabaseManager.shared.getDatabaseQueue()
         var exists = false
 
@@ -266,7 +279,7 @@ extension DatabaseManager {
         return exists
     }
     
-    func lastDevicID(modelId: Int, serialNo: Int) -> Int {
+    func lastDevicID(modelId: Int, serialNo: String) -> Int {
         var deviceID = 0
         
         let dbQueue = DatabaseManager.shared.getDatabaseQueue()
@@ -289,7 +302,7 @@ extension DatabaseManager {
         return deviceID
     }
     
-    func isExistDiveLog(diveNo: Int, modelId: Int, serialNo: Int) -> Bool {
+    func isExistDiveLog(diveNo: Int, modelId: Int, serialNo: String) -> Bool {
         let dbQueue = DatabaseManager.shared.getDatabaseQueue()
         var exists = false
         do {
@@ -324,7 +337,7 @@ extension DatabaseManager {
         }
     }
     
-    func saveDeviceSettings(modelId: Int, serialNo: Int, dcSettings: [String: Any]) {
+    func saveDeviceSettings(modelId: Int, serialNo: String, dcSettings: [String: Any]) {
         let dbQueue = DatabaseManager.shared.getDatabaseQueue()
         
         do {
@@ -442,7 +455,7 @@ extension DatabaseManager {
     func saveDiveData(diveData: [String: Any]) -> (existed: Bool, diveID: Int64?) {
         guard let diveNo = diveData["DiveNo"] as? Int,
               let modelId = diveData["ModelID"] as? Int,
-              let serialNo = diveData["SerialNo"] as? Int else {
+              let serialNo = diveData["SerialNo"] as? String else {
             PrintLog("❌ DiveNo / ModelID / SerialNo missing or invalid")
             return (false, nil)
         }
