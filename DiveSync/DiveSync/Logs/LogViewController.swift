@@ -224,7 +224,7 @@ class LogViewController: BaseViewController {
         if manualDive == false {
             var deviceSerialNo = ""
             switch modelID {
-            case C_LOG:
+            case C_LOG, C_LOGPLUS, C_GRA:
                 deviceSerialNo = diveLog.stringValue(key: "SerialNo")
             default:
                 deviceSerialNo = String(format: "%05d", diveLog.stringValue(key: "SerialNo").toInt())
@@ -301,8 +301,11 @@ class LogViewController: BaseViewController {
         
         maxPo2ValueLb.text = String(format: "%.2f", diveLog.stringValue(key: "MaxPpo2").toDouble())
         
-        let startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
-        let endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
+        var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
+        if startingMixIdx == 0 { startingMixIdx = 1 }
+        
+        var endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
+        if endingMixIdx == 0 { endingMixIdx = 1 }
         
         let mix1Fo2Percent = diveLog.stringValue(key: "Mix1Fo2Percent").toInt()
         let mix2Fo2Percent = diveLog.stringValue(key: "Mix2Fo2Percent").toInt()

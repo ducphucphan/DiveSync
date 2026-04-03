@@ -35,9 +35,14 @@ final class Set2ValueSettingAlert2: UIViewController {
     private var rightValue: String = ""
     
     private var messageText: String? = nil
+    
+    private var leftTitle: String? = nil
+    private var rightTitle: String? = nil
         
     // MARK: - Initializer
     static func showMessage(message: String? = "Set Auto Dim".localized,
+                            leftTitle: String? = nil, // Thêm mới
+                            rightTitle: String? = nil, // Thêm mới
                             leftValue: String,
                             rightValue: String,
                             leftOptions: [String],
@@ -52,6 +57,8 @@ final class Set2ValueSettingAlert2: UIViewController {
         }
         
         alert.messageText = message
+        alert.leftTitle = leftTitle
+        alert.rightTitle = rightTitle
         alert.leftOptions = leftOptions
         alert.rightOptions = rightOptions
         alert.leftValue = leftValue
@@ -74,8 +81,8 @@ final class Set2ValueSettingAlert2: UIViewController {
     private func setupUI() {
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
-        leftTitleLb.text = "Time to dim".localized
-        rightTitleLb.text = "Dim to brightness".localized
+        leftTitleLb.text = (leftTitle ?? "Time to dim").localized
+        rightTitleLb.text = (rightTitle ?? "Dim to brightness").localized
         
         messageLabel.text = messageText
         allowButton.setTitle(allowTitle, for: .normal)

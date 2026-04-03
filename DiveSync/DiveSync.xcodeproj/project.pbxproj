@@ -12,6 +12,7 @@
 		20FAEC502CEF1E9E009B577F /* Cosmos in Frameworks */ = {isa = PBXBuildFile; productRef = 20FAEC4F2CEF1E9E009B577F /* Cosmos */; };
 		4801E0582D6C624A0076CDBA /* DeviceViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4801E0572D6C624A0076CDBA /* DeviceViewCell.swift */; };
 		480333432DFAE07800519AD0 /* Set2ValueSettingAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */; };
+		48039F9C2F7A9B3500BF1C75 /* Int+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48039F9B2F7A9B3500BF1C75 /* Int+Extension.swift */; };
 		4803EF9D2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4803EF9C2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift */; };
 		4804027A2F5AC42F00CAB8DC /* BluetoothManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480402792F5AC42F00CAB8DC /* BluetoothManagerProtocol.swift */; };
 		4805CC622E9F90840073BBFE /* BreathingTimeInputAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4805CC612E9F90840073BBFE /* BreathingTimeInputAlert.swift */; };
@@ -49,6 +50,7 @@
 		483CCA792DBE523A00E8138A /* StatisticsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CCA782DBE523A00E8138A /* StatisticsViewController.swift */; };
 		483CCA7B2DBE569700E8138A /* OwnerInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CCA7A2DBE569700E8138A /* OwnerInfoViewController.swift */; };
 		483D80F32D191ABB009041E2 /* CustomHighLightRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483D80F22D191ABB009041E2 /* CustomHighLightRenderer.swift */; };
+		483F0C052F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */; };
 		484C24632E1B78D0002258CB /* UInt8+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C24622E1B78D0002258CB /* UInt8+Extension.swift */; };
 		484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D52CE1B2EF0082039E /* AppDelegate.swift */; };
 		484C44D82CE1B2EF0082039E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D72CE1B2EF0082039E /* SceneDelegate.swift */; };
@@ -93,6 +95,7 @@
 		4874FD612CE1B9420027C5F3 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4874FD542CE1B9420027C5F3 /* MenuViewController.swift */; };
 		4874FD652CE1B97F0027C5F3 /* SwiftHEXColors in Frameworks */ = {isa = PBXBuildFile; productRef = 4874FD642CE1B97F0027C5F3 /* SwiftHEXColors */; };
 		48750D612CF47B7F00455EE0 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48750D602CF47B7F00455EE0 /* Utilities.swift */; };
+		487599E02F6C17AB00BE0F47 /* CR5_device.json in Resources */ = {isa = PBXBuildFile; fileRef = 487599DF2F6C17AB00BE0F47 /* CR5_device.json */; };
 		4877A5F02E713FD9001B3025 /* FullView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4877A5EF2E713FD9001B3025 /* FullView.storyboard */; };
 		4879A4592CF42D71007EBE64 /* Device.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4879A4582CF42D71007EBE64 /* Device.storyboard */; };
 		487DDF552E16A27900ABE9CA /* AlertHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487DDF542E16A27900ABE9CA /* AlertHelper.swift */; };
@@ -264,6 +267,7 @@
 		20AF12B92CF71A40006642A0 /* DeviceCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceCell.swift; sourceTree = "<group>"; };
 		4801E0572D6C624A0076CDBA /* DeviceViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceViewCell.swift; sourceTree = "<group>"; };
 		480333422DFAE07800519AD0 /* Set2ValueSettingAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Set2ValueSettingAlert.swift; sourceTree = "<group>"; };
+		48039F9B2F7A9B3500BF1C75 /* Int+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+Extension.swift"; sourceTree = "<group>"; };
 		4803EF9C2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKMapView+ZoomLevel.swift"; sourceTree = "<group>"; };
 		480402792F5AC42F00CAB8DC /* BluetoothManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManagerProtocol.swift; sourceTree = "<group>"; };
 		4805CC612E9F90840073BBFE /* BreathingTimeInputAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BreathingTimeInputAlert.swift; sourceTree = "<group>"; };
@@ -299,6 +303,7 @@
 		483CCA782DBE523A00E8138A /* StatisticsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsViewController.swift; sourceTree = "<group>"; };
 		483CCA7A2DBE569700E8138A /* OwnerInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnerInfoViewController.swift; sourceTree = "<group>"; };
 		483D80F22D191ABB009041E2 /* CustomHighLightRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHighLightRenderer.swift; sourceTree = "<group>"; };
+		483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothDeviceCR5Manager.swift; sourceTree = "<group>"; };
 		484C24622E1B78D0002258CB /* UInt8+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UInt8+Extension.swift"; sourceTree = "<group>"; };
 		484C44D22CE1B2EF0082039E /* DiveSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiveSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		484C44D52CE1B2EF0082039E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -339,6 +344,7 @@
 		4874FD4E2CE1B9420027C5F3 /* BaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		4874FD542CE1B9420027C5F3 /* MenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		48750D602CF47B7F00455EE0 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		487599DF2F6C17AB00BE0F47 /* CR5_device.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = CR5_device.json; sourceTree = "<group>"; };
 		4877A5EF2E713FD9001B3025 /* FullView.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = FullView.storyboard; sourceTree = "<group>"; };
 		4879A4582CF42D71007EBE64 /* Device.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Device.storyboard; sourceTree = "<group>"; };
 		487DDF542E16A27900ABE9CA /* AlertHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertHelper.swift; sourceTree = "<group>"; };
@@ -614,6 +620,7 @@
 			isa = PBXGroup;
 			children = (
 				48283E4B2F3B1EA70014BDD7 /* BluetoothDeviceCRManager.swift */,
+				483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */,
 			);
 			path = "CR-Devices";
 			sourceTree = "<group>";
@@ -673,6 +680,7 @@
 				484C44E32CE1B2F00082039E /* Info.plist */,
 				48F6A7F82DE84BCC00CDFD05 /* SE_device.json */,
 				48E499522F4DBF1B00331C89 /* Logic_device.json */,
+				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
 			);
 			path = DiveSync;
 			sourceTree = "<group>";
@@ -979,6 +987,7 @@
 				48DAC0702D6C836900308F39 /* DcInfo.swift */,
 				48D2D54D2E0C021300A43E30 /* RomData.swift */,
 				48FD81B52D8963DC005C3374 /* Data+Extension.swift */,
+				48039F9B2F7A9B3500BF1C75 /* Int+Extension.swift */,
 				485EE4662E7951EA00EF25AC /* Data+NumberConversion.swift */,
 				484C24622E1B78D0002258CB /* UInt8+Extension.swift */,
 				48DD82352E618E8700557367 /* CBPeripheral+Extension.swift */,
@@ -1210,6 +1219,7 @@
 				48F6A7F92DE84C3800CDFD05 /* SE_device.json in Resources */,
 				488DD8282DDF1F0000FF517A /* divesync.db in Resources */,
 				48D21E2A2D0D3EBC004E8018 /* HelveticaNeueLTProHvCn.otf in Resources */,
+				487599E02F6C17AB00BE0F47 /* CR5_device.json in Resources */,
 				4879A4592CF42D71007EBE64 /* Device.storyboard in Resources */,
 				48AD3A4B2EF92FF0005BDB6A /* Localizable.strings in Resources */,
 				48D21E132D0D3EBC004E8018 /* HelveticaNeueLTProUltLtCnO.otf in Resources */,
@@ -1320,6 +1330,7 @@
 				48ECA6B32DF965C200AB2C47 /* DeviceSettings.swift in Sources */,
 				48221AA62E77CFDC006D6324 /* FwrConstants.swift in Sources */,
 				4804027A2F5AC42F00CAB8DC /* BluetoothManagerProtocol.swift in Sources */,
+				48039F9C2F7A9B3500BF1C75 /* Int+Extension.swift in Sources */,
 				484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */,
 				486F23D92EA0E4F100A655D9 /* HTTPMethod.swift in Sources */,
 				20AF12B82CF71A02006642A0 /* Devices.swift in Sources */,
@@ -1375,6 +1386,7 @@
 				48E66E472D0C19C6005ACECE /* DropDown.swift in Sources */,
 				48970C402E3776EC00BBAC9E /* DivePhotoManager.swift in Sources */,
 				482675A42DCA49560037E40C /* LogGraphCell.swift in Sources */,
+				483F0C052F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift in Sources */,
 				48DAA6DC2CFD9A4300FADC10 /* CustomChartDataEntry.swift in Sources */,
 				489311752DCBA8D700FF3219 /* MemoViewController.swift in Sources */,
 				480333432DFAE07800519AD0 /* Set2ValueSettingAlert.swift in Sources */,
@@ -1608,7 +1620,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1651,7 +1663,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;

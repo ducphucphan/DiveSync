@@ -696,11 +696,10 @@ final class BluetoothDeviceCRManager {
             ]
             
             // Lấy Units để parse DepthAlarm chính xác
-            let units = (writeData["Units"] as? String)?.toInt() ?? 0
-            
+            let writeUnits = row.stringValue(key: "Units").toInt()
             let steps: [ReadStep] = commandsToWrite.flatMap { cmd -> [ReadStep] in
                 
-                guard let payloads = cmd.getWritePayloads(from: row, units: units) else {
+                guard let payloads = cmd.getWritePayloads(from: row, units: writeUnits) else {
                     return []
                 }
                 

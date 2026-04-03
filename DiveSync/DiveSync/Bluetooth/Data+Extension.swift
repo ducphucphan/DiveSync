@@ -67,3 +67,14 @@ extension Data {
         return Int(UInt32(littleEndian: value))
     }
 }
+
+extension Data {
+    // Tự động convert Data sang Integer (Little Endian)
+    func toInt() -> Int {
+        var value: Int = 0
+        for (index, byte) in self.enumerated() {
+            value |= Int(byte) << (index * 8)
+        }
+        return value
+    }
+}

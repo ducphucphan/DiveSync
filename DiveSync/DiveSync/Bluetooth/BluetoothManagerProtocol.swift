@@ -15,5 +15,7 @@ protocol BluetoothManagerProtocol: AnyObject {
 // Thêm dòng này:
 extension BluetoothDeviceCRManager: BluetoothManagerProtocol {}
 
+extension BluetoothDeviceCR5Manager: BluetoothManagerProtocol {}
+
 // Nếu bạn có class khác cũng có ModelID và readAllSettings:
 extension BluetoothDataManager: BluetoothManagerProtocol {}

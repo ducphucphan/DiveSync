@@ -182,6 +182,7 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
                 switch session {
                 case .normalSession(let m): manager = m
                 case .crSession(let m): manager = m
+                case .cr5Session(let m): manager = m
                 }
                 
                 if let (bleName, _) = scanned.peripheral.peripheral.splitDeviceName(),

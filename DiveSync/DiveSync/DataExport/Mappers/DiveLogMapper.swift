@@ -19,6 +19,12 @@ func modelIDExport(modelId: Int) -> Int {
         return 837573
     case C_SPI:
         return 838073
+    case C_LOG:
+        return 678249
+    case C_GRA:
+        return 678253
+    case C_CEN:
+        return 678252
     default:
         return modelId
     }

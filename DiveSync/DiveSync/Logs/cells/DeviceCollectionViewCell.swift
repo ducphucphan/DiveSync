@@ -53,7 +53,7 @@ final class DeviceCollectionViewCell: UICollectionViewCell {
         let modelId = Int(item.modelId ?? 0)
         var deviceSerialNo = ""
         switch modelId {
-        case C_LOG:
+        case C_LOG, C_LOGPLUS, C_GRA:
             deviceSerialNo = item.SerialNo ?? ""
         default:
             deviceSerialNo = String(format: "%05d", item.SerialNo?.toInt() ?? 0)

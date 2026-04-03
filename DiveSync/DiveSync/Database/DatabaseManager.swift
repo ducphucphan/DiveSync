@@ -148,6 +148,27 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v1_add_column_to_DeviceSettings_DC5") { db in
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "DST" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    // Do 3 fields này được thêm cùng thời điểm nên không cần check contains từng field.
+                    t.add(column: "DST", .text)
+                    t.add(column: "Vibration", .text)
+                    t.add(column: "GNSS", .text)
+                    t.add(column: "TWIST", .text)
+                    t.add(column: "FREE_DEPTH_ALARM1", .text)
+                    t.add(column: "FREE_DEPTH_ALARM2", .text)
+                    t.add(column: "FREE_DEPTH_ALARM3", .text)
+                    t.add(column: "FREE_TIME_ALARM1", .text)
+                    t.add(column: "FREE_TIME_ALARM2", .text)
+                    t.add(column: "FREE_TIME_ALARM3", .text)
+                    t.add(column: "FREE_SI_ALARM1", .text)
+                    t.add(column: "FREE_SI_ALARM2", .text)
+                    t.add(column: "FREE_SI_ALARM3", .text)
+                }
+            }
+        }
+        
         /*
         // 🔹 Migration 2: thêm bảng mới
         migrator.registerMigration("v2_create_table_SyncHistory") { db in

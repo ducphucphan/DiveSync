@@ -530,8 +530,13 @@ extension String {
         return 0
     }
     
+//    func toDouble() -> Double {
+//        return Double(self) ?? 0.0
+//    }
+    
     func toDouble() -> Double {
-        return Double(self) ?? 0.0
+        let scanner = Scanner(string: self)
+        return scanner.scanDouble() ?? 0.0
     }
     
     func removingSurroundingSingleQuotes() -> String {

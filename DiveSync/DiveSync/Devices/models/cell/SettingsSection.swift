@@ -17,12 +17,12 @@ class SettingsRow: Codable {
     let title: String
     let type: SettingsRowType
     var value: String?
-    let options: [String]?
-    let options_ft: [String]?
+    var options: [String]?
+    var options_ft: [String]?
     let safetyStopDepth_m: [String]?
     let safetyStopDepth_ft: [String]?
     let left_options: [String]?
-    let right_options: [String]?
+    var right_options: [String]?
     let safetyStopTime: [String]?
     let icon: String?
     let destination: String? // nếu là dạng submenu thì dùng file json khác

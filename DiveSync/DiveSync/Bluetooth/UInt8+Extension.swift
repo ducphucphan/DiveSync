@@ -78,10 +78,12 @@ extension Data {
     }
     
     var asciiString: String? {
-        String(data: self, encoding: .ascii)
+        let cleanData = self.filter { $0 != 0 }
+        return String(data: cleanData, encoding: .ascii)
     }
     
     var utf8String: String? {
-        String(data: self, encoding: .utf8)
+        let cleanData = self.filter { $0 != 0 }
+        return String(data: cleanData, encoding: .utf8)
     }
 }

@@ -115,6 +115,8 @@ class SubSettingsViewController: BaseViewController {
                     dateTimeSetting["TimeFormat"] = index
                 case "dates":
                     dateTimeSetting["DateFormat"] = index
+                case "dst":
+                    dateTimeSetting["DST"] = index
                 case "set_date":
                     dateTimeSetting["SetDate"] = value
                 case "set_time":
@@ -188,6 +190,7 @@ class SubSettingsViewController: BaseViewController {
                     switch session {
                     case .normalSession(let m): manager = m
                     case .crSession(let m): manager = m
+                    case .cr5Session(let m): manager = m
                     }
                     
                     // 2. Logic Set ModelID (Viết 1 lần cho cả 2)
@@ -328,6 +331,8 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let modelID = Int(device.modelId ?? 0)
+        
         let row = rows[indexPath.row]
         
         if let disable = row.disable, disable == 1 {
@@ -501,7 +506,14 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             guard !optionsToUse.isEmpty else { return }
             
             var notes: String? = nil
-            if row.id == "conservatism" { notes = "GF" }
+            if row.id == "conservatism" {
+                switch modelID {
+                case C_LOG, C_LOGPLUS, C_GRA:
+                    notes = nil
+                default:
+                    notes = "GF"
+                }
+            }
             
             ItemSelectionAlert.showMessage(
                 message: row.title.localized,
@@ -569,11 +581,18 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                             
                         // Set Date Time
                         case "dates":
-                            var fromFormat: String = "dd.MM.yyyy"
-                            var toFormat: String = "MM.dd.yyyy"
-                            if index == 0 {
-                                fromFormat = "MM.dd.yyyy"
-                                toFormat = "dd.MM.yyyy"
+                            
+                            var fromFormat = ""
+                            var toFormat = ""
+                            
+                            switch modelID {
+                            case C_GRA:
+                                // Ví dụ: value1 = "DD.MM.YY", value2 = "MM.DD.YY"
+                                fromFormat = getStandardFormat(from: currentValue) // Trả về "dd.MM.yyyy"
+                                toFormat = getStandardFormat(from: value)   // Trả về "MM.dd.yyyy"
+                            default:
+                                fromFormat = (index == 0) ? "MM.dd.yyyy" : "dd.MM.yyyy"
+                                toFormat = (index == 0) ? "dd.MM.yyyy" : "MM.dd.yyyy"
                             }
                             
                             for row in rows {
@@ -696,5 +715,21 @@ extension SubSettingsViewController {
         return renderer.image { context in
             view.layer.render(in: context.cgContext)
         }
+    }
+    
+    func getStandardFormat(from jsonFormat: String) -> String {
+        // Chuyển "YY.MM.DD" hoặc "DD.MM.YY" thành các thành phần riêng lẻ
+        let components = jsonFormat.lowercased().components(separatedBy: ".")
+        
+        let standardComponents = components.map { comp -> String in
+            switch comp {
+            case "dd": return "dd"
+            case "mm": return "MM"   // Ép tháng thành MM viết hoa
+            case "yy": return "yyyy" // Ép năm thành yyyy (4 số)
+            default: return comp
+            }
+        }
+        
+        return standardComponents.joined(separator: ".")
     }
 }

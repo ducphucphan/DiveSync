@@ -50,8 +50,10 @@ class DeviceSettingViewController: BaseViewController {
     
     private func loadSettings() {
         switch Int(device.modelId ?? 0) {
-        case C_LOG:
+        case C_LOG, C_LOGPLUS:
             applyLogicDeciceValues()
+        case C_GRA:
+            applyCR5DeviceValues()
         default: // DAV
             applyValues()
             break
@@ -510,6 +512,255 @@ class DeviceSettingViewController: BaseViewController {
         }
     }
     
+    func applyCR5DeviceValues() {
+        if let sections = loadSettingsSections(from: "CR5_device"), sections.count > 0 {
+            //settings = sections[0].rows
+            
+            let excludedIDsForModel: [String] = []
+            let rows = sections[0].rows
+            let filtered = rows.filter { row in
+                !excludedIDsForModel.contains(row.id ?? "")
+            }
+            settings = filtered
+            
+            var dbSettings: [String:String] = [:]
+            do {
+                let dcSettings = try DatabaseManager.shared.fetchData(from: "DeviceSettings",
+                                                                      where: "DeviceID=?",
+                                                                      arguments: [device.deviceId])
+                guard let row = dcSettings.first else { return }
+                dbSettings = Utilities.convertRowToMap(row)
+            } catch {
+                PrintLog("Failed to fetch certificates data: \(error)")
+            }
+            
+            if dbSettings.count <= 0 { return }
+            
+            
+            for i in 0..<settings.count {
+                if let subRows = settings[i].subRows {
+                    // Xử lý row ở đây
+                    for row in subRows {
+                        //print(row.id)
+                        let options = row.options
+                        let options_ft = row.options_ft
+                        
+                        switch row.id {
+                        case "hour":
+                            if let tf = dbSettings["TimeFormat"]?.toInt() {
+                                row.value = options?[tf]
+                            }
+                        case "dates":
+                            if let df = dbSettings["DateFormat"]?.toInt() {
+                                row.value = options?[df]
+                            }
+                        case "set_date":
+                            if let df = dbSettings["DateFormat"]?.toInt(), df == 0 { // M.D
+                                row.value = Utilities.getDateTime(Date.now, "MM.dd.yyyy")
+                            } else {
+                                row.value = Utilities.getDateTime(Date.now, "dd.MM.yyyy")
+                            }
+                        case "dst":
+                            if let dst = dbSettings["DST"]?.toInt(), dst == 0 {
+                                row.value = options?[0] // OFF
+                            } else {
+                                row.value = options?[1] // ON
+                            }
+                        case "set_time":
+                            if let tf = dbSettings["TimeFormat"]?.toInt(), tf == 0 { // 12H
+                                row.value = Utilities.getDateTime(Date.now, "hh:mm a")
+                            } else {
+                                row.value = Utilities.getDateTime(Date.now, "HH:mm")
+                            }
+                        case "fo2":
+                            if let fo2 = dbSettings["FO2"]?.toInt() {
+                                row.value = options?[fo2-21]
+                            }
+                        case "po2":
+                            if let po2Raw = dbSettings["PO2"], let po2Double = Double(po2Raw) {
+                                let formattedPo2 = String(format: "%.1f", po2Double / 10.0)
+                                if let index = options?.firstIndex(of: formattedPo2) {
+                                    row.value = options?[index]
+                                }
+                            }
+                        case "log_stop_time":
+                            if let logStopTime = dbSettings["LogStopTime"]?.toInt() {
+                                row.value = options?[logStopTime]
+                            }
+                        case "conservatism":
+                            if let conservatism = dbSettings["Conservatism"]?.toInt() {
+                                row.value = options?[conservatism]
+                            }
+                        case "sample_rate":
+                            if let sample = dbSettings["DiveLogSamplingTime"]?.toInt() {
+                                row.value = options?[sample]
+                            }
+                        case "mdepth":
+                            // fill giá trị cho options.
+                            row.options = [OFF] + (0...99).map { "\($0) M" }
+                            row.options_ft = [OFF] + (0...325).map { "\($0) FT" }
+                            
+                            var mdepth = 0
+                            if DeviceSettings.shared.unit == M {
+                                mdepth = dbSettings["DepthAlarmM"]?.toInt() ?? -1
+                                row.value = (mdepth == -1) ? OFF : "\(mdepth) M"
+                            } else {
+                                mdepth = dbSettings["DepthAlarmFt"]?.toInt() ?? -1
+                                row.value = (mdepth == -1) ? OFF : "\(mdepth) FT"
+                            }
+                            
+                        case "time_alarm":
+                            row.options = [OFF] + (0...90).map { "\($0) MIN" }
+                            
+                            let diveTime = dbSettings["DiveTimeAlarmMin"]?.toInt() ?? -1
+                            row.value = (diveTime == -1) ? OFF : String(format: "%d MIN", diveTime)
+                            
+                        case "free_depth_alarm1":
+                            row.options = [OFF] + (0...99).map { "\($0) M" }
+                            
+                            if let freeDepth1Alarm = dbSettings["FREE_DEPTH_ALARM1"]?.toInt() {
+                                row.value = (freeDepth1Alarm == -1) ? OFF : "\(freeDepth1Alarm) M"
+                            }
+                            
+                        case "free_depth_alarm2":
+                            row.options = [OFF] + (0...99).map { "\($0) M" }
+                            
+                            if let freeDepth2Alarm = dbSettings["FREE_DEPTH_ALARM2"]?.toInt() {
+                                row.value = (freeDepth2Alarm == -1) ? OFF : "\(freeDepth2Alarm) M"
+                            }
+                            
+                        case "free_depth_alarm3":
+                            row.options = [OFF] + (0...99).map { "\($0) M" }
+                            
+                            if let freeDepth3Alarm = dbSettings["FREE_DEPTH_ALARM3"]?.toInt() {
+                                row.value = (freeDepth3Alarm == -1) ? OFF : "\(freeDepth3Alarm) M"
+                            }
+                        
+                        case "free_time_alarm1":
+                            row.options = [OFF] + (0...1500).map { "\($0) SEC" }
+                            
+                            if let value = dbSettings["FREE_TIME_ALARM1"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) SEC"
+                            }
+                            
+                        case "free_time_alarm2":
+                            row.options = [OFF] + (0...1500).map { "\($0) SEC" }
+                            
+                            if let value = dbSettings["FREE_TIME_ALARM2"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) SEC"
+                            }
+                            
+                        case "free_time_alarm3":
+                            row.options = [OFF] + (0...1500).map { "\($0) SEC" }
+                            
+                            if let value = dbSettings["FREE_TIME_ALARM3"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) SEC"
+                            }
+                            
+                        case "free_si_alarm1":
+                            
+                            if let value = dbSettings["FREE_SI_ALARM1"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) MIN"
+                            }
+                            
+                        case "free_si_alarm2":
+                            
+                            if let value = dbSettings["FREE_SI_ALARM2"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) MIN"
+                            }
+                            
+                        case "free_si_alarm3":
+                            
+                            if let value = dbSettings["FREE_SI_ALARM3"]?.toInt() {
+                                row.value = (value == -1) ? OFF : "\(value) MIN"
+                            }
+                            
+                        default:
+                            break
+                        }
+                    }
+                } else {
+                    let row = settings[i]
+                    let options = row.options
+                    
+                    let left_options = row.left_options
+                    let right_options = row.right_options
+                    
+                    switch row.id {
+                    case "units":
+                        if let unit = dbSettings["Units"]?.toInt() {
+                            row.value = options?[unit]
+                            DeviceSettings.shared.unit = unit
+                        }
+                    case "set_lang":
+                        if let lang = dbSettings["Language"]?.toInt() {
+                            row.value = options?[lang]
+                        }
+                    case "set_buzzer":
+                        if let tf = dbSettings["BuzzerMode"]?.toInt(), tf == 0 {
+                            row.value = options?[0] // OFF
+                        } else {
+                            row.value = options?[1] // ON
+                        }
+                    case "set_vibration":
+                        if let tf = dbSettings["Vibration"]?.toInt(), tf == 0 {
+                            row.value = options?[0] // OFF
+                        } else {
+                            row.value = options?[1] // ON
+                        }
+                    case "set_gnss":
+                        if let tf = dbSettings["GNSS"]?.toInt(), tf == 0 {
+                            row.value = options?[0] // OFF
+                        } else {
+                            row.value = options?[1] // ON
+                        }
+                    case "set_backlight":
+                        
+                        if let backLightDuration = dbSettings["BacklightDimTime"]?.toInt(),
+                           let backLightLev = dbSettings["BacklightDimLevel"]?.toInt() {
+                            
+                            let leftValue = backLightLev+1
+                            let rightValue = right_options?[backLightDuration] ?? "5 SEC"
+                            
+                            row.value = String(format: "Level %d - %@", leftValue, rightValue)
+                        }
+                    case "set_divemode":
+                        if let diveMode = dbSettings["DiveMode"]?.toInt(), let diveStartDepthIdx = dbSettings["LogStartDepth"]?.toInt(),
+                           let leftValue = left_options?[diveMode]  {
+                            
+                            var rightValue = right_options?[diveStartDepthIdx]
+                            if DeviceSettings.shared.unit == FT {
+                                let rightValueInt = right_options?[diveStartDepthIdx].toDouble() ?? 0.0
+                                let feet = floor(rightValueInt * CONST_M_TO_FT * 10) / 10
+                                rightValue = String(format: "%.1f FT", feet)
+                            }
+                            
+                            row.value = String(format: "%@ - %@", leftValue, rightValue ?? "1.0 M")
+                            
+                        }
+                    case "set_water":
+                        if let water = dbSettings["WaterDensity"]?.toInt() {
+                            if water == 103 { // SALT
+                                row.value = options?[0]
+                            } else { // FRESH
+                                row.value = options?[1]
+                            }
+                        }
+                    case "set_twist":
+                        if let tf = dbSettings["TWIST"]?.toInt(), tf == 0 {
+                            row.value = options?[0] // OFF
+                        } else {
+                            row.value = options?[1] // ON
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+            
+        }
+    }
+    
     func getPDCSettings() -> [String: Any] {
         var dcSettings: [String: Any] = [:]
         
@@ -830,6 +1081,215 @@ class DeviceSettingViewController: BaseViewController {
         return dcSettings
     }
     
+    func getCR5Settings() -> [String: Any] {
+        var dcSettings: [String: Any] = [:]
+        
+        dcSettings["DeviceID"] = device.deviceId
+        
+        //printAllSettings(rows: settings)
+        
+        for i in 0..<settings.count {
+            if let subRows = settings[i].subRows {
+                // Xử lý row ở đây
+                for row in subRows {
+                    var index = 0
+                    let value = row.value ?? ""
+                    
+                    let options = row.options
+                    if options != nil {
+                        index = options!.firstIndex(of: value) ?? 0
+                    }
+                    
+                    switch row.id {
+                    // System Settings
+                    case "hour":
+                        dcSettings["TimeFormat"] = index
+                        
+                    case "dates":
+                        dcSettings["DateFormat"] = index
+                        
+                    case "dst":
+                        dcSettings["DST"] = index
+                        
+                    case "fo2":
+                        dcSettings["FO2"] = value
+                        
+                    case "po2":
+                        dcSettings["PO2"] = Int(value.toDouble() * 10)
+                        
+                    case "log_stop_time":
+                        dcSettings["LogStopTime"] = index
+                        
+                    case "conservatism":
+                        dcSettings["Conservatism"] = index
+                        
+                    case "sample_rate":
+                        dcSettings["DiveLogSamplingTime"] = index
+                        
+                        
+                    // Scuba Settings
+                    case "mdepth":
+                        
+                        if value == OFF {
+                            dcSettings["DepthAlarmM"] = -1
+                            dcSettings["DepthAlarmFt"] = -1
+                        } else {
+                            if DeviceSettings.shared.unit == M {
+                                dcSettings["DepthAlarmM"] = value.toInt()
+                            } else {
+                                dcSettings["DepthAlarmFt"] = value.toInt()
+                            }
+                        }
+                        
+                    case "time_alarm":
+                        if value == OFF {
+                            dcSettings["DiveTimeAlarmMin"] = -1
+                        } else {
+                            dcSettings["DiveTimeAlarmMin"] = value.toInt()
+                        }
+                        
+                    case "free_depth_alarm1":
+                        if value == OFF {
+                            dcSettings["FREE_DEPTH_ALARM1"] = -1
+                        } else {
+                            dcSettings["FREE_DEPTH_ALARM1"] = value.toInt()
+                        }
+                        
+                    case "free_depth_alarm2":
+                        if value == OFF {
+                            dcSettings["FREE_DEPTH_ALARM2"] = -1
+                        } else {
+                            dcSettings["FREE_DEPTH_ALARM2"] = value.toInt()
+                        }
+                    
+                    case "free_depth_alarm3":
+                        if value == OFF {
+                            dcSettings["FREE_DEPTH_ALARM3"] = -1
+                        } else {
+                            dcSettings["FREE_DEPTH_ALARM3"] = value.toInt()
+                        }
+                        
+                    case "free_time_alarm1":
+                        if value == OFF {
+                            dcSettings["FREE_TIME_ALARM1"] = -1
+                        } else {
+                            dcSettings["FREE_TIME_ALARM1"] = value.toInt()
+                        }
+                        
+                    case "free_time_alarm2":
+                        if value == OFF {
+                            dcSettings["FREE_TIME_ALARM2"] = -1
+                        } else {
+                            dcSettings["FREE_TIME_ALARM2"] = value.toInt()
+                        }
+                    
+                    case "free_time_alarm3":
+                        if value == OFF {
+                            dcSettings["FREE_TIME_ALARM3"] = -1
+                        } else {
+                            dcSettings["FREE_TIME_ALARM3"] = value.toInt()
+                        }
+                        
+                    case "free_si_alarm1":
+                        if value == OFF {
+                            dcSettings["FREE_SI_ALARM1"] = -1
+                        } else {
+                            dcSettings["FREE_SI_ALARM1"] = value.toInt()
+                        }
+                        
+                    case "free_si_alarm2":
+                        if value == OFF {
+                            dcSettings["FREE_SI_ALARM2"] = -1
+                        } else {
+                            dcSettings["FREE_SI_ALARM2"] = value.toInt()
+                        }
+                    
+                    case "free_si_alarm3":
+                        if value == OFF {
+                            dcSettings["FREE_SI_ALARM3"] = -1
+                        } else {
+                            dcSettings["FREE_SI_ALARM3"] = value.toInt()
+                        }
+                        
+                    default:
+                        break
+                    }
+                }
+            } else {
+                let row = settings[i]
+                var index = 0
+                let value = row.value ?? ""
+                
+                let options = row.options
+                if options != nil {
+                    index = options!.firstIndex(of: value) ?? 0
+                }
+                
+                let leftOptions = row.left_options
+                let rightOptions = row.right_options
+                
+                switch row.id {
+                case "units":
+                    dcSettings["Units"] = index
+                
+                case "set_lang":
+                    dcSettings["Language"] = index
+                    
+                case "set_buzzer":
+                    dcSettings["BuzzerMode"] = index
+                    
+                case "set_vibration":
+                    dcSettings["Vibration"] = index
+                    
+                case "set_gnss":
+                    dcSettings["GNSS"] = index
+                    
+                case "set_backlight":
+                    
+                    let components = value.components(separatedBy: " - ")
+                    if components.count == 2 {
+                        let prefix = components[0] // "Level 1"
+                        dcSettings["BacklightDimLevel"] = leftOptions?.firstIndex(of: prefix)
+                        
+                        let suffix = components[1] // "5 SEC"
+                        dcSettings["BacklightDimTime"] = rightOptions?.firstIndex(of: suffix)
+                    }
+                    
+                case "set_divemode":
+                    //if let diveMode = dbSettings["DiveMode"]?.toInt(), let diveStartDepthIdx = dbSettings["LogStartDepth"]?.toInt(),
+                       let components = value.components(separatedBy: " - ")
+                       if components.count == 2 {
+                           let prefix = components[0] // "Free"
+                           dcSettings["DiveMode"] = leftOptions?.firstIndex(of: prefix)
+                           
+                           let suffix = components[1] // "1.0 M" or "3.2 FT"
+                           if DeviceSettings.shared.unit == M {
+                               dcSettings["LogStartDepth"] = rightOptions?.firstIndex(of: suffix)
+                           } else {
+                               let doubleValue = suffix.toDouble()
+                               
+                               let meters = (doubleValue * CONST_FT_TO_M * 10).rounded() / 10
+                               let metersValue = String(format: "%.1f M", meters)
+                               
+                               dcSettings["LogStartDepth"] = rightOptions?.firstIndex(of: metersValue)
+                           }
+                       }
+                        
+                case "set_water":
+                    dcSettings["WaterDensity"] = (index == 0) ? 103:100
+                 
+                case "set_twist":
+                    dcSettings["TWIST"] = index
+                    
+                default:
+                    break
+                }
+            }
+        }
+        
+        return dcSettings
+    }
+    
     @IBAction func downloadTapped(_ sender: Any) {
         searchType = .kSetting
         syncType = .kDownloadSetting
@@ -851,8 +1311,10 @@ class DeviceSettingViewController: BaseViewController {
         var settings:[String: Any] = [:]
         
         switch Int(device.modelId ?? 0) {
-        case C_LOG:
+        case C_LOG, C_LOGPLUS:
             settings = getLogicSettings()
+        case C_GRA:
+            settings = getCR5Settings()
         default: // DAV
             settings = getPDCSettings()
             break
@@ -911,6 +1373,7 @@ class DeviceSettingViewController: BaseViewController {
                     switch session {
                     case .normalSession(let m): manager = m
                     case .crSession(let m): manager = m
+                    case .cr5Session(let m): manager = m
                     }
                     
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
@@ -937,8 +1400,16 @@ class DeviceSettingViewController: BaseViewController {
     
     func resetSettings(in rows: inout [SettingsRow], with defaults: [String: String]) {
         for i in 0..<rows.count {
-            if let id = rows[i].id, let defaultValue = defaults[id] {
-                rows[i].value = defaultValue
+            if let id = rows[i].id {
+                // Nếu có trong danh sách reset cứng (như OFF)
+                if let defaultValue = defaults[id] {
+                    rows[i].value = defaultValue
+                }
+                // Nếu là key cần chuyển đổi đơn vị (ví dụ: set_divemode)
+                else if id == "set_divemode" {
+                    let currentValue = rows[i].value ?? ""
+                    rows[i].value = convertValueUnit(currentValue: currentValue, toUnit: DeviceSettings.shared.unit)
+                }
             }
 
             if var sub = rows[i].subRows {
@@ -946,6 +1417,46 @@ class DeviceSettingViewController: BaseViewController {
                 rows[i].subRows = sub
             }
         }
+    }
+    
+    func getIndexPaths(for ids: [String], in rows: [SettingsRow]) -> [IndexPath] {
+        var indexPaths: [IndexPath] = []
+        
+        for (index, row) in rows.enumerated() {
+            if let rowId = row.id, ids.contains(rowId) {
+                indexPaths.append(IndexPath(row: index, section: 0)) // Giả định section là 0
+            }
+        }
+        return indexPaths
+    }
+    
+    func convertValueUnit(currentValue: String, toUnit unit: Int) -> String {
+        // CR5 SET DIVE MODE value
+        // "value": "Gauge - 3.0 M",
+        
+        let components = currentValue.components(separatedBy: " - ")
+        guard components.count == 2 else { return currentValue }
+        
+        let prefix = components[0] // "Gauge"
+        let suffix = components[1] // "3.0 M" hoặc "9.8 FT"
+        
+        let valueParts = suffix.components(separatedBy: " ")
+        guard let numericValue = Double(valueParts.first ?? "") else { return currentValue }
+        
+        if unit == 1 { // Chuyển sang Feet (Imperial)
+            if suffix.contains("M") {
+                let feet = floor(numericValue * CONST_M_TO_FT * 10) / 10
+                return "\(prefix) - \(String(format: "%.1f FT", feet))"
+            }
+        } else { // Chuyển sang Mét (Metric)
+            if suffix.contains("FT") {
+                // Ngược lại: 1 FT = 0.3048 M. Làm tròn 1 chữ số.
+                let meters = (numericValue * CONST_FT_TO_M * 10).rounded() / 10
+                return "\(prefix) - \(String(format: "%.1f M", meters))"
+            }
+        }
+        
+        return currentValue
     }
 }
 
@@ -1019,17 +1530,41 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                 }
                 
                 let leftOptionsToUse: [String] = row.left_options ?? []
-                let rightOptionsToUse: [String] = row.right_options ?? []
+                var rightOptionsToUse: [String] = row.right_options ?? []
                 
                 // Nếu optionsToUse rỗng thì return
                 guard !leftOptionsToUse.isEmpty else { return }
                 guard !rightOptionsToUse.isEmpty else { return }
                 
+                var leftTitle: String? = nil
+                var rightTitle: String? = nil
+                if row.id == "set_backlight" {
+                    leftTitle = "Brightness"
+                    rightTitle = "Duration"
+                } else if row.id == "set_divemode" {
+                    leftTitle = "Auto Mode"
+                    rightTitle = "Log Start Depth"
+                    
+                    // CR5
+                    if DeviceSettings.shared.unit == FT {
+                        rightOptionsToUse = rightOptionsToUse.map { item in
+                            guard let meters = Double(item.components(separatedBy: " ").first ?? "") else { return item }
+                            
+                            var feet = meters * CONST_M_TO_FT
+                            feet = floor(feet * 10) / 10
+                            
+                            return String(format: "%.1f FT", feet)
+                        }
+                    }
+                }
+                
                 Set2ValueSettingAlert2.showMessage(message: row.title.localized,
-                                                  leftValue: timeToDimValue,
-                                                  rightValue: dimToBrightnessValue,
-                                                  leftOptions: leftOptionsToUse,
-                                                  rightOptions: rightOptionsToUse) { [weak self] action, selectedValue in
+                                                   leftTitle: leftTitle,
+                                                   rightTitle: rightTitle,
+                                                   leftValue: timeToDimValue,
+                                                   rightValue: dimToBrightnessValue,
+                                                   leftOptions: leftOptionsToUse,
+                                                   rightOptions: rightOptionsToUse) { [weak self] action, selectedValue in
                     guard let self = self else { return }
                     
                     if let selectedValue = selectedValue, action == .allow {
@@ -1054,16 +1589,28 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                         if let id = row.id, id == "units" {
                             DeviceSettings.shared.unit = (value == "M - °C") ? 0 : 1
                             
-                            let defaultValues: [String: String] = [
+                            var defaultValues: [String: String] = [
                                 "mdepth": "OFF",
                                 "safety_stop": "OFF",
                             ]
+                            
+                            var idsToReload = ["units"]
+                            
+                            if Int(device.modelId ?? 0) == C_GRA {
+                                idsToReload.append("set_divemode")
+                            }
+                            
                             resetSettings(in: &self.settings, with: defaultValues)
+                            
+                            let indexPaths = getIndexPaths(for: idsToReload, in: self.settings)
+                            if !indexPaths.isEmpty {
+                                self.settings[indexPath.row].value = value
+                                self.tableview.reloadRows(at: indexPaths, with: .automatic)
+                            }
+                        } else {
+                            self.settings[indexPath.row].value = value
+                            self.tableview.reloadRows(at: [indexPath], with: .automatic)
                         }
-                        
-                        self.settings[indexPath.row].value = value
-                        self.tableview.reloadRows(at: [indexPath], with: .automatic)
-                        
                         PrintLog("Save to backend: \(value)")
                     }
                 }

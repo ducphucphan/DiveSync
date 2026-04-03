@@ -22,11 +22,13 @@ enum ScanMode {
 enum ConnectedDeviceType {
     case normal
     case cr // CR-1, CR-4, CR-5 (3 device làm riêng từ app Dive Story)
+    case cr5
 }
 
 enum ConnectedSession {
     case normalSession(BluetoothDataManager)
     case crSession(BluetoothDeviceCRManager)
+    case cr5Session(BluetoothDeviceCR5Manager)
 }
 
 protocol BluetoothDeviceCoordinatorDelegate: AnyObject {
@@ -55,6 +57,8 @@ final class BluetoothDeviceCoordinator {
     
     private(set) var crDeviceManager: BluetoothDeviceCRManager?
     
+    private(set) var cr5DeviceManager: BluetoothDeviceCR5Manager?
+    
     private var didAutoSyncOnce = false
     private var isManualSyncing = false
     
@@ -70,8 +74,10 @@ final class BluetoothDeviceCoordinator {
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             let ModelID = dcInfo[2].toInt()
             switch ModelID {
-            case C_CEN, C_GRA, C_LOG:
+            case C_LOG, C_LOGPLUS:
                 return .cr
+            case C_CEN, C_GRA:
+                return .cr5
             default:
                 return .normal
             }
@@ -106,7 +112,7 @@ final class BluetoothDeviceCoordinator {
         
         scanningDisposable = central.scanForPeripherals(withServices: nil)
             .filter { scanned in
-                print("\(scanned.peripheral.name) - \(scanned.advertisementData.localName)")
+                //print("\(scanned.peripheral.name) - \(scanned.advertisementData.localName)")
                 guard let name = scanned.advertisementData.localName else { return false }
                 
                 let matched = BLEConstants.BLEDeviceNames.list.contains { name.hasPrefix($0) }
@@ -366,6 +372,24 @@ final class BluetoothDeviceCoordinator {
                         )
                         .map {
                             return .crSession(crManager)
+                        }
+                case .cr5:
+                    let cr5Manager = BluetoothDeviceCR5Manager(peripheral: connected)
+                    self.cr5DeviceManager = cr5Manager
+                    
+                    guard discover else {
+                        ProgressHUD.dismiss()
+                        return .just(.cr5Session(cr5Manager))
+                    }
+                    
+                    return cr5Manager
+                        .discoverServicesAndCharacteristics(
+                            servicesUUID: BLEConstants.SERVICES.cr5,
+                            indicateCharUUID: BLEConstants.RWCharCR5.indicate,
+                            notifyCharUUIDs: [BLEConstants.RWCharCR5.notify1, BLEConstants.RWCharCR5.notify2]
+                        )
+                        .map {
+                            return .cr5Session(cr5Manager)
                         }
                 }
             }

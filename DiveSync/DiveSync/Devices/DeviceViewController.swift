@@ -108,6 +108,8 @@ class DeviceViewController: BaseViewController {
     @IBOutlet weak var deleteLb: UILabel!
     @IBOutlet weak var tapOnLb: UILabel!
     
+    @IBOutlet weak var updateDCView: UIView!
+    
     private var disposeBag = DisposeBag()
 
     private var currentIndex = 0
@@ -228,11 +230,14 @@ class DeviceViewController: BaseViewController {
         scrollContentView.isHidden = false
         bottomView.isHidden = false
         
-        
         deviceName.text = device.ModelName ?? ""
-        serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
-        if Int(device.modelId ?? 0) == C_LOG {
+        
+        switch Int(device.modelId ?? 0) {
+        case C_LOG, C_LOGPLUS, C_GRA:
+            updateDCView.isHidden = true
             serialNoLb.text = "Serial Number".localized + ": \(device.SerialNo ?? "")"
+        default:
+            serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
         }
         
         var versionText = "Firmware Version".localized + ": \(device.Firmware ?? "")"
@@ -556,6 +561,7 @@ class DeviceViewController: BaseViewController {
                     switch session {
                     case .normalSession(let m): manager = m
                     case .crSession(let m): manager = m
+                    case .cr5Session(let m): manager = m
                     }
                     
                     if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),

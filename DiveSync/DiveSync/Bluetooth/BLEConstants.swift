@@ -15,6 +15,7 @@ let C_SKI       = 8375
 let C_SPI       = 8380
 
 let C_LOG       = 7679
+let C_LOGPLUS   = 7680
 let C_CEN       = 6769
 let C_GRA       = 7182
 
@@ -63,6 +64,13 @@ enum DeviceReadResult: Equatable {
     case failure(error: String?)
 }
 
+struct FileInfoRecord {
+    let index: Int
+    let fileName: String
+    let fileSize: UInt32
+    let checksum: UInt32
+}
+
 enum DataType {
     case LBS
     case MBS
@@ -106,6 +114,7 @@ struct BLEConstants {
             "SKI",
             "SPI",
             "SHERWOOD-Logic+",
+            "SHERWOOD-Logic",
             "GENESIS-Graviton"
             //"CENTAURI"
         ]
@@ -125,6 +134,10 @@ struct BLEConstants {
             CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E1001"), // Log+ Primary 1
             CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2011")  // Log+ Primary 2
         ]
+        
+        static let cr5 = [
+            CBUUID(string: "6E400001-b5a3-f393-e0a9-e50e24dcca9e")
+        ]
     }
     
     struct RWChar {
@@ -135,6 +148,12 @@ struct BLEConstants {
     struct RWCharLogic {
         static let write = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2012")
         static let read = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E0002")
+    }
+    
+    struct RWCharCR5 {
+        static let indicate = CBUUID(string: "6E400002-b5a3-f393-e0a9-e50e24dcca9e")
+        static let notify1 = CBUUID(string: "6E400003-b5a3-f393-e0a9-e50e24dcca9e")
+        static let notify2 = CBUUID(string: "6E400004-b5a3-f393-e0a9-e50e24dcca9e")
     }
     
     struct OTA {

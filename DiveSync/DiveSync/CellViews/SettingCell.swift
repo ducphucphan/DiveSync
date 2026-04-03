@@ -29,7 +29,7 @@ class SettingCell: UITableViewCell {
         titleLb.text = row.title.localized
         valueLb.text = row.value
         
-        if let value = row.value, row.id == "conservatism", modelId != C_LOG {
+        if let value = row.value, row.id == "conservatism", modelId != C_LOG, modelId != C_LOGPLUS, modelId != C_GRA {
             if value.toInt() == 0 {
                 valueLb.text = value + " (GF: 90 - 90)"
             } else if value.toInt() == 1 {
@@ -38,7 +38,7 @@ class SettingCell: UITableViewCell {
                 valueLb.text = value + " (GF: 70 - 35)"
             }
         }
-        
+
         if let icon = row.icon, !icon.isEmpty {
             iconImageView.image = UIImage(named: icon)
         } else {
