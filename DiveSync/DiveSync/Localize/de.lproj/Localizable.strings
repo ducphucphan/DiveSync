@@ -144,6 +144,8 @@
 "Set Date - Time" = "Datum und Uhrzeit einstellen";
 "Set Date Format" = "Datumsformat einstellen";
 "Set Time Format" = "Uhrzeitformat einstellen";
+"Date Format" = "Datumsformat";
+"Time Format" = "Uhrzeitformat";
 "Set Date" = "Datum einstellen";
 "Set Time" = "Uhrzeit einstellen";
 "Use the system Date and Time" = "Systemdatum und -uhrzeit verwenden";
@@ -179,6 +181,7 @@
 "Start Dive<" = "Tauchgang starten<";
 "Start Pressure" = "Startdruck";
 "Max Ascent Rate" = "Maximale Aufstiegsgeschwindigkeit";
+"Max Ascent Bar" = "Max. Aufstiegsbalken";
 "NO DECO" = "KEINE Dekompression";
 "Settings Used" = "Verwendete Einstellungen";
 "Max PPO2" = "Max PPO2";
@@ -193,7 +196,7 @@
 "SAC" = "SAC";
 "Tank Type" = "Tank-Typ";
 "Mode" = "Modus";
-"TLBG Bar" = "TLBG-Leiste";
+"TLBG Bar" = "Max TLBG";
 "Remove" = "Entfernen";
 "Min Temperature" = "Minimale Temperatur";
 "Search" = "Suchen";
@@ -386,3 +389,5 @@ our products." = "Erlauben Sie DiveSync, Daten von Ihrem Tauchcomputer zu sammel
 "Uploading your owner info..." = "Ihre Besitzerinformationen werden hochgeladen...";
 "Select All" = "Alles auswählen";
 "Long press an item to select or deselect it" = "Lange tippen zum Aus- oder Abwählen";
+"START" = "START";
+"END" = "ENDE";

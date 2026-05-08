@@ -144,6 +144,8 @@
 "Set Date - Time" = "Tarih - Saat Ayarı";
 "Set Date Format" = "Tarih Biçimi Ayarı";
 "Set Time Format" = "Saat Biçimi Ayarı";
+"Date Format" = "Tarih Biçimi";
+"Time Format" = "Saat Biçimi";
 "Set Date" = "Tarih Ayarı";
 "Set Time" = "Saat Ayarı";
 "Use the system Date and Time" = "Sistem Tarih ve Saatini Kullan";
@@ -179,6 +181,7 @@
 "Start Dive<" = "Dalışa Başla<";
 "Start Pressure" = "Başlangıç Basıncı";
 "Max Ascent Rate" = "Maksimum Yükselme Hızı";
+"Max Ascent Bar" = "Maks. Yükselme Çubuğu";
 "NO DECO" = "DECO YOK";
 "Settings Used" = "Kullanılan Ayarlar";
 "Max PPO2" = "Max PPO2";
@@ -193,7 +196,7 @@
 "SAC" = "SAC";
 "Tank Type" = "Tank Tipi";
 "Mode" = "Mod";
-"TLBG Bar" = "TLBG Çubuğu";
+"TLBG Bar" = "Max TLBG";
 "Remove" = "Kaldır";
 "Min Temperature" = "Minimum Sıcaklık";
 "Search" = "Ara";
@@ -386,3 +389,5 @@ our products." = "DiveSync'in ürünlerimizi iyileştirmemize yardımcı olması
 "Uploading your owner info..." = "Sahip bilgileriniz yükleniyor...";
 "Select All" = "Tümünü seç";
 "Long press an item to select or deselect it" = "Seçmek veya kaldırmak için uzun basın";
+"START" = "BAŞLAT";
+"END" = "SON";

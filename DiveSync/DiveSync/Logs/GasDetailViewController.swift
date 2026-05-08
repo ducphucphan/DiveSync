@@ -304,8 +304,13 @@ class GasDetailViewController: BaseViewController {
             break
         }
         
+        let isEnabledByMask = mixesEnabled[gasNo]
+        let isEnabledByFo2 = fo2 >= 21
+        
+        let isGasEnabled = isEnabledByMask || isEnabledByFo2
+        
         gasNoLb.text = String(format: "%@ %d - %@", "Gas".localized.uppercased(), gasNo, Utilities.fo2GasValue(gasNo: gasNo, fo2: fo2))
-        if mixesEnabled[gasNo] == false {
+        if isGasEnabled == false {
             gasNoLb.text = String(format: "%@ %d - %@", "Gas".localized.uppercased(), gasNo, OFF)
         }
         

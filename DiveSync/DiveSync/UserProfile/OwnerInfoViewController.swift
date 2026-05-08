@@ -149,12 +149,20 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
             cell.accessoryType = .disclosureIndicator
         default:
             let value = profileValues[key]
-            let displayValue: String
+            var displayValue: String
             if let stringValue = value as? String, !stringValue.isEmpty {
                 displayValue = stringValue
             } else {
                 displayValue = "-"
             }
+            
+            // Cập nhật logic format cho ngày sinh
+            if key == "birthdate", displayValue != "-" {
+                let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+                let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+                displayValue = Utilities.convertDateFormat(from: displayValue, fromFormat: "dd/MM/yyyy", toFormat: datePattern)
+            }
+            
             cell.bindCell(title: titleData[indexPath.row].localized.capitalized, value: displayValue)
         }
         
@@ -204,11 +212,16 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
             }
             
         case .date:
+            let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+            let currentInputFormat = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+            
             EditProfilePopupManager.showBirthDatePicker(
                 in: self,
                 title: titleText,
                 currentValue: currentValue,
+                inputFormat: currentInputFormat, // Thêm line này
                 onSave: { [weak self] newDateString in
+                    // newDateString lúc này đang ở định dạng dd.MM.yy hoặc MM.dd.yy
                     self?.updateValue(newDateString, at: indexPath)
                 }
             )
@@ -244,12 +257,28 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
     
     private func updateValue(_ newValue: String, at indexPath: IndexPath) {
         let key = keys[indexPath.row]
-        let value = newValue
+        var valueToSave = newValue
         
-        DatabaseManager.shared.updateTable(tableName: "userinfo",
-                                           params: [key:newValue])
+        // Nếu là ngày sinh, phải convert về format DB trước khi lưu
+        if key == "birthdate" {
+            let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+            let currentDisplayPattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = currentDisplayPattern
+            
+            if let dateObj = formatter.date(from: newValue) {
+                let dbFormatter = DateFormatter()
+                dbFormatter.dateFormat = "dd/MM/yyyy"
+                valueToSave = dbFormatter.string(from: dateObj)
+            }
+        }
         
-        profileValues[key] = value
+        // Lưu vào Database với giá trị đã chuẩn hóa
+        DatabaseManager.shared.updateTable(tableName: "userinfo", params: [key: valueToSave])
+        
+        // Cập nhật lại UI local
+        profileValues[key] = valueToSave
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }

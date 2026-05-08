@@ -107,8 +107,8 @@
                         "id": "po2",
                         "type": "modeSelector",
                         "title": "PO2",
-                        "value": "100",
-                        "options": ["100", "110", "120", "130", "140", "150", "160", "170", "180"]
+                        "value": "1.00",
+                        "options": ["1.00", "1.10", "1.20", "1.30", "1.40", "1.50", "1.60", "1.70", "1.80"]
                     },
                     {
                         "id": "conservatism",
@@ -121,9 +121,9 @@
                         "id": "log_start_depth",
                         "type": "modeSelector",
                         "title": "Log Start Depth",
-                        "value": "10 M",
-                        "options": ["10 M", "15 M", "20 M", "25 M", "30 M"],
-                        "options_ft": ["32 FT", "49 FT", "65 FT", "82 FT", "98 FT"]
+                        "value": "1.0 M",
+                        "options": ["1.0 M", "1.5 M", "2.0 M", "2.5 M", "3.0 M"],
+                        "options_ft": ["3.2 FT", "4.9 FT", "6.5 FT", "8.2 FT", "9.8 FT"]
                     },
                     
                     {

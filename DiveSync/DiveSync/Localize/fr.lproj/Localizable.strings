@@ -144,6 +144,8 @@
 "Set Date - Time" = "Régler date / heure";
 "Set Date Format" = "Format de date";
 "Set Time Format" = "Format de l’heure";
+"Date Format" = "Format de date";
+"Time Format" = "Format de l’heure";
 "Set Date" = "Régler la date";
 "Set Time" = "Régler l’heure";
 "Use the system Date and Time" = "Utiliser date et heure du système";
@@ -179,6 +181,7 @@
 "Start Dive<" = "Début de plongée";
 "Start Pressure" = "Pression de départ";
 "Max Ascent Rate" = "Vitesse de remontée max";
+"Max Ascent Bar" = "Max Ascent Bar";
 "NO DECO" = "Sans décompression";
 "Settings Used" = "Paramètres utilisés";
 "Max PPO2" = "PPO₂ max";
@@ -193,7 +196,7 @@
 "SAC" = "Type de bloc";
 "Tank Type" = "Mode";
 "Mode" = "Barre TLBG";
-"TLBG Bar" = "Supprimer";
+"TLBG Bar" = "TLBG max";
 "Remove" = "Température min";
 "Min Temperature" = "Rechercher";
 "Search" = "Aucune certification";
@@ -388,3 +391,5 @@ our products.";
 "Uploading your owner info..." = "Téléchargement de vos informations de propriétaire...";
 "Select All" = "Tout sélectionner";
 "Long press an item to select or deselect it" = "Appui long pour sélectionner ou désélectionner";
+"START" = "DÉBUT";
+"END" = "FIN";

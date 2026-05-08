@@ -102,7 +102,7 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
             .map { scannedList -> [ScannedPeripheral] in
                 // Filter chỉ những device chưa có trong app
                 scannedList.filter { sp in
-                    //guard let (_, serial) = sp.peripheral.peripheral.splitDeviceName() else { return true }
+                    //guard let (_, serial) = sp.splitDeviceName() else { return true }
                     //return !knownDevicesSerials.contains(serial)
                     guard let IdentityName = sp.peripheral.peripheral.name else { return true } // IdentityName [DAVxxxxx, SKIxxxxx, SPIxxxxx]
                     return !knownDevicesIdentities.contains(IdentityName)
@@ -174,7 +174,7 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
     
     private func connectToDevice(_ scanned: ScannedPeripheral) {
         BluetoothDeviceCoordinator.shared
-            .connect(to: scanned.peripheral, discover: true) // ← discover ngay
+            .connect(to: scanned, discover: true) // ← discover ngay
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { session in
                 
@@ -185,7 +185,7 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
                 case .cr5Session(let m): manager = m
                 }
                 
-                if let (bleName, _) = scanned.peripheral.peripheral.splitDeviceName(),
+                if let (bleName, _) = scanned.splitDeviceName(),
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                     manager.ModelID = dcInfo[2].toInt()
                 }

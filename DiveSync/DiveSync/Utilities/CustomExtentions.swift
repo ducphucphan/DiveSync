@@ -482,6 +482,15 @@ extension String {
         return self // fallback là String
     }
     
+    func toCleanInt(multiplier: Double) -> Int {
+        // Lọc chỉ lấy số và dấu chấm thập phân
+        let numericString = self.filter { "0123456789.".contains($0) }
+        if let doubleValue = Double(numericString) {
+            return Int((doubleValue * multiplier).rounded())
+        }
+        return 0
+    }
+    
     func toInt() -> Int {
         /*
         // Nếu chuỗi là "OFF", trả về 0

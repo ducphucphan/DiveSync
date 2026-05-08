@@ -55,6 +55,9 @@ class LogCell: UITableViewCell {
     }
     
     func bindData(row: Row) {
+        let dFormat = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let tFormat = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+        
         let modelID = row.stringValue(key: "ModelID").toInt()
         
         locLb.text = row.stringValue(key: "SpotName")
@@ -81,8 +84,14 @@ class LogCell: UITableViewCell {
         
         let diveDateTime = row.stringValue(key: "DiveStartLocalTime")
         
-        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: "dd.MM.yy")
-        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: "hh:mm a")
+        // Định dạng Ngày: 0 -> dd.MM.yy, 1 -> MM.dd.yy
+        let datePattern = (dFormat == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        
+        // Định dạng Giờ: 0 -> hh:mm a (12h), 1 -> HH:mm (24h)
+        let timePattern = (tFormat == 0) ? "hh:mm a" : "HH:mm"
+        
+        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: datePattern)
+        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: timePattern)
         let diveOfTheDay = row.stringValue(key: "DiveOfTheDay")
         
         diveDateLb.text = diveDate

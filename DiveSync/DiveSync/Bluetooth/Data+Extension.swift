@@ -59,12 +59,28 @@ extension Data {
         return Int(UInt16(littleEndian: value))
     }
     
+    // Hàm lấy một mảng UInt16 (Little Endian) từ offset và số lượng phần tử
+    func u16ArrayLE(_ offset: Int, count: Int) -> [Int] {
+        var result: [Int] = []
+        for i in 0..<count {
+            // Mỗi phần tử u16 chiếm 2 byte nên offset sẽ là: offset + (i * 2)
+            let currentOffset = offset + (i * 2)
+            result.append(self.u16LE(currentOffset))
+        }
+        return result
+    }
+    
     func u32LE(_ offset: Int) -> Int {
         guard offset + 4 <= self.count else { return 0 }
         let value = self.subdata(in: offset..<offset+4).withUnsafeBytes {
             $0.load(as: UInt32.self)
         }
         return Int(UInt32(littleEndian: value))
+    }
+    
+    func bytes(_ offset: Int, count: Int) -> [UInt8] {
+        guard offset + count <= self.count else { return [] }
+        return Array(self[offset..<offset+count])
     }
 }
 

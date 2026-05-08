@@ -127,7 +127,7 @@ final class BluetoothDeviceCRManager {
     // MARK: - Properties
     // ============================================
     
-    let peripheral: Peripheral
+    let scannedPeripheral: ScannedPeripheral
     
     private var writeCharacteristic: Characteristic?
     private var notifyCharacteristic: Characteristic?
@@ -143,6 +143,9 @@ final class BluetoothDeviceCRManager {
     var SerialNo = ""
     var ModelID = 0
     
+    var currentDateFormat = -1
+    var currentTimeFormat = -1
+    
     private var numOfLogs: Int = 0
     private var units: Int = M
     
@@ -153,8 +156,8 @@ final class BluetoothDeviceCRManager {
     // MARK: - Init / Deinit
     // ============================================
     
-    init(peripheral: Peripheral) {
-        self.peripheral = peripheral
+    init(scannedPeripheral: ScannedPeripheral) {
+        self.scannedPeripheral = scannedPeripheral
     }
     
     func dispose() {
@@ -172,7 +175,7 @@ final class BluetoothDeviceCRManager {
         readCharUUID: CBUUID
     ) -> Observable<Void> {
         
-        peripheral.discoverServices(servicesUUID)
+        scannedPeripheral.peripheral.discoverServices(servicesUUID)
             .asObservable()
             .flatMap { Observable.from($0) }
             .flatMap { service -> Observable<[Characteristic]> in
@@ -275,7 +278,7 @@ final class BluetoothDeviceCRManager {
             PrintLog("📤 SEND READ: \(data.hexString)")
         }
         
-        return peripheral
+        return scannedPeripheral.peripheral
             .writeValue(data, for: characteristic, type: .withoutResponse)
             .asObservable()
             .map { _ in () }
@@ -507,12 +510,12 @@ final class BluetoothDeviceCRManager {
                 var props: [String: Any] = [
                     "ModelID": m.ModelID,
                     "SerialNo": m.SerialNo,
-                    "Identity": m.peripheral.name ?? "",
+                    "Identity": m.scannedPeripheral.advertisementData.localName ?? "",
                     "LastSync": Utilities.getLastSyncText(date: Date()),
                     "Firmware": m.firmwareRev
                 ]
                 
-                if let (bleName, _) = self.peripheral.peripheral.splitDeviceName(),
+                if let (bleName, _) = self.scannedPeripheral.splitDeviceName(),
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                     props["Manufacture"] = dcInfo[0]
                     props["ModelName"]   = dcInfo[1]
@@ -544,6 +547,10 @@ final class BluetoothDeviceCRManager {
                     _ = DatabaseManager.shared.insertIntoTable(tableName: "devices", params: props)
                 }
                 
+                if syncType == .kDownloadDiveData {
+                    DatabaseManager.shared.updateDeviceStatisticsFromLogs(modelId: m.ModelID, serialNo: m.SerialNo)
+                }
+                
                 BluetoothDeviceCoordinator.shared.disconnect()
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg.localized)
             },
@@ -557,7 +564,7 @@ final class BluetoothDeviceCRManager {
     // MARK: - PARSE DATA
     func U_LogicSaveSetting() -> Observable<DeviceReadResult> {
         
-        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+        if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             self.ModelID = dcInfo[2].toInt()
         }
@@ -652,7 +659,7 @@ final class BluetoothDeviceCRManager {
     
     func U_LogicWriteSetting() -> Observable<DeviceReadResult> {
         // 1. Lấy thông tin ModelID
-        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+        if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             self.ModelID = dcInfo[2].toInt()
         }
@@ -742,7 +749,7 @@ final class BluetoothDeviceCRManager {
         
         var divedata: [String: Any] = [:]
         
-        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+        if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             divedata["DeviceName"] = dcInfo[1]
         }
@@ -764,6 +771,16 @@ final class BluetoothDeviceCRManager {
         
         let profileLength = header.u32LE(32)
         print("PROFILE LENGTH: \(profileLength)")
+        
+        print("Log version: \(header.u8(47))")
+        
+        let logIndex = header.u16LE(48)
+        
+        divedata["DiveNo"] = logIndex
+        divedata["ModelID"] = self.ModelID
+        divedata["SerialNo"] = self.SerialNo
+        
+        divedata["DiveOfTheDay"] = (logIndex + 1) // Do device không có trường để lấy DiveOfTheDay nên lưu tạm logindex
         
         let maxDepthRaw = header.u16LE(264)
         let maxDepth = Double(maxDepthRaw) / 100.0
@@ -800,23 +817,12 @@ final class BluetoothDeviceCRManager {
         print("user_mark_count: \(header.u16LE(441))")
         print("system_mark_count: \(header.u16LE(443))")
         
-        print("Log version: \(header.u8(47))")
-        
-        let logIndex = header.u16LE(48)
-        
-        divedata["DiveNo"] = logIndex
-        divedata["ModelID"] = self.ModelID
-        divedata["SerialNo"] = self.SerialNo
-        
         //
         divedata["Units"] = units
-        //        divedata["Water"] = settings.systemSettings?.waterDensity.decimalString
-        //        divedata["Light"] = settings.systemSettings?.backlightLevel.decimalString // Davinci (display percent 10% -> 100%)
-        //        divedata["backlightDimTime"] = settings.systemSettings?.backlightDimTime_s.decimalString // Skiff / Spirit (display in xx SEC)
-        //        divedata["Sound"] = settings.systemSettings?.buzzerMode.decimalString
-        //
         
         divedata["DiveMode"] = header.u8(22)
+        
+        divedata["Water"] = header.u8(219)
         
         let timezone = header.u8(31)
         
@@ -828,17 +834,66 @@ final class BluetoothDeviceCRManager {
         let endDate   = Date(timeIntervalSince1970: TimeInterval(endUTC))
         divedata["DiveEndLocalTime"] = formatDiveDate(endDate, timezoneOffset: Int(timezone))
         
+        /*
+         0 : Conserve   CF1 (35/75)
+         1 : Normal       CF2 (40/85)
+         2 : Aggressive CF3 (45/95)
+         */
+        divedata["GfHighPercent"] = header.u8(217)
+        divedata["GfLowPercent"] = header.u8(218)
+        
         divedata["TotalDiveTime"] = header.u32LE(260)
-        if logIndex == 0 {
+        
+        let surfTimeValue = header.u32LE(256)
+        let limit24H: UInt32 = 86400 // 24 * 60 * 60
+        if surfTimeValue > limit24H {
             divedata["SurfTime"] = 0
         } else {
-            divedata["SurfTime"] = header.u32LE(256)
+            divedata["SurfTime"] = surfTimeValue
         }
         
-        //divedata["DiveOfTheDay"] = logData[38]
-        //divedata["IsDecoDive"] = logData[39]
-        
         divedata["SamplingTime"] = Int(Double(header.u16LE(50)) * 0.01)
+        
+        divedata["TankTurnAlarmBar"] = header.u16LE(68)
+        
+        //TankEndAlramBar
+        divedata["TankEndAlarmBar"] = header.u16LE(70)
+        
+        //TankTurnAlramPsi
+        divedata["TankTurnAlarmPsi"] = Int(convertUBAR2PSI(Double(header.u16LE(68))))
+        
+        //TankEndAlramPsi
+        divedata["TankEndAlarmPsi"] = Int(convertUBAR2PSI(Double(header.u16LE(70))))
+        
+        let rawAscentRate = Double(header.u16LE(272)) / 100 //100 in 1 meter/sec (ref. salinity), 0 at surface
+        let ftPerMin = convertMeter2Feet(rawAscentRate) * 60
+        // Lưu vào Database (thường làm tròn 1 hoặc 2 chữ số thập phân tùy nhu cầu)
+        let ascentRatevalueToSave = (ftPerMin * 100).rounded() / 100 // Kết quả: 82.68
+        divedata["AscentSpeedAlarm"] = ascentRatevalueToSave
+        
+        divedata["Mix1Fo2Percent"] = header.u8(197)
+        divedata["Mix2Fo2Percent"] = header.u8(201)
+        divedata["Mix3Fo2Percent"] = header.u8(205)
+        divedata["Mix4Fo2Percent"] = header.u8(209)
+        divedata["Mix5Fo2Percent"] = header.u8(213)
+        
+        divedata["Mix1FHePercent"] = header.u8(198)
+        divedata["Mix2FHePercent"] = header.u8(202)
+        divedata["Mix3FHePercent"] = header.u8(206)
+        divedata["Mix4FHePercent"] = header.u8(210)
+        divedata["Mix5FHePercent"] = header.u8(214)
+        
+        divedata["Mix1PpO2Barx100"] = header.u8(199)
+        divedata["Mix2PpO2Barx100"] = header.u8(203)
+        divedata["Mix3PpO2Barx100"] = header.u8(207)
+        divedata["Mix4PpO2Barx100"] = header.u8(211)
+        divedata["Mix5PpO2Barx100"] = header.u8(215)
+        
+        //print("start_nitro_pressure[16] = \(header.u32(282))")
+        //print("end_nitro_pressure[16] = \(header.u32(314))")
+        
+        divedata["MaxPpo2"] = Double(header.u8(428)) / 10
+        
         PrintLog(divedata)
         
         let rs = DatabaseManager.shared.saveDiveData(diveData: divedata)
@@ -847,10 +902,105 @@ final class BluetoothDeviceCRManager {
         // DIVE PROFILE
         let profileData = data.subdata(in: headerSize..<data.count)
         print(profileData.hexString)
+        
         let count = profileData.count / sampleSize
         
-        var diveTime = 0
+        let samplingTime = divedata["SamplingTime"] as? Int ?? 0
         
+        var offset = 0
+        var diveTime = 0
+        var currentSpO2: Int = 0
+        var currentAlarmID: Int = 0
+        var decoStopDepth: Double = 0
+        var decoTime: Int = 0
+        
+        while offset < profileData.count {
+            let type = profileData.u8(offset)
+            
+            switch type {
+            case 0x01:
+                if offset + 6 <= profileData.count {
+                    var row: [String: Any] = [:]
+                    
+                    row["DiveID"] = rs.diveID
+                                                            
+                    // ---- SENSOR (0–5)
+                    let sensorType = profileData.u8(offset)
+                    let heartrate = profileData.u8(offset + 1)
+                    let depthRaw = profileData.u16LE(offset + 2)
+                    let tempRaw = profileData.u16LE(offset + 4)
+                    
+                    let depth = (Double(depthRaw) / 100.0) * 10.0 // format cho giống các device khác.
+                    let temperature = Double(tempRaw)
+                    
+                    print("LOG_DIVE_MARK_TYPE_SENSOR:", sensorType)
+                    print("heartrate:", heartrate)
+                    print("depth:", depth)
+                    print("temperature:", temperature)
+                    
+                    row["DepthFT"] = depth // Dive Depth in meters x 100
+                    row["TemperatureF"] = temperature // Temperature in Celcisuis x 10
+                    row["DiveTime"] = diveTime
+                                        
+                    // Gán các giá trị tích lũy từ các gói khác (nếu có)
+                    row["OxToxPercent"] = currentSpO2 // Ánh xạ SpO2 vào cột cũ nếu cần
+                    row["AlarmID"] = currentAlarmID
+                    row["DecoStopDepthFT"] = decoStopDepth
+                    row["DecoTime"] = decoTime
+                    
+                    DatabaseManager.shared.saveDiveProfile(profile: row)
+                    
+                    // Tăng diveTime theo chu kỳ lấy mẫu
+                    diveTime += samplingTime
+                    offset += 6
+                    
+                    // Reset các biến chỉ xuất hiện theo sự kiện (tùy nhu cầu)
+                    currentAlarmID = 0
+                } else { offset = profileData.count }
+            case 0x02:
+                if offset + 33 <= profileData.count {
+                    offset += 33
+                } else { offset = profileData.count }
+            case 0x03:
+                if offset + 9 <= profileData.count {
+                    currentAlarmID = Int(profileData.u32(offset + 5))
+                    offset += 9
+                } else { offset = profileData.count }
+            case 0x04:
+                if offset + 8 <= profileData.count {
+                    /*
+                     update_type
+                     Value      Name    Notes
+                     0          LOG_MARK_UPDATE_STATE_TO_NORMAL
+                     1          LOG_MARK_UPDATE_STATE_TO_NORMAL_STOP
+                     2          LOG_MARK_UPDATE_STATE_TO_DECO
+                     3          LOG_MARK_UPDATE_STATE_TO_DECO_STOP
+                     4          LOG_MARK_UPDATE_DECO_STOP_DEPTH
+                     */
+                    
+                    let decoType = profileData.u8(offset + 1)
+                    if decoType == 4 {
+                        decoStopDepth = Double(profileData.u16LE(offset + 2))
+                        decoTime = Int(profileData.u16LE(offset + 4))
+                    }
+                    offset += 8
+                } else { offset = profileData.count }
+            case 0x05:
+                if offset + 7 <= profileData.count {
+                    offset += 7
+                } else { offset = profileData.count }
+            case 0x06:
+                if offset + 5 <= profileData.count {
+                    offset += 5
+                } else { offset = profileData.count }
+            default:
+                offset += 1
+                break
+            }
+            
+        }
+        
+        /*
         for i in 0..<count {
             
             var row: [String: Any] = [:]
@@ -883,65 +1033,13 @@ final class BluetoothDeviceCRManager {
             
             DatabaseManager.shared.saveDiveProfile(profile: row)
             
-            /*
-             // ---- TISSUE (6–38)
-             let tissuesType = sample.u8(6)
-             var tissues: [UInt16] = []
-             for t in 0..<16 {
-             let offset = 7 + (t * 2)
-             tissues.append(sample.u16(offset))
-             }
-             print("LOG_DIVE_MARK_TYPE_TISSUE_N2:", tissuesType)
-             print("Tissue[0]:", tissues.first ?? 0)
-             
-             // ---- ALARM (39–47)
-             let alarmMarkType = sample.u8(39)
-             let diveTime = sample.u16LE(40)
-             let alarmDepth = Double(sample.u16LE(42)) / 100.0
-             let alarmType = sample.u32LE(44)
-             print("LOG_DIVE_MARK_TYPE_ALARM:", alarmMarkType)
-             print("diveTime:", diveTime)
-             print("alarmDepth:", alarmDepth)
-             print("alarmType:", alarmType)
-             
-             
-             // ---- STATE (48–55)
-             let stateType = sample.u8(48)
-             let updateType = sample.u8(49)
-             let stopDepthRaw = sample.u16LE(50)
-             let stateDiveTime = sample.u16LE(52)
-             let stateDepth = sample.u16LE(54)
-             print("LOG_DIVE_MARK_TYPE_STATE:", stateType)
-             print("updateType:", updateType)
-             print("stopDepth:", Double(stopDepthRaw) / 100.0)
-             print("stateDiveTime:", stateDiveTime)
-             print("stateDepth:", Double(stateDepth) / 100.0)
-             
-             // ---- USER (56–62)
-             let userType = sample.u8(56)
-             let avgDepthRaw = sample.u16LE(57)
-             let lapTime = sample.u16LE(59)
-             let userDepth = sample.u16LE(61)
-             print("LOG_DIVE_MARK_TYPE_USER:", userType)
-             print("avgDepth:", Double(avgDepthRaw) / 100.0)
-             print("lapTime:", lapTime)
-             print("stateDepth:", Double(stateDepth) / 100.0)
-             print("userDepth:", Double(userDepth) / 100.0)
-             
-             // ---- SYSTEM (63–67)
-             let systemType = sample.u8(63)
-             let systemDiveTime = sample.u16LE(64)
-             let systemDepth = Double(sample.u16LE(66)) / 100.0
-             print("LOG_DIVE_MARK_TYPE_SYSTEM:", systemType)
-             print("systemDiveTime:", systemDiveTime)
-             print("systemDepth:", systemDepth)
-             */
         }
+        */
     }
     
     func U_LogicWriteTimeSync() -> Observable<DeviceReadResult> {
         
-        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+        if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             self.ModelID = dcInfo[2].toInt()
         }

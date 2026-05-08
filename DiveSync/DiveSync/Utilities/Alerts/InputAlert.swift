@@ -5,7 +5,7 @@ enum InputAlertAction {
     case save(String?)
 }
 
-final class InputAlert: UIViewController {
+final class InputAlert: UIViewController, UITextFieldDelegate {
 
     // MARK: - UI Elements
     private let containerView = UIView()
@@ -16,6 +16,8 @@ final class InputAlert: UIViewController {
     private let saveButton = UIButton(type: .system)
     private let inputStack = UIStackView()
 
+    private var maxLength: Int? // Thêm biến lưu giới hạn ký tự
+    
     private var completion: ((InputAlertAction) -> Void)?
 
     override func viewDidAppear(_ animated: Bool) {
@@ -33,10 +35,16 @@ final class InputAlert: UIViewController {
          unitText: String = "",
          keyboardType: UIKeyboardType = .default,
          textAlignment: NSTextAlignment = .left,
+         maxLength: Int? = nil,
          completion: @escaping (InputAlertAction) -> Void) {
+        
         super.init(nibName: nil, bundle: nil)
+        
         self.completion = completion
+        self.maxLength = maxLength
+        
         setupViews(title: title, saveTitle: saveTitle, currentValue: currentValue, placeholder: placeholder, unitText: unitText, keyboardType: keyboardType, textAlignment: textAlignment)
+        
         modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
     }
@@ -53,14 +61,18 @@ final class InputAlert: UIViewController {
                      unitText: String = "",
                      keyboardType: UIKeyboardType = .default,
                      textAlignment: NSTextAlignment = .left,
+                     maxLength: Int? = nil,
                      completion: @escaping (InputAlertAction) -> Void) {
         guard let topVC = UIApplication.shared.topMostViewController() else { return }
-        let alert = InputAlert(title: title, saveTitle: saveTitle, currentValue: currentValue, placeholder: placeholder, unitText: unitText, keyboardType: keyboardType, textAlignment: textAlignment, completion: completion)
+        let alert = InputAlert(title: title, saveTitle: saveTitle, currentValue: currentValue, placeholder: placeholder, unitText: unitText, keyboardType: keyboardType, textAlignment: textAlignment, maxLength: maxLength, completion: completion)
         topVC.present(alert, animated: true)
     }
 
     // MARK: - Setup UI
     private func setupViews(title: String, saveTitle: String, currentValue: String, placeholder: String?, unitText: String, keyboardType: UIKeyboardType, textAlignment: NSTextAlignment) {
+        
+        textField.delegate = self
+        
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
 
         // Container
@@ -164,5 +176,13 @@ final class InputAlert: UIViewController {
         dismiss(animated: true) {
             self.completion?(.save(self.textField.text))
         }
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        guard let limit = maxLength else { return true }
+        
+        let currentString = (textField.text ?? "") as NSString
+        let newString = currentString.replacingCharacters(in: range, with: string)
+        return newString.count <= limit
     }
 }

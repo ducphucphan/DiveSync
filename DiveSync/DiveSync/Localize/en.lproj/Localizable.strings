@@ -144,6 +144,8 @@
 "Set Date - Time" = "Set Date - Time";
 "Set Date Format" = "Set Date Format";
 "Set Time Format" = "Set Time Format";
+"Date Format" = "Date Format";
+"Time Format" = "Time Format";
 "Set Date" = "Set Date";
 "Set Time" = "Set Time";
 "Use the system Date and Time" = "Use the system Date and Time";
@@ -179,6 +181,7 @@
 "Start Dive<" = "Start Dive<";
 "Start Pressure" = "Start Pressure";
 "Max Ascent Rate" = "Max Ascent Rate";
+"Max Ascent Bar" = "Max Ascent Bar";
 "NO DECO" = "NO DECO";
 "Settings Used" = "Settings Used";
 "Max PPO2" = "Max PPO2";
@@ -193,7 +196,7 @@
 "SAC" = "SAC";
 "Tank Type" = "Tank Type";
 "Mode" = "Mode";
-"TLBG Bar" = "TLBG Bar";
+"TLBG Bar" = "Max TLBG";
 "Remove" = "Remove";
 "Min Temperature" = "Min Temperature";
 "Search" = "Search";
@@ -388,3 +391,5 @@ our products.";
 "Uploading your owner info..." = "Uploading your owner info...";
 "Select All" = "Select All";
 "Long press an item to select or deselect it" = "Long press an item to select or deselect it";
+"START" = "START";
+"END" = "END";

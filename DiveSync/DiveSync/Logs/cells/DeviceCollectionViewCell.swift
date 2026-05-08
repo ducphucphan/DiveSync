@@ -67,7 +67,7 @@ final class DeviceCollectionViewCell: UICollectionViewCell {
         if let active = BluetoothDeviceCoordinator.shared.activeDataManager,
            active.SerialNo == item.SerialNo?.toInt(),
            active.ModelID == item.modelId ?? 0,
-           active.peripheral.peripheral.state == .connected {
+           active.scannedPeripheral.peripheral.peripheral.state == .connected {
             
             statusLabel.isHidden = false
             statusLabel.text = "Connected".localized

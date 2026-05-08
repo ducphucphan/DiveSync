@@ -110,6 +110,8 @@ class DeviceViewController: BaseViewController {
     
     @IBOutlet weak var updateDCView: UIView!
     
+    @IBOutlet weak var autoSyncView: UIView!
+    
     private var disposeBag = DisposeBag()
 
     private var currentIndex = 0
@@ -225,6 +227,7 @@ class DeviceViewController: BaseViewController {
         }
         
         let device = deviceList[currentIndex]
+        let modelid = Int(device.modelId ?? 0)
         
         currentDevice = device
         scrollContentView.isHidden = false
@@ -232,11 +235,14 @@ class DeviceViewController: BaseViewController {
         
         deviceName.text = device.ModelName ?? ""
         
-        switch Int(device.modelId ?? 0) {
+        switch modelid {
         case C_LOG, C_LOGPLUS, C_GRA:
+            autoSyncView.alpha = 1
             updateDCView.isHidden = true
             serialNoLb.text = "Serial Number".localized + ": \(device.SerialNo ?? "")"
         default:
+            autoSyncView.alpha = 0
+            updateDCView.isHidden = false
             serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
         }
         
@@ -246,7 +252,37 @@ class DeviceViewController: BaseViewController {
         }
         versionLb.text = versionText
         
-        syncedLb.text = "Synced".localized + ": " + (device.LastSync ?? "")
+        //syncedLb.text = "Synced".localized + ": " + (device.LastSync ?? "")
+        
+        let rawLastSync = device.LastSync ?? "" // Giá trị: "04/22/26 09:54AM"
+
+        if !rawLastSync.isEmpty {
+            // 1. Lấy cài đặt định dạng Ngày từ User
+            let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+            let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+
+            // 2. Lấy cài đặt định dạng Giờ từ User (0: 24h, 1: 12h)
+            let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+            let timePattern = (timeFormatId == 0) ? "hh:mma" : "HH:mm"
+
+            // Kết hợp lại thành định dạng hiển thị cuối cùng
+            let finalDisplayPattern = "\(datePattern) \(timePattern)"
+
+            // 3. Định nghĩa chính xác format đang lưu trong DB để máy có thể parse được
+            let oldDbFormat = "MM/dd/yy hh:mma"
+
+            // 4. Thực hiện chuyển đổi
+            let formattedSync = Utilities.convertDateFormat(
+                from: rawLastSync,
+                fromFormat: oldDbFormat,
+                toFormat: finalDisplayPattern
+            )
+
+            syncedLb.text = "Synced".localized + ": " + formattedSync
+        } else {
+            syncedLb.text = "Synced".localized + ": ---"
+        }
+        
         
         if let deviceIdentify = device.Identity, let autosyncDeviceIdentify:String = AppSettings.shared.get(forKey: AppSettings.Keys.autosyncDeviceIdentify), deviceIdentify == autosyncDeviceIdentify {
             autosyncSwitch.isOn = true
@@ -254,6 +290,16 @@ class DeviceViewController: BaseViewController {
         
         // Stats
         
+        // Lấy giá trị ra, nếu nil thì mặc định là "0" hoặc chuỗi rỗng
+        let totalDivesStr = device.StatsLogTotalDives ?? "0"
+        let totalSecondsStr = device.StatsTotalDiveSecond ?? "0"
+        let maxDepthStr = device.StatsMaxDepthFT ?? "0"
+        let avgDepthStr = device.StatsAvgDepthFT ?? "0"
+        let minTempStr = device.StatsMinTemperatureF ?? "0"
+        let altLevelStr = device.StatsMaxAltitudeLevel ?? "0"
+
+        let totalDivesInt = totalDivesStr.toInt()
+
         statsTotalDivesValueLb.text = "---"
         statsTotalDiveTimeValueLb.text = "---"
         statsMdepthValueLb.text = "---"
@@ -261,53 +307,38 @@ class DeviceViewController: BaseViewController {
         statsMinTempValueLb.text = "---"
         statsAltLevelValueLb.text = "---"
         
-        if let StatsLogTotalDives = device.StatsLogTotalDives,
-           let StatsTotalDiveSecond = device.StatsTotalDiveSecond,
-           let StatsMaxDepthFT = device.StatsMaxDepthFT,
-           let StatsAvgDepthFT = device.StatsAvgDepthFT,
-           let StatsMinTemperatureF = device.StatsMinTemperatureF,
-           let StatsMaxAltitudeLevel = device.StatsMaxAltitudeLevel {
-            
-            statsTotalDivesValueLb.text = "\(StatsLogTotalDives.toInt())"
-            statsTotalDiveTimeValueLb.text = Utilities.formatSecondsToHMS(StatsTotalDiveSecond.toInt())
-            
-            var mdepth = StatsMaxDepthFT
-            var avgDepth = StatsAvgDepthFT
-            var minTemp = StatsMinTemperatureF
+        // Kiểm tra nếu chưa có dive nào thì hiển thị "---"
+        if totalDivesInt > 0 {
+            // Xử lý hiển thị bình thường
+            statsTotalDivesValueLb.text = "\(totalDivesInt)"
+            statsTotalDiveTimeValueLb.text = Utilities.formatSecondsToHMS(totalSecondsStr.toInt())
             
             let unitOfDive = device.Units?.toInt()
+            let isMetric = (unitOfDive == M)
+            let unitString = isMetric ? "M" : "FT"
+            let tempUnitString = isMetric ? "°C" : "°F"
             
-            let unitString = unitOfDive == M ? "M":"FT"
-            let tempUnitString = unitOfDive == M ? "°C":"°F"
+            var mdepth: String
+            var avgDepth: String
+            var minTemp: String
             
-            if unitOfDive == M {
-                mdepth = formatNumber(converFeet2Meter(mdepth.toDouble()))
-                avgDepth = formatNumber(converFeet2Meter(avgDepth.toDouble()))
-                minTemp = formatNumber(convertF2C(minTemp.toDouble()))
+            if isMetric {
+                mdepth = formatNumber(converFeet2Meter(maxDepthStr.toDouble()))
+                avgDepth = formatNumber(converFeet2Meter(avgDepthStr.toDouble()))
+                minTemp = formatNumber(convertF2C(minTempStr.toDouble()))
             } else {
-                mdepth = formatNumber(mdepth.toDouble(), decimalIfNeeded: 0)
-                avgDepth = formatNumber(avgDepth.toDouble(), decimalIfNeeded: 0)
-                minTemp = formatNumber(minTemp.toDouble(), decimalIfNeeded: 0)
+                mdepth = formatNumber(maxDepthStr.toDouble(), decimalIfNeeded: 0)
+                avgDepth = formatNumber(avgDepthStr.toDouble(), decimalIfNeeded: 0)
+                minTemp = formatNumber(minTempStr.toDouble(), decimalIfNeeded: 0)
             }
             
-            statsMdepthValueLb.text = String(format: "%@ %@", mdepth, unitString)
-            statsAvgDepthValueLb.text = String(format: "%@ %@", avgDepth, unitString)
-            statsMinTempValueLb.text = String(format: "%@ %@", minTemp, tempUnitString)
+            statsMdepthValueLb.text = "\(mdepth) \(unitString)"
+            statsAvgDepthValueLb.text = "\(avgDepth) \(unitString)"
+            statsMinTempValueLb.text = "\(minTemp) \(tempUnitString)"
             
-            let level = StatsMaxAltitudeLevel.toInt()
-            if level == 0 {
-                statsAltLevelValueLb.text = "SEA"
-            } else {
-                statsAltLevelValueLb.text = String(format: "LEV%d", level)
-            }
-            
-            if StatsLogTotalDives.toInt() == 0 {
-                statsTotalDivesValueLb.text = "---"
-                statsTotalDiveTimeValueLb.text = "---"
-                statsMdepthValueLb.text = "---"
-                statsAvgDepthValueLb.text = "---"
-                statsMinTempValueLb.text = "---"
-                statsAltLevelValueLb.text = "---"
+            if modelid != C_LOG && modelid != C_LOGPLUS && modelid != C_GRA && modelid != C_CEN {
+                let level = altLevelStr.toInt()
+                statsAltLevelValueLb.text = (level == 0) ? "SEA" : "LEV\(level)"
             }
         }
         
@@ -405,7 +436,7 @@ class DeviceViewController: BaseViewController {
         
         // Tìm thiết bị trong relay
         let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-        guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+        guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
             PrintLog("Device not found in scannedDevices yet")
             showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
             completion(.failure(NSError(domain: "DeviceNotFound".localized, code: -1, userInfo: nil)))
@@ -417,7 +448,7 @@ class DeviceViewController: BaseViewController {
         
         // Connect
         BluetoothDeviceCoordinator.shared
-            .connect(to: matchedDevice.peripheral, discover: true)
+            .connect(to: matchedDevice, discover: true)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] session in
                 guard self != nil else { return }
@@ -425,7 +456,7 @@ class DeviceViewController: BaseViewController {
                 // Set ModelID nếu cần
                 if case let .normalSession(manager) = session {
                     // Set ModelID nếu cần
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                    if let (bleName, _) = matchedDevice.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
@@ -468,7 +499,7 @@ class DeviceViewController: BaseViewController {
         if let activeManager = BluetoothDeviceCoordinator.shared.activeDataManager,
            activeManager.SerialNo == device.SerialNo?.toInt(),
            activeManager.ModelID == device.modelId ?? 0,
-           activeManager.peripheral.peripheral.state == .connected {
+           activeManager.scannedPeripheral.peripheral.peripheral.state == .connected {
             // Disconnect
             BluetoothDeviceCoordinator.shared.disconnect()
             
@@ -479,7 +510,7 @@ class DeviceViewController: BaseViewController {
         } else {
             // Tìm thiết bị trong relay
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-            guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 return
@@ -490,7 +521,7 @@ class DeviceViewController: BaseViewController {
             
             // Connect
             BluetoothDeviceCoordinator.shared
-                .connect(to: matchedDevice.peripheral, discover: true)
+                .connect(to: matchedDevice, discover: true)
                 .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
@@ -502,7 +533,7 @@ class DeviceViewController: BaseViewController {
                         //ProgressHUD.dismiss()
                         
                         // Set ModelID nếu cần
-                        if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                        if let (bleName, _) = matchedDevice.splitDeviceName(),
                            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                             manager.ModelID = dcInfo[2].toInt()
                         }
@@ -543,7 +574,7 @@ class DeviceViewController: BaseViewController {
             // Chua ket noi thi thuc hien ket noi
             
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-            guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
                 showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
@@ -552,7 +583,7 @@ class DeviceViewController: BaseViewController {
             }
             
             BluetoothDeviceCoordinator.shared
-                .connect(to: matchedDevice.peripheral, discover: true)
+                .connect(to: matchedDevice, discover: true)
                 .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
@@ -564,7 +595,7 @@ class DeviceViewController: BaseViewController {
                     case .cr5Session(let m): manager = m
                     }
                     
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                    if let (bleName, _) = matchedDevice.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
@@ -677,7 +708,7 @@ class DeviceViewController: BaseViewController {
                 if let activeManager = BluetoothDeviceCoordinator.shared.activeDataManager,
                    activeManager.SerialNo == device.SerialNo?.toInt(),
                    activeManager.ModelID == device.modelId ?? 0,
-                   activeManager.peripheral.peripheral.state == .connected {
+                   activeManager.scannedPeripheral.peripheral.peripheral.state == .connected {
                     // Disconnect
                     BluetoothDeviceCoordinator.shared.disconnect()
                     
@@ -753,6 +784,26 @@ extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
                     })
                 } else {
                     showAlert(on: self, message: msg)
+                    
+                    guard let device = deviceList?[safe: currentIndex] else { return }
+                    let modelId = Int(device.modelId ?? 0)
+
+                    if syncType == .kDownloadDiveData {
+                        switch modelId {
+                        case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+                            // Đảm bảo chạy trên Main Thread để cập nhật UI ngay lập tức
+                            DispatchQueue.main.async {
+                                self.loadDevices()
+                                PrintLog("✅ Data refreshed for model: \(modelId)")
+                            }
+                        default:
+                            // Các model khác có thể cũng cần refresh nếu chúng có Stats?
+                            // Nếu tất cả các model đều cần cập nhật sau khi tải dive,
+                            // bạn có thể bỏ switch và gọi loadDevices() luôn.
+                            break
+                        }
+                    }
+                    
                 }
             }
         }

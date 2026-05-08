@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -211,8 +211,8 @@
                 </mask>
             </variation>
             <connections>
+                <outlet property="airTimeRemainingLb" destination="qy4-c7-4yA" id="awF-nJ-7YR"/>
                 <outlet property="depthLb" destination="ESO-dD-uNJ" id="145-a6-S9v"/>
-                <outlet property="endTankLb" destination="qy4-c7-4yA" id="kGd-6Z-L19"/>
                 <outlet property="lineChartView" destination="tNd-wy-LHK" id="TR8-IY-gyC"/>
                 <outlet property="msgLb" destination="gh2-kt-VNB" id="HSO-a1-JG0"/>
                 <outlet property="startTankLb" destination="OIM-AK-cke" id="Xtb-LJ-jDC"/>

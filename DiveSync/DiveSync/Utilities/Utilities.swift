@@ -402,17 +402,22 @@ class Utilities {
     }
     
     static func firstBinFile() -> URL? {
-        let fileManager = FileManager.default
-        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        
-        if let files = try? fileManager.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
-            // Lọc file có đuôi .bin
-            let binFiles = files.filter { $0.pathExtension == "bin" }
-            // Lấy file đầu tiên nếu có
-            return binFiles.first
+        let isDebug = false
+        if isDebug {
+            return Bundle.main.url(forResource: "Wisdom_20260422", withExtension: "bin")
+        } else {
+            let fileManager = FileManager.default
+            let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            
+            if let files = try? fileManager.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
+                // Lọc file có đuôi .bin
+                let binFiles = files.filter { $0.pathExtension == "bin" }
+                // Lấy file đầu tiên nếu có
+                return binFiles.first
+            }
+            
+            return nil
         }
-        
-        return nil
     }
     
     static func formatSecondsToHMS(_ seconds: Int) -> String {

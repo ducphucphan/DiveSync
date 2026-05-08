@@ -32,7 +32,7 @@ class LogGraphCell: UICollectionViewCell {
     @IBOutlet weak var timeLb: UILabel!
     @IBOutlet weak var tempLb: UILabel!
     @IBOutlet weak var startTankLb: UILabel!
-    @IBOutlet weak var endTankLb: UILabel!
+    @IBOutlet weak var airTimeRemainingLb: UILabel!
     @IBOutlet weak var msgLb: UILabel!
     @IBOutlet weak var warningImv: UIImageView!
     
@@ -413,6 +413,7 @@ extension LogGraphCell: ChartViewDelegate {
             )
             showAlarms(alarms)
             
+            let modelId = diveLog.stringValue(key: "ModelID").toInt()
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10
             if unit == FT {
@@ -431,7 +432,7 @@ extension LogGraphCell: ChartViewDelegate {
             
             let TemperatureF = selectedRow.stringValue(key: "TemperatureF").toDouble() / 10
             if unit == FT {
-                tempLb.text = formatNumber(convertMeter2Feet(TemperatureF), decimalIfNeeded: 0) + " " + "°F"
+                tempLb.text = formatNumber(convertC2F(TemperatureF), decimalIfNeeded: 0) + " " + "°F"
             } else {
                 tempLb.text = formatNumber(TemperatureF) + " " + "°C"
             }
@@ -440,12 +441,25 @@ extension LogGraphCell: ChartViewDelegate {
             if TankPSI == 0xFFFF {
                 TankPSI = 0
             }
-            if unit == FT {
-                startTankLb.text = String(format: "%d PSI", TankPSI)
-            } else {
-                startTankLb.text = String(format: "%.1f BAR", convertPSI2BAR(Double(TankPSI)))
+            
+            var atr = selectedRow.stringValue(key: "TankAtrMin").toInt()
+            if atr > 599 {
+                atr = 0
             }
             
+            switch modelId {
+            case C_GRA, C_LOG, C_LOGPLUS, C_CEN:
+                startTankLb.text = "---"
+                airTimeRemainingLb.text = "---"
+            default:
+                if unit == FT {
+                    startTankLb.text = String(format: "%d PSI", TankPSI)
+                } else {
+                    startTankLb.text = String(format: "%.1f BAR", convertPSI2BAR(Double(TankPSI)))
+                }
+                airTimeRemainingLb.text = Utilities.convertMinutesToHHmm(atr)
+            }
+
             didSelectedChartEntryPoint?(selectedRow)
         }
     }
@@ -456,7 +470,7 @@ extension LogGraphCell: ChartViewDelegate {
         timeLb.text = "---"
         tempLb.text = "---"
         startTankLb.text = "---"
-        endTankLb.text = "---"
+        airTimeRemainingLb.text = "---"
         
     }
 }

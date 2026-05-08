@@ -161,6 +161,8 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
             tableView.reloadRows(at: [indexPath], with: .fade)
             updateSelectAllButton()
         }
+        
+        updateUIForDeleteMode()
     }
     
     @IBAction func recycleAction(_ sender: Any) {
@@ -510,7 +512,7 @@ extension LogsViewController: AddLogsPopupDelegate {
             
             if let deviceConnected = BluetoothDeviceCoordinator.shared.activeDataManager {
                 // Kiểm tra SerialNo hoặc Identity có match không
-                if deviceConnected.peripheral.name == device.Identity {
+                if deviceConnected.scannedPeripheral.advertisementData.localName == device.Identity {
                     // Đúng device đang kết nối → đọc luôn
                     deviceConnected.readAllSettings()
                     return
@@ -522,14 +524,14 @@ extension LogsViewController: AddLogsPopupDelegate {
             
             // Thực hiện kết nối mới
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-            guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
                 return
             }
             
             BluetoothDeviceCoordinator.shared
-                .connect(to: matchedDevice.peripheral, discover: true)
+                .connect(to: matchedDevice, discover: true)
                 .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
@@ -541,7 +543,7 @@ extension LogsViewController: AddLogsPopupDelegate {
                     case .cr5Session(let m): manager = m
                     }
                     
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                    if let (bleName, _) = matchedDevice.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }

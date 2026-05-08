@@ -73,7 +73,7 @@ extension AboutViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 1:
-            if let url = URL(string: "DiveSync.io") {
+            if let url = URL(string: "http://divesync.io") {
                 UIApplication.shared.open(url)
             }
         case 2:

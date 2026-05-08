@@ -33,9 +33,9 @@ class SettingCell: UITableViewCell {
             if value.toInt() == 0 {
                 valueLb.text = value + " (GF: 90 - 90)"
             } else if value.toInt() == 1 {
-                valueLb.text = value + " (GF: 85 - 35)"
+                valueLb.text = value + " (GF: 35 - 85)"
             } else {
-                valueLb.text = value + " (GF: 70 - 35)"
+                valueLb.text = value + " (GF: 35 - 70)"
             }
         }
 

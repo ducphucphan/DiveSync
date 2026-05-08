@@ -144,6 +144,8 @@
 "Set Date - Time" = "日付・時刻の設定";
 "Set Date Format" = "日付形式の設定";
 "Set Time Format" = "時刻形式の設定";
+"Date Format" = "日付形式";
+"Time Format" = "時刻形式";
 "Set Date" = "日付の設定";
 "Set Time" = "時刻の設定";
 "Use the system Date and Time" = "システムの日付と時刻を使用";
@@ -179,6 +181,7 @@
 "Start Dive<" = "ダイブ開始<";
 "Start Pressure" = "開始圧力";
 "Max Ascent Rate" = "最大上昇速度";
+"Max Ascent Bar" = "最大上昇バー";
 "NO DECO" = "減圧不要";
 "Settings Used" = "使用設定";
 "Max PPO2" = "最大PPO2";
@@ -193,7 +196,7 @@
 "SAC" = "SAC";
 "Tank Type" = "タンクタイプ";
 "Mode" = "モード";
-"TLBG Bar" = "TLBGバー";
+"TLBG Bar" = "最大TLBG";
 "Remove" = "削除";
 "Min Temperature" = "最低温度";
 "Search" = "検索";
@@ -386,4 +389,5 @@ our products." = "「DiveSyncがダイブコンピュータからデータを収
 "Uploading your owner info..." = "所有者情報をアップロードしています...";
 "Select All" = "すべて選択";
 "Long press an item to select or deselect it" = "長押しで選択／解除";
-
+"START" = "開始";
+"END" = "終了";

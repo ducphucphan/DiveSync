@@ -169,26 +169,61 @@ class DatabaseManager {
             }
         }
         
-        /*
-        // 🔹 Migration 2: thêm bảng mới
-        migrator.registerMigration("v2_create_table_SyncHistory") { db in
-            if try !db.tableExists("SyncHistory") {
-                try db.create(table: "SyncHistory") { t in
-                    t.autoIncrementedPrimaryKey("id")
-                    t.column("DeviceID", .integer).notNull()
-                    t.column("SyncTime", .datetime).notNull()
-                    t.column("Status", .text)
+        // 🔹 Migration cho DeviceSettings (bao gồm OC_Dft và các Alarm mới)
+        migrator.registerMigration("v2_add_alarms_and_defaults_to_DeviceSettings") { db in
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "NewDayMix2AirReset" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    t.add(column: "NewDayMix2AirReset", .text)
+                    t.add(column: "TankTurnAlramOn", .text)
+                    t.add(column: "TankEndAlramOn", .text)
+                    t.add(column: "TankTurnAlramBar", .text)
+                    t.add(column: "TankEndAlramBar", .text)
+                    t.add(column: "TankTurnAlramPsi", .text)
+                    t.add(column: "TankEndAlramPsi", .text)
+                    t.add(column: "TankReserveTimeAlramOn", .text)
+                    t.add(column: "TankReserveTimeAlramMin", .text)
+                    t.add(column: "NoDecoAlarmOn", .text)
+                    t.add(column: "ModAlarmOn", .text)
+                    t.add(column: "DecoEntryAlarmOn", .text)
+                    t.add(column: "GasSwitchAlarmOn", .text)
+                    t.add(column: "OxToxAlarmOn", .text)
+                    t.add(column: "OxTox100AlarmOn", .text)
+                    t.add(column: "DepthAlarmOn", .text)
+                    t.add(column: "DiveTimeAlarmOn", .text)
+                    t.add(column: "AscentSpeedAlarmOn", .text)
+                    t.add(column: "TlbgAlarmOn", .text)
+                }
+            }
+        }
+
+        // 🔹 Migration cho DiveLog (các trường Alarm)
+        migrator.registerMigration("v2_add_alarms_to_DiveLog") { db in
+            // Kiểm tra một cột đại diện để tránh chạy lại nếu đã tồn tại
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "NoDecoAlarmOn" }) {
+                try db.alter(table: "DiveLog") { t in
+                    t.add(column: "NoDecoAlarmOn", .text)
+                    t.add(column: "ModAlarmOn", .text)
+                    t.add(column: "DecoEntryAlarmOn", .text)
+                    t.add(column: "GasSwitchAlarmOn", .text)
+                    t.add(column: "OxToxAlarmOn", .text)
+                    t.add(column: "OxTox100AlarmOn", .text)
+                    t.add(column: "DepthAlarmOn", .text)
+                    t.add(column: "DiveTimeAlarmOn", .text)
+                    t.add(column: "AscentSpeedAlarmOn", .text)
+                    t.add(column: "TlbgAlarmOn", .text)
                 }
             }
         }
         
-        // 🔹 Migration 3: thay đổi kiểu dữ liệu hoặc thêm index
-        migrator.registerMigration("v3_add_index_to_DiveLog") { db in
-            try db.create(index: "idx_DiveLog_SerialNo_ModelID", on: "DiveLog", columns: ["SerialNo", "ModelID"])
+        migrator.registerMigration("v2_add_fields_to_DeviceGasMixesSettings") { db in
+            // Kiểm tra một cột đại diện để tránh chạy lại nếu đã tồn tại
+            if try !db.columns(in: "DeviceGasMixesSettings").contains(where: { $0.name == "OC_Dft_FO2" }) {
+                try db.alter(table: "DeviceGasMixesSettings") { t in
+                    t.add(column: "OC_Dft_FO2", .text)
+                    t.add(column: "OC_Dft_on", .text)
+                }
+            }
         }
-        */
-        
-        //AlarmID1
         
         try migrator.migrate(dbQueue)
     }
@@ -474,10 +509,24 @@ extension DatabaseManager {
     }
 
     func saveDiveData(diveData: [String: Any]) -> (existed: Bool, diveID: Int64?) {
+        
+        let diveNo = diveData["DiveNo"]
+        
+        
         guard let diveNo = diveData["DiveNo"] as? Int,
-              let modelId = diveData["ModelID"] as? Int,
-              let serialNo = diveData["SerialNo"] as? String else {
-            PrintLog("❌ DiveNo / ModelID / SerialNo missing or invalid")
+              let modelId = diveData["ModelID"] as? Int else {
+            PrintLog("❌ DiveNo / ModelID missing or invalid")
+            return (false, nil)
+        }
+        
+        let serialNo: String
+
+        if let s = diveData["SerialNo"] as? String {
+            serialNo = s
+        } else if let i = diveData["SerialNo"] as? Int {
+            serialNo = String(i)
+        } else {
+            PrintLog("❌ SerialNo không đúng định dạng")
             return (false, nil)
         }
         
@@ -925,5 +974,92 @@ extension DatabaseManager {
         }
 
         return hasDeleted
+    }
+}
+
+extension DatabaseManager {
+    /// Cập nhật các chỉ số thống kê cho một thiết bị cụ thể dựa trên dữ liệu từ bảng DiveLog.
+    func updateDeviceStatisticsFromLogs(modelId: Int, serialNo: String) {
+        let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+        
+        do {
+            try dbQueue.write { db in
+                // 1. Tính toán dữ liệu tổng hợp từ DiveLog cho thiết bị chỉ định
+                // Sử dụng CAST vì các field trong DiveLog là TEXT
+                let summarySql = """
+                SELECT 
+                    COUNT(*) as TotalDives,
+                    SUM(CAST(TotalDiveTime AS INTEGER)) as TotalSeconds,
+                    MAX(CAST(MaxDepthFT AS REAL)) as MaxDepth,
+                    AVG(CAST(AvgDepthFT AS REAL)) as AvgDepth,
+                    MIN(CAST(MinTemperatureF AS REAL)) as MinTemp
+                FROM DiveLog
+                WHERE ModelID = ? AND SerialNo = ?
+                """
+                
+                guard let row = try Row.fetchOne(db, sql: summarySql, arguments: [modelId, serialNo]) else {
+                    return
+                }
+                
+                // Lấy giá trị, xử lý trường hợp NULL bằng giá trị mặc định
+                let totalDives = row["TotalDives"] as Int? ?? 0
+                let totalSeconds = row["TotalSeconds"] as Int? ?? 0
+                let maxDepth = row["MaxDepth"] as Double? ?? 0.0
+                let avgDepth = row["AvgDepth"] as Double? ?? 0.0
+                let minTemp = row["MinTemp"] as Double? ?? 0.0
+                
+                // 2. Cập nhật vào bảng Devices
+                // Ép kiểu về String (TEXT) để phù hợp với định nghĩa table của bạn
+                let updateSql = """
+                UPDATE Devices
+                SET 
+                    StatsLogTotalDives = ?,
+                    StatsTotalDiveSecond = ?,
+                    StatsMaxDepthFT = ?,
+                    StatsAvgDepthFT = ?,
+                    StatsMinTemperatureF = ?
+                WHERE ModelID = ? AND SerialNo = ?
+                """
+                
+                try db.execute(sql: updateSql, arguments: [
+                    "\(totalDives)",
+                    "\(totalSeconds)",
+                    String(format: "%.1f", maxDepth),
+                    String(format: "%.1f", avgDepth),
+                    String(format: "%.1f", minTemp),
+                    modelId,
+                    serialNo
+                ])
+                
+                PrintLog("✅ Updated Devices stats for Serial: \(serialNo)")
+            }
+        } catch {
+            PrintLog("❌ Failed to update device stats: \(error)")
+        }
+    }
+    
+    func updateDateTimeFormat(modelId: Int, serialNo: String, dateFormat: String, timeFormat: String) {
+        let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+        
+        do {
+            try dbQueue.write { db in
+                let sql = """
+                    UPDATE DiveLog
+                    SET DateFormat = ?, TimeFormat = ?
+                    WHERE ModelID = ? AND SerialNo = ?
+                """
+                
+                try db.execute(sql: sql, arguments: [
+                    dateFormat,
+                    timeFormat,
+                    modelId,
+                    serialNo
+                ])
+            }
+            
+            PrintLog("✅ Updated DateFormat & TimeFormat")
+        } catch {
+            PrintLog("❌ Failed to update DateFormat & TimeFormat: \(error)")
+        }
     }
 }

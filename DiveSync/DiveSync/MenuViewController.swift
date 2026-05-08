@@ -11,8 +11,8 @@ class MenuViewController: BaseViewController {
 
     @IBOutlet weak var tableview: UITableView!
     
-    let data = ["Logs", "Devices", "Owner Info", "Dive Spots", "Statistics", "Language", "Help", "About"]
-    let icons = ["log_icon", "watch_icon", "user_icon", "loc_icon", "stat_icon", "lang", "help", "about_icon"] // Replace with your actual icon names
+    let data = ["Logs", "Devices", "Owner Info", "Dive Spots", "Statistics", "Settings", "Help", "About"]
+    let icons = ["log_icon", "watch_icon", "user_icon", "loc_icon", "stat_icon", "settings_icon", "help", "about_icon"] // Replace with your actual icon names
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,7 +61,7 @@ extension MenuViewController: UITableViewDelegate {
             viewcontroller = storyboard.instantiateViewController(withIdentifier: "StatisticsViewController") as! StatisticsViewController
         case 5:
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            viewcontroller = storyboard.instantiateViewController(withIdentifier: "LanguageViewController") as! LanguageViewController
+            viewcontroller = storyboard.instantiateViewController(withIdentifier: "SettingsViewController") as! SettingsViewController
         case 6:
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             viewcontroller = storyboard.instantiateViewController(withIdentifier: "HelpViewController") as! HelpViewController

@@ -100,6 +100,8 @@ class LogViewController: BaseViewController {
     
     var manualDive: Bool = false
     
+    private var modelId = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -126,6 +128,16 @@ class LogViewController: BaseViewController {
             manualDive = true
             startEndGasStackView.isHidden = true
             conservatismStackView.backgroundColor = .clear
+        }
+        
+        modelId = diveLog.stringValue(key: "ModelID").toInt()
+        
+        switch modelId {
+        case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
+            maxAscLb.text = "Max Ascent Rate".localized
+        default:
+            maxAscLb.text = "Max Ascent Bar".localized
+            break
         }
         
         fillDiveData()
@@ -188,7 +200,7 @@ class LogViewController: BaseViewController {
         diveTimeLb.text = "Dive Time".localized
         mdepthLb.text = "Max Depth".localized
         tlbgLb.text = "TLBG Bar".localized
-        maxAscLb.text = "Max Ascent Rate".localized
+        maxAscLb.text = "Max Ascent Bar".localized
         minTempLb.text = "Min Temperature".localized
         maxTempLb.text = "Max Temperature".localized
         oxtoxLb.text = "OXTOX end dive".localized
@@ -209,8 +221,6 @@ class LogViewController: BaseViewController {
         
         PrintLog(diveLog)
         
-        let modelID = diveLog.stringValue(key: "ModelID").toInt()
-        
         diveOfTheDayLb.text = "#" + diveLog.stringValue(key: "DiveOfTheDay")
         if (diveLog.stringValue(key: "DiveOfTheDay").isEmpty) {
             diveOfTheDayLb.text = ""
@@ -223,7 +233,7 @@ class LogViewController: BaseViewController {
         
         if manualDive == false {
             var deviceSerialNo = ""
-            switch modelID {
+            switch modelId {
             case C_LOG, C_LOGPLUS, C_GRA:
                 deviceSerialNo = diveLog.stringValue(key: "SerialNo")
             default:
@@ -239,21 +249,35 @@ class LogViewController: BaseViewController {
         }
         
         let diveDateTime = diveLog.stringValue(key: "DiveStartLocalTime")
-        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: "dd.MM.yy")
-        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: "hh:mm a")
+        
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+        
+        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        let timePattern = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
+        
+        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: datePattern)
+        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: timePattern)
         
         diveDateLb.text = diveDate
         sdvaLueLb.text = diveTime
         altLevelLb.text = getAltitudeLevel()
         
         let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
-        //let tlbg = diveLog.stringValue(key: "EndingTlbg").toInt()
+        var limitOfTLBG = 0
+        switch modelId {
+        case C_WIS5:
+            limitOfTLBG = 8
+        default:
+            limitOfTLBG = 5
+        }
+        
         var maxTlbg = diveLog.stringValue(key: "MaxTLBG").toInt()
         if maxTlbg == 0 { maxTlbg = 1 }
-        ltbgValueLb.text = String(format: "%d/5", maxTlbg)
-        if isDeco == 1 {
-            maxTlbg = 5
-            ltbgValueLb.text = String(format: "%d/%d", maxTlbg, maxTlbg)
+        ltbgValueLb.text = String(format: "%d/%d", maxTlbg, limitOfTLBG)
+        if isDeco == 1 || maxTlbg > limitOfTLBG {
+            maxTlbg = limitOfTLBG
+            ltbgValueLb.text = String(format: "%d/%d", maxTlbg, limitOfTLBG)
         }
         
         var mode = diveLog.stringValue(key: "DiveMode").toInt()
@@ -270,7 +294,11 @@ class LogViewController: BaseViewController {
         dtValueLb.text = String(format: "%02d:%02d", totalDiveTime/3600, (totalDiveTime % 3600) / 60)
         
         let surfTime = diveLog.stringValue(key: "SurfTime").toInt()
-        siValueLb.text = String(format: "%02d:%02d", surfTime/3600, (surfTime % 3600) / 60)
+        if surfTime == 0 {
+            siValueLb.text = "-:--"
+        } else {
+            siValueLb.text = String(format: "%02d:%02d", surfTime/3600, (surfTime % 3600) / 60)
+        }
         
         let unitOfDive = diveLog.stringValue(key: "Units").toInt()
         
@@ -281,6 +309,7 @@ class LogViewController: BaseViewController {
         var maxTemp = diveLog.stringValue(key: "MaxTemperatureF")
         var minTemp = diveLog.stringValue(key: "MinTemperatureF")
         var ascentSpeedAlarm = diveLog.stringValue(key: "AscentSpeedAlarm")
+        let MaxAscentSpeedLev = diveLog.stringValue(key: "MaxAscentSpeedLev")
         if unitOfDive == M {
             mdepth = formatNumber(converFeet2Meter(mdepth.toDouble()))
             maxTemp = formatNumber(convertF2C(maxTemp.toDouble()))
@@ -297,7 +326,16 @@ class LogViewController: BaseViewController {
         minTempValueLb.text = String(format: "%@ %@", minTemp, tempUnitString)
         
         oxtoxValueLb.text = String(format: "%d %%", diveLog.stringValue(key: "EndingOxToxPercent").toInt())
-        ascValueLb.text = String(format: "%@ %@/MIN", ascentSpeedAlarm, unitString)
+        
+        switch modelId {
+        case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
+            ascValueLb.text = String(format: "%@ %@/MIN", ascentSpeedAlarm, unitString)
+        default:
+            ascValueLb.text = String(format: "%@", MaxAscentSpeedLev.isEmpty ? "---" : MaxAscentSpeedLev)
+            if (manualDive) {
+                ascValueLb.text = String(format: "%@", MaxAscentSpeedLev.isEmpty ? "1" : MaxAscentSpeedLev)
+            }
+        }
         
         maxPo2ValueLb.text = String(format: "%.2f", diveLog.stringValue(key: "MaxPpo2").toDouble())
         
@@ -348,6 +386,14 @@ class LogViewController: BaseViewController {
         // Favorite
         isFavorite = (diveLog.intValue(key: "IsFavorite") != 0)
         favoriteBtn.setImage(UIImage(named: isFavorite ? "favorite" : "un_favorite"), for: .normal)
+        
+        switch modelId {
+        case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
+            ltbgValueLb.text = "---"
+            oxtoxValueLb.text = "---"
+        default:
+            break
+        }
     }
     
     private func loadDiveProfile(diveId: Int) {
@@ -355,7 +401,7 @@ class LogViewController: BaseViewController {
             diveProfile = try DatabaseManager.shared.fetchData(from: "DiveProfile",
                                                                where: "DiveID=?",
                                                                arguments: [diveId])
-            PrintLog(diveProfile)
+            //PrintLog(diveProfile)
         } catch {
             PrintLog("Failed to fetch certificates data: \(error)")
         }
@@ -427,22 +473,28 @@ class LogViewController: BaseViewController {
             let buttonTag = button.tag
             switch buttonTag {
             case 0:
-                let storyboard = UIStoryboard(name: "Logs", bundle: nil)
-                let vc = storyboard.instantiateViewController(withIdentifier: "LogGasViewController") as! LogGasViewController
+//                let storyboard = UIStoryboard(name: "Logs", bundle: nil)
+//                let vc = storyboard.instantiateViewController(withIdentifier: "LogGasViewController") as! LogGasViewController
+//                vc.diveLog = diveLog
+//                vc.onUpdated = {[weak self] in
+//                    guard let self = self else { return }
+//                    do {
+//                        let rs = try DatabaseManager.shared.fetchDiveLog(where: "DiveID=\(self.diveLog.intValue(key: "DiveID"))")
+//                        if rs.count > 0 {
+//                            diveLog = rs[0]
+//                            self.onUpdated?(true)
+//                        }
+//                    } catch {
+//                        PrintLog("Failed to load divelog data: \(error)")
+//                    }
+//                }
+//                self.navigationController?.pushViewController(vc, animated: true)
+                
+                let storyboard = UIStoryboard(name: "GasDetails", bundle: nil)
+                let vc = storyboard.instantiateViewController(withIdentifier: "GasDetailsViewController") as! GasDetailsViewController
                 vc.diveLog = diveLog
-                vc.onUpdated = {[weak self] in
-                    guard let self = self else { return }
-                    do {
-                        let rs = try DatabaseManager.shared.fetchDiveLog(where: "DiveID=\(self.diveLog.intValue(key: "DiveID"))")
-                        if rs.count > 0 {
-                            diveLog = rs[0]
-                            self.onUpdated?(true)
-                        }
-                    } catch {
-                        PrintLog("Failed to load divelog data: \(error)")
-                    }
-                }
                 self.navigationController?.pushViewController(vc, animated: true)
+                
             case 1:
                 let storyboard = UIStoryboard(name: "Logs", bundle: nil)
                 let vc = storyboard.instantiateViewController(withIdentifier: "LogSettingsUsedViewController") as! LogSettingsUsedViewController
@@ -629,12 +681,14 @@ extension LogViewController {
                     }
                 }
             case 1: // Dive Date
+                let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+                let currentInputFormat = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
                 
                 EditProfilePopupManager.showBirthDatePicker(
                     in: self,
                     title: "Dive Date".localized,
                     currentValue: diveDate,
-                    inputFormat: "dd.MM.yy",
+                    inputFormat: currentInputFormat,
                     onSave: { [weak self] newDateString in
                         guard let self = self else { return }
                         self.diveDateLb.text = newDateString
@@ -717,7 +771,8 @@ extension LogViewController {
                 if let siTime = siValueLb.text?.components(separatedBy: ":"), siTime.count == 2 {
                     let leftOpts: [String] = (0...23).map { String(format: "%02d", $0) }
                     let rightOpts: [String] = (0...59).map { String(format: "%02d", $0) }
-                    Set2ValueSettingAlert.showMessage(leftValue: siTime[0],
+                    Set2ValueSettingAlert.showMessage(message: siTitleLb.text ?? "",
+                                                      leftValue: siTime[0],
                                                       rightValue: siTime[1],
                                                       leftOptions: leftOpts,
                                                       rightOptions: rightOpts) { [weak self] action, selectedValue in
@@ -734,8 +789,16 @@ extension LogViewController {
                 }
                 
             case 6: // Dive Time
-                presentTimePicker(from: self, selectedTime: diveTime, outputFormat: "hh:mm a") { value in
+                // 1. Lấy định dạng thời gian từ Settings
+                let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+                
+                // 2. Xác định định dạng trả về cho Picker (0: 12h, 1: 24h)
+                let currentOutputFormat = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
+                
+                // 3. Truyền format động vào presentTimePicker
+                presentTimePicker(from: self, selectedTime: diveTime, outputFormat: currentOutputFormat) { value in
                     self.sdvaLueLb.text = value
+                    // Hàm này sẽ tự xử lý để lưu chuẩn dd/MM/yyyy HH:mm:ss vào DB như đã nói ở trên
                     self.saveDiveDateTime(diveDate: diveDate, diveTime: value)
                 }
             case 7:
@@ -784,21 +847,38 @@ extension LogViewController {
                 ) { [weak self] action, value, index in
                     guard let self = self else { return }
                     self.ltbgValueLb.text = String(format: "%@/5", value ?? "1")
-                    self.saveDiveData(key: "EndingTlbg", value: (index ?? 0) + 1)
+                    self.saveDiveData(key: "MaxTLBG", value: (index ?? 0) + 1)
                 }
             case 10: // Max Asc Rate
-                var currentMdepth = ascValueLb.text ?? ""
-                currentMdepth = currentMdepth.components(separatedBy: " ").first ?? ""
-                let unitStr = unitOfDive == M ? "M/MIN":"FT/MIN"
-                MDepthInputAlert.showMessage(message: "Max Ascent Rate".localized, selectedValue: currentMdepth, unitValue:unitStr) { action, value in
-                    self.ascValueLb.text = value + " " + unitStr
-                    
-                    var valueDouble = value.toDouble()
-                    if unitOfDive == M {
-                        valueDouble = convertMeter2Feet(valueDouble )
+                var currentAscValue = ascValueLb.text ?? ""
+                
+                switch modelId {
+                case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
+                    currentAscValue = currentAscValue.components(separatedBy: " ").first ?? ""
+                    let unitStr = unitOfDive == M ? "M/MIN":"FT/MIN"
+                    MDepthInputAlert.showMessage(message: "Max Ascent Rate".localized, selectedValue: currentAscValue, unitValue:unitStr) { action, value in
+                        self.ascValueLb.text = value + " " + unitStr
+                        
+                        var valueDouble = value.toDouble()
+                        if unitOfDive == M {
+                            valueDouble = convertMeter2Feet(valueDouble )
+                        }
+                        self.saveDiveData(key: "AscentSpeedAlarm", value: valueDouble )
                     }
-                    self.saveDiveData(key: "AscentSpeedAlarm", value: valueDouble )
+                default:
+                    let currentAscValue = ascValueLb.text ?? ""
+                    let opts:[String] = (1...5).map { String(format: "%d", $0) }
+                    ItemSelectionAlert.showMessage(
+                        message: "Max Ascent Bar".localized,
+                        options: opts,
+                        selectedValue: currentAscValue
+                    ) { [weak self] action, value, index in
+                        guard let self = self else { return }
+                        self.ascValueLb.text = value
+                        self.saveDiveData(key: "MaxAscentSpeedLev", value: (index ?? 0) + 1)
+                    }
                 }
+                
                 break
             case 11: // Min Temp
                 var opts: [String] = (0...99).map { String(format: "%d °C", $0) }
@@ -885,25 +965,32 @@ extension LogViewController {
     }
     
     private func saveDiveDateTime(diveDate: String, diveTime: String) {
-        let inputFormatter = DateFormatter()
-        inputFormatter.locale = Locale(identifier: "en_US_POSIX") // đảm bảo định dạng AM/PM được xử lý đúng
-        inputFormatter.dateFormat = "dd.MM.yy hh:mm a"
+        // 1. Lấy định dạng hiện tại người dùng đang dùng ở giao diện
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
         
-        // 2. Gộp date và time vào thành 1 string
+        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        let timePattern = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
+
+        let inputFormatter = DateFormatter()
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        inputFormatter.dateFormat = "\(datePattern) \(timePattern)" // Định dạng này khớp với cái UI đang hiển thị
+        
+        // 2. Gộp chuỗi từ giao diện
         let combinedString = "\(diveDate) \(diveTime)"
         
-        // 3. Chuyển sang kiểu Date
+        // 3. Chuyển từ chuỗi UI -> đối tượng Date
         if let date = inputFormatter.date(from: combinedString) {
-            // 4. Format lại theo yêu cầu lưu database
-            let outputFormatter = DateFormatter()
-            outputFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
+            // 4. Chuyển từ đối tượng Date -> Chuỗi chuẩn Database
+            let dbFormatter = DateFormatter()
+            dbFormatter.dateFormat = "dd/MM/yyyy HH:mm:ss" // LUÔN lưu định dạng này
             
-            let finalString = outputFormatter.string(from: date)
-            PrintLog(finalString) // Ví dụ: "31/07/2025 10:30:00"
+            let finalStringForDB = dbFormatter.string(from: date)
             
-            self.saveDiveData(key: "DiveStartLocalTime", value: finalString)
+            // 5. Lưu vào DB
+            self.saveDiveData(key: "DiveStartLocalTime", value: finalStringForDB)
         } else {
-            PrintLog("Lỗi định dạng đầu vào")
+            print("❌ Lỗi: Không thể parse ngày tháng với format: \(datePattern) \(timePattern)")
         }
     }
     
@@ -987,22 +1074,41 @@ extension LogViewController: UIScrollViewDelegate, UICollectionViewDataSource, U
 
 extension LogViewController {
     private func getAltitudeLevel() -> String {
-        let level = diveLog.stringValue(key: "AltitudeLevel").toInt()
-        if level == 0 {
-            return "SEA".localized
-        } else {
-            return String(format: "LEV%d", level)
+        switch modelId {
+        case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+            return "---"
+        default:
+            let level = diveLog.stringValue(key: "AltitudeLevel").toInt()
+            if level == 0 {
+                return "SEA".localized
+            } else {
+                return String(format: "LEV%d", level)
+            }
         }
     }
     
     private func getMode() -> String {
         var mode = diveLog.stringValue(key: "DiveMode").toInt()
         if mode >= 100 { mode = mode % 100 }
-        switch mode {
-        case 0:
-            return "Computer".localized.uppercased()
+        
+        let defaultMode = "Gauge".localized.uppercased()
+        
+        switch modelId {
+        case C_LOG, C_LOGPLUS:
+            let modeOptions: [String] = ["Scuba", "Nitrox", "Gauge", "Free", "Tec"]
+            guard mode >= 0 && mode < modeOptions.count else { return defaultMode }
+            return modeOptions[mode].localized.uppercased()
+        case C_GRA, C_CEN:
+            let modeOptions: [String] = ["Scuba", "Gauge", "Free", "Tec"]
+            guard mode >= 0 && mode < modeOptions.count else { return defaultMode }
+            return modeOptions[mode].localized.uppercased()
         default:
-            return "Gauge".localized.uppercased()
+            switch mode {
+            case 0:
+                return "Computer".localized.uppercased()
+            default:
+                return defaultMode
+            }
         }
     }
     
@@ -1028,12 +1134,24 @@ extension LogViewController {
     private func getConservatism() -> String {
         let gfHigh = diveLog.stringValue(key: "GfHighPercent").toInt()
         let gfLow = diveLog.stringValue(key: "GfLowPercent").toInt()
-        if gfHigh >= 90 && gfLow >= 90 {
-            return "C0"
-        } else if gfHigh <= 70 && gfLow <= 35 {
-            return "C2"
-        } else {
-            return "C1"
+        
+        switch modelId {
+        case C_GRA, C_LOG, C_LOGPLUS:
+            if gfHigh >= 95 && gfLow >= 45 {
+                return "CF3" // Aggressive
+            } else if gfHigh <= 75 && gfLow <= 35 {
+                return "CF1" // Conserve
+            } else {
+                return "CF2" // Normal
+            }
+        default:
+            if gfHigh >= 90 && gfLow >= 90 {
+                return "C0"
+            } else if gfHigh <= 70 && gfLow <= 35 {
+                return "C2"
+            } else {
+                return "C1"
+            }
         }
     }
 }

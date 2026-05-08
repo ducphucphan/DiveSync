@@ -13,6 +13,8 @@ struct FirmwareURLBuilder {
     static func iniFile(modelId: Int) -> String {
         var fileName = "CREDAV"
         switch modelId {
+        case C_WIS5:
+            fileName = "SHEWIS"
         case C_SKI:
             fileName = "XSCSKI"
         case C_SPI:
@@ -27,6 +29,8 @@ struct FirmwareURLBuilder {
     static func readmeFile(modelId: Int) -> String {
         var fileName = "CREDAV"
         switch modelId {
+        case C_WIS5:
+            fileName = "SHEWIS"
         case C_SKI:
             fileName = "XSCSKI"
         case C_SPI:
@@ -43,6 +47,9 @@ struct FirmwareURLBuilder {
         var companyName = ""
         var fileName = ""
         switch modelId {
+        case C_WIS5:
+            companyName = "SHERWOOD"
+            fileName = "SHEWIS.\(version)"
         case C_SKI:
             companyName = "XS_SCUBA"
             fileName = "XSCSKI.\(version)"

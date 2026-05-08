@@ -83,7 +83,15 @@ class CertificationViewController: BaseViewController {
     
     private func fillData(row: Row) {
         certValueLb.text = row["levels"]
-        dateValueLb.text = row["dates"]
+        
+        let rawDate = row["dates"] as? String ?? ""
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        
+        // Convert từ dd/MM/yyyy sang định dạng hiển thị
+        dateValueLb.text = Utilities.convertDateFormat(from: rawDate,
+                                                       fromFormat: "dd/MM/yyyy",
+                                                       toFormat: datePattern)
         
         if let imageName = row["imagepathfront"] as? String {
             let imageNamePath = HomeDirectory().appendingFormat("%@", USERINFO_DIR) + imageName
@@ -125,13 +133,27 @@ class CertificationViewController: BaseViewController {
     }
     
     @IBAction func dateTapped(_ sender: Any) {
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let currentDisplayPattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        
+        // 1. Convert từ label (đang hiển thị rút gọn) về chuẩn dd/MM/yyyy để Picker hiểu đúng năm 2026
+        let dateForPicker = Utilities.convertDateFormat(from: dateValueLb.text ?? "",
+                                                        fromFormat: currentDisplayPattern,
+                                                        toFormat: "dd/MM/yyyy")
+        
         EditProfilePopupManager.showBirthDatePicker(
             in: self,
             title: "Date".localized,
-            currentValue: dateValueLb.text ?? "",
+            currentValue: dateForPicker, // Truyền định dạng chuẩn vào đây
             onSave: { [weak self] newDateString in
                 guard let self = self else { return }
-                self.dateValueLb.text = newDateString
+                
+                // 2. newDateString trả về thường là dd/MM/yyyy, ta convert lại để hiển thị rút gọn lên UI
+                let formattedDisplayDate = Utilities.convertDateFormat(from: newDateString,
+                                                                       fromFormat: "dd/MM/yyyy",
+                                                                       toFormat: currentDisplayPattern)
+                
+                self.dateValueLb.text = formattedDisplayDate
             }
         )
     }

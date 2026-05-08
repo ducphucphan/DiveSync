@@ -1,0 +1,211 @@
+[
+  {
+    "title": "Device Settings",
+    "rows": [
+      {
+        "id": "units",
+        "type": "modeSelector",
+        "title": "Set Units",
+        "icon": "set_units",
+        "value": "M - °C",
+        "options": ["M - °C", "FT - °F"]
+      },
+      {
+        "type": "subSection",
+        "title": "Set 1 (Modes/Basics)",
+        "icon": "mode",
+        "subRows": [
+            {
+              "id": "conservatism",
+              "type": "modeSelector",
+              "title": "Conservatism",
+              "hidden": 0,
+              "value": "C0",
+              "options": ["C0", "C1", "C2"]
+            },
+            {
+              "id": "gas1_po2",
+              "type": "modeSelector",
+              "title": "PO2",
+              "hidden": 0,
+              "value": "1.20",
+              "options": ["1.20", "1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "1.27", "1.28", "1.29", "1.30", "1.31", "1.32", "1.33", "1.34", "1.35", "1.36", "1.37", "1.38", "1.39", "1.40", "1.41", "1.42", "1.43", "1.44", "1.45", "1.46", "1.47", "1.48", "1.49", "1.50", "1.51", "1.52", "1.53", "1.54", "1.55", "1.56", "1.57", "1.58", "1.59", "1.60"]
+            },
+            {
+              "id": "gas1_fo2",
+              "type": "modeSelector",
+              "title": "FO2",
+              "hidden": 0,
+              "value": "21%",
+              "options": ["21%", "22%", "23%", "24%", "25%", "26%", "27%", "28%", "29%", "30%", "31%", "32%", "33%", "34%", "35%", "36%", "37%", "38%", "39%", "40%", "41%", "42%", "43%", "44%", "45%", "46%", "47%", "48%", "49%", "50%"]
+            },
+        ]
+      },
+      {
+        "type": "subSection",
+        "title": "Set 2 (Alarms)",
+        "icon": "set_alarms",
+        "subRows": [
+            {
+              "id": "set_all_alarm",
+              "type": "modeSelector",
+              "title": "All Alarm",
+              "value": "OFF",
+              "options": ["OFF", "ON"]
+            },
+            {
+              "id": "set_asnt",
+              "type": "modeSelector",
+              "title": "ASNT",
+              "hidden": 0,
+              "value": "OFF",
+              "options": ["OFF", "ON"]
+            },
+          {
+            "id": "mdepth",
+            "type": "modeSelector",
+            "title": "Depth",
+            "hidden": 0,
+            "value": "OFF",
+            "options": [
+              "OFF", "9 M", "12 M", "15 M", "18 M", "21 M", "24 M", "27 M", "30 M",
+              "33 M", "36 M", "39 M", "42 M", "45 M", "48 M", "51 M", "54 M", "57 M",
+              "60 M", "63 M", "66 M", "69 M", "72 M", "75 M", "78 M", "81 M", "84 M",
+              "87 M", "90 M", "93 M", "96 M", "99 M"
+            ],
+            "options_ft": [
+              "OFF", "30 FT", "40 FT", "50 FT", "60 FT", "70 FT", "80 FT", "90 FT", "100 FT",
+              "110 FT", "120 FT", "130 FT", "140 FT", "150 FT", "160 FT", "170 FT", "180 FT",
+              "190 FT", "200 FT", "210 FT", "220 FT", "230 FT", "240 FT", "250 FT", "260 FT",
+              "270 FT", "280 FT", "290 FT", "300 FT", "310 FT", "320 FT", "330 FT"
+            ]
+          },
+          {
+            "id": "turn_pressure",
+            "type": "modeSelector",
+            "title": "Turn Pressure",
+            "hidden": 0,
+            "value": "OFF",
+            "options": [
+                "OFF", "69 BAR", "86 BAR", "103 BAR", "120 BAR", "137 BAR", "154 BAR", "171 BAR", "188 BAR", "205 BAR"
+            ],
+            "options_ft": [
+                "OFF", "1000 PSI", "1250 PSI", "1500 PSI", "1750 PSI", "2000 PSI", "2250 PSI", "2500 PSI", "2750 PSI", "3000 PSI"
+            ]
+          },
+          {
+            "id": "end_pressure",
+            "type": "modeSelector",
+            "title": "End Pressure",
+            "hidden": 0,
+            "value": "OFF",
+            "options": [
+              "OFF", "20 BAR", "27 BAR", "34 BAR", "41 BAR", "48 BAR", "55 BAR", "62 BAR", "69 BAR", "76 BAR", "83 BAR", "90 BAR", "97 BAR", "104 BAR"
+            ],
+            "options_ft": [
+                "OFF", "300 PSI", "400 PSI", "500 PSI", "600 PSI", "700 PSI", "800 PSI", "900 PSI", "1000 PSI", "1100 PSI", "1200 PSI", "1300 PSI", "1400 PSI", "1500 PSI"
+            ]
+          },
+          {
+            "id": "reserve_time",
+            "type": "modeSelector",
+            "title": "Reserve Time",
+            "hidden": 0,
+            "value": "OFF",
+            "options": ["OFF", "0 MIN", "1 MIN", "2 MIN", "3 MIN", "4 MIN", "5 MIN", "6 MIN", "7 MIN", "8 MIN", "9 MIN", "10 MIN", "11 MIN", "12 MIN", "13 MIN", "14 MIN", "15 MIN", "16 MIN", "17 MIN", "18 MIN", "19 MIN", "20 MIN", "21 MIN", "22 MIN", "23 MIN", "24 MIN", "25 MIN", "26 MIN", "27 MIN", "28 MIN", "29 MIN", "30 MIN"]
+          },
+          {
+            "id": "set_deco",
+            "type": "modeSelector",
+            "title": "DECO",
+            "hidden": 0,
+            "value": "OFF",
+            "options": ["OFF", "ON"]
+          },
+          {
+            "id": "set_po2",
+            "type": "modeSelector",
+            "title": "PO2",
+            "hidden": 0,
+            "value": "OFF",
+            "options": ["OFF", "ON"]
+          }
+        ]
+      },
+      {
+        "type": "subSection",
+        "title": "Set 3 (Utilities)",
+        "icon": "dive_settings",
+        "subRows": [
+            {
+              "id": "set_light",
+              "type": "modeSelector",
+              "title": "Set Backlight",
+              "value": "OFF",
+              "options": ["OFF", "ON"]
+            },
+          {
+            "id": "water",
+            "type": "modeSelector",
+            "title": "H20 SENSOR",
+            "value": "ON",
+            "options": ["OFF", "ON"]
+          },
+          {
+            "id": "sample_rate",
+            "type": "modeSelector",
+            "title": "Sample Rate",
+            "value": "2 SEC",
+            "options": ["2 SEC", "10 SEC", "20 SEC", "60 SEC"]
+          },
+          {
+            "id": "deep_stop",
+            "type": "modeSelector",
+            "title": "Deep Stop",
+            "value": "OFF",
+            "options": ["OFF", "ON"]
+          }
+        ]
+      },
+      {
+        "id": "set_date_time",
+        "type": "subSection",
+        "title": "Set 4 (Date/Time)",
+        "icon": "set_date_time",
+        "subRows": [
+            {
+              "id": "dates",
+              "type": "modeSelector",
+              "title": "Set Date Format",
+              "hidden": 1,
+              "value": "D.M",
+              "options": ["D.M", "M.D"]
+            },
+          {
+            "id": "hour",
+            "type": "modeSelector",
+            "title": "Set Time Format",
+            "value": "24 H",
+            "options": ["24 H", "12 H"]
+          },
+          {
+            "id": "set_date",
+            "type": "date",
+            "title": "Set Date",
+            "value": "01.06.2025"
+          },
+          {
+            "id": "set_time",
+            "type": "time",
+            "title": "Set Time",
+            "value": "10:48"
+          },
+          {
+            "type": "toggle",
+            "title": "Use the system Date and Time",
+          }
+        ]
+      }
+    ]
+  }
+]

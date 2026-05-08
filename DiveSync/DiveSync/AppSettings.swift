@@ -37,5 +37,9 @@ extension AppSettings {
         static let autosyncDeviceIdentify = "autosyncDeviceIdentify"
         
         static let permissionIdentify = "permissionIdentify"
+        
+        static let dateFormatIdentify = "dateFormatIdentify"
+        
+        static let timeFormatIdentify = "timeFormatIdentify"
     }
 }

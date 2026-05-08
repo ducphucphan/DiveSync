@@ -10,20 +10,6 @@ import UIKit
 class LanguageViewController: BaseViewController {
     @IBOutlet weak var tableView: UITableView!
     
-    let titleData = [
-        ("🇺🇸 English", "en"),
-        ("🇫🇷 French", "fr"),
-        ("🇨🇳 简体中文", "zh-Hans"),
-        ("🇩🇪 German", "de"),
-        ("🇹🇷 Turkish", "tr"),
-        ("🇮🇹 Italian", "it"),
-        ("🇰🇷 한국어", "ko"),
-        ("🇹🇼 繁體中文", "zh-Hant"),
-        ("🇯🇵 日本語", "ja"),
-        ("🇪🇸 Spanish", "es"),
-        ("🇵🇹 Portuguese", "pt-PT")
-    ]
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -56,13 +42,13 @@ extension LanguageViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return titleData.count
+        return LocalizationManager.supportedLanguages.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BaseTableViewCell", for: indexPath) as! BaseTableViewCell
         
-        let item = titleData[indexPath.row]
+        let item = LocalizationManager.supportedLanguages[indexPath.row]
         let currentLang = LocalizationManager.shared.currentLanguage
         
         cell.bindCell(title: item.0, value: nil)
@@ -81,7 +67,7 @@ extension LanguageViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedLang = titleData[indexPath.row].1
+        let selectedLang = LocalizationManager.supportedLanguages[indexPath.row].1
         
         // 1️⃣ Set ngôn ngữ
         LocalizationManager.shared.currentLanguage = selectedLang

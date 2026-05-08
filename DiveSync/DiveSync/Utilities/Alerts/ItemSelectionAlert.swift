@@ -150,11 +150,11 @@ extension ItemSelectionAlert: UIPickerViewDelegate, UIPickerViewDataSource {
         if let notes = notes, notes == "GF" {
             switch selectedIndex {
             case 0:
-                notesLabel.text = "GF High".localized + ": 90, " + "GF Low".localized + ": 90"
+                notesLabel.text = "GF Low".localized + ": 90, " + "GF High".localized + ": 90"
             case 1:
-                notesLabel.text = "GF High".localized + ": 85, " + "GF Low".localized + ": 35"
+                notesLabel.text = "GF Low".localized + ": 35, " + "GF High".localized + ": 85"
             case 2:
-                notesLabel.text = "GF High".localized + ": 70, " + "GF Low".localized + ": 35"
+                notesLabel.text = "GF Low".localized + ": 35, " + "GF High".localized + ": 70"
             default:
                 break
             }

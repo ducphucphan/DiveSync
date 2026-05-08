@@ -144,6 +144,8 @@
 "Set Date - Time" = "設定日期-時間";
 "Set Date Format" = "設定日期格式";
 "Set Time Format" = "設定時間格式";
+"Date Format" = "日期格式";
+"Time Format" = "时间格式";
 "Set Date" = "設定日期";
 "Set Time" = "放置時間";
 "Use the system Date and Time" = "使用系統日期和時間";
@@ -179,6 +181,7 @@
 "Start Dive<" = "開始潜水<";
 "Start Pressure" = "啟動壓力";
 "Max Ascent Rate" = "最大上升速率";
+"Max Ascent Bar" = "最大上升条";
 "NO DECO" = "無裝潢";
 "Settings Used" = "使用的設定";
 "Max PPO2" = "最大二氧化碳分壓";
@@ -193,7 +196,7 @@
 "SAC" = "SAC";
 "Tank Type" = "儲罐類型";
 "Mode" = "模式";
-"TLBG Bar" = "TLBG酒吧";
+"TLBG Bar" = "最大TLBG";
 "Remove" = "移除";
 "Min Temperature" = "最低溫度";
 "Search" = "搜尋";
@@ -386,3 +389,5 @@ our products." = "允許DiveSync從您的潜水電腦收集數據，以幫助我
 "Uploading your owner info..." = "正在上傳您的車主資訊…";
 "Select All" = "全选";
 "Long press an item to select or deselect it" = "长按项目以选择或取消选择";
+"START" = "開始";
+"END" = "結束";

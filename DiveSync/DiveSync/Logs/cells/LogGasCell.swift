@@ -43,18 +43,22 @@ class LogGasCell: UITableViewCell {
         psiValueLb.text = ""
         
         let mixes = fromDiveLog.stringValue(key: "EnabledMixes").toInt()
+        let fo2 = fromDiveLog.stringValue(key: "Mix\(gasNo)Fo2Percent").toInt()
+        let po2 = fromDiveLog.stringValue(key: "Mix\(gasNo)PpO2Barx100").toInt()
         
         var mixesEnabled: [Bool] = []
         for i in 0..<8 {
             mixesEnabled.append((mixes & (1 << i)) != 0)
         }
         
-        let fo2 = fromDiveLog.stringValue(key: "Mix\(gasNo)Fo2Percent").toInt()
-        let po2 = fromDiveLog.stringValue(key: "Mix\(gasNo)PpO2Barx100").toInt()
+        let isEnabledByMask = mixesEnabled[gasNo]
+        let isEnabledByFo2 = fo2 >= 21
+        
+        let isGasEnabled = isEnabledByMask || isEnabledByFo2
         
         maxPO2ValueLb.text = String(format: "%d.%02d", po2/100, po2%100)
         
-        if mixesEnabled[gasNo] == false {
+        if isGasEnabled == false {
             po2Lb.isHidden = true
             maxPO2ValueLb.isHidden = true
         } else {
@@ -63,7 +67,7 @@ class LogGasCell: UITableViewCell {
         }
         
         fo2ValueBt.setTitle(Utilities.fo2GasValue(gasNo: gasNo, fo2: fo2), for: .normal)
-        if mixesEnabled[gasNo] == false {
+        if isGasEnabled == false {
             fo2ValueBt.setTitle(OFF.localized, for: .normal)
         }
         

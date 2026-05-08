@@ -188,7 +188,15 @@ extension CertificationsViewController: UITableViewDataSource, UITableViewDelega
         
         cell.certNoLb.text = "Certification".localized + " \(indexPath.row+1)"
         cell.certNameLb.text = row["levels"]
-        cell.dateLb.text = row["dates"]
+        
+        let rawDate = row["dates"] as? String ?? ""
+        
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        
+        cell.dateLb.text = Utilities.convertDateFormat(from: rawDate,
+                                                       fromFormat: "dd/MM/yyyy",
+                                                       toFormat: datePattern)
         
         if let imageName = row["imagepathfront"] as? String {
             let imageNamePath = HomeDirectory().appendingFormat("%@", USERINFO_DIR) + imageName

@@ -68,9 +68,9 @@ final class BluetoothDeviceCoordinator {
     
     var isExpectedDisconnect = false
         
-    private func detectDeviceType(peripheral: Peripheral) -> ConnectedDeviceType {
+    private func detectDeviceType(scannedPeripheral: ScannedPeripheral) -> ConnectedDeviceType {
         
-        if let (bleName, _) = peripheral.peripheral.splitDeviceName(),
+        if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
             let ModelID = dcInfo[2].toInt()
             switch ModelID {
@@ -236,7 +236,7 @@ final class BluetoothDeviceCoordinator {
         
         let knownDevices = DatabaseManager.shared.fetchDevices() ?? []
         guard
-            let (_, serial) = first.peripheral.peripheral.splitDeviceName(),
+            let (_, serial) = first.splitDeviceName(),
             let deviceRow = knownDevices.first(where: { $0.SerialNo == serial })
         else { return }
         
@@ -251,7 +251,7 @@ final class BluetoothDeviceCoordinator {
         
         PrintLog("🤖 Auto-connect to known: \(deviceRow.Identity ?? "")")
         
-        _ = connect(to: first.peripheral, discover: true)
+        _ = connect(to: first, discover: true)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] session in
                 // Auto-sync settings sau khi connect
@@ -296,7 +296,7 @@ final class BluetoothDeviceCoordinator {
         // Cai dialog con treo de cho scan lai va reconnect, net khi scan thay se dismiss đi truoc khi connect lai.
         DialogViewController.finish(success: true)
         
-        _ = connect(to: target.peripheral, discover: true)
+        _ = connect(to: target, discover: true)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] session in
                 
@@ -311,7 +311,7 @@ final class BluetoothDeviceCoordinator {
     }
     
     // MARK: - Connect/Disconnect
-    func connect(to peripheral: Peripheral,
+    func connect(to scannedPeripheral: ScannedPeripheral,
                  discover: Bool = true,
                  services: [CBUUID] = BLEConstants.SERVICES.list,
                  writeChar: CBUUID = BLEConstants.RWChar.write,
@@ -319,12 +319,12 @@ final class BluetoothDeviceCoordinator {
         
         stopScan()   // ⛔ stop scan ngay khi bắt đầu connect
         
-        ProgressHUD.animate("Connecting to".localized + " \(peripheral.peripheral.name?.formattedDeviceName() ?? "")...")
+        ProgressHUD.animate("Connecting to".localized + " \(scannedPeripheral.advertisementData.localName?.formattedDeviceName() ?? "")...")
         
         connectionDisposable?.dispose()
         connectionDisposable = nil
         
-        let connectObs = central.establishConnection(peripheral)
+        let connectObs = central.establishConnection(scannedPeripheral.peripheral)
             .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
                 onDispose: {
                 PrintLog("🔌 Disconnected")
@@ -335,10 +335,10 @@ final class BluetoothDeviceCoordinator {
                 
                 self.connectedPeripheral = connected
                 
-                let deviceType = self.detectDeviceType(peripheral: connected)
+                let deviceType = self.detectDeviceType(scannedPeripheral: scannedPeripheral)
                 switch deviceType {
                 case .normal:
-                    let manager = BluetoothDataManager(peripheral: connected)
+                    let manager = BluetoothDataManager(scannedPeripheral: scannedPeripheral)
                     self.activeDataManager = manager
                     
                     guard discover else {
@@ -356,7 +356,7 @@ final class BluetoothDeviceCoordinator {
                             return .normalSession(manager)
                         }
                 case .cr:
-                    let crManager = BluetoothDeviceCRManager(peripheral: connected)
+                    let crManager = BluetoothDeviceCRManager(scannedPeripheral: scannedPeripheral)
                     self.crDeviceManager = crManager
                     
                     guard discover else {
@@ -374,7 +374,7 @@ final class BluetoothDeviceCoordinator {
                             return .crSession(crManager)
                         }
                 case .cr5:
-                    let cr5Manager = BluetoothDeviceCR5Manager(peripheral: connected)
+                    let cr5Manager = BluetoothDeviceCR5Manager(scannedPeripheral: scannedPeripheral)
                     self.cr5DeviceManager = cr5Manager
                     
                     guard discover else {
@@ -425,7 +425,7 @@ final class BluetoothDeviceCoordinator {
                 guard let self = self else { return .error(NSError(domain: "BLE", code: -99)) }
                 
                 self.connectedPeripheral = connected
-                let manager = BluetoothDataManager(peripheral: connected)
+                let manager = BluetoothDataManager(scannedPeripheral: device)
                 self.activeDataManager = manager
                 
                 self.deviceOtaAddress = device.advertisementData.deviceAddress

@@ -127,9 +127,35 @@ struct DiveLog {
     var mixPpo2BarX100: [UInt8]  // 7 elements
     
     var enabledMixes: UInt16
-    var dummy: [UInt8]   // 60 bytes
+    
+    var MaxTlbg: UInt8 // Max Tissue bar graph during dive
     var res0: UInt8
-    var res1: UInt8
+    
+    var TankTurnAlramOn: UInt8    // Tank Turn Alarm On/Off
+    var TankEndAlramOn: UInt8     // Tank Turn Alarm On/Off
+    var TankTurnAlramBar: UInt16  // Tank Turn Alarm in Bar
+    var TankEndAlramBar: UInt16   // Tank End Alarm in Bar
+    var TankTurnAlramPsi: UInt16  // Tank Turn Alarm in Psi
+    var TankEndAlramPsi: UInt16   // Tank End Alarm in Psi
+
+    var TankReserveTimeAlramOn: UInt8   // Tank Reserve Time Alarm On/Off
+    var TankReserveTimeAlramMin: UInt8  // Tank Reserve Time Alarm Minutes
+    
+    var NoDecoAlarmOn: UInt8        // No Deco Alarm On/off
+    var ModAlarmOn: UInt8           // Mod Alarm On/off
+    var DecoEntryAlarmOn: UInt8     // Deco Entry Alarm On/off
+    var GasSwitchAlarmOn: UInt8     // Gas Switch Alarm On/off
+    var OxToxAlarmOn: UInt8         // OxTox Alaram On/Off
+    var OxTox100AlarmOn: UInt8      // OxTox 100 Alaram On/Off
+    var DepthAlarmOn: UInt8         // Depth Alarm On/Off
+    var DiveTimeAlarmOn: UInt8      // DiveTime Alarm On/off
+    var AscentSpeedAlarmOn: UInt8   // Ascent Speed alarm On/Off
+    var TlbgAlarmOn: UInt8          // Tissue Load Bar Graph Alarm On/off
+    
+    var dummy: [UInt8]   // 36 bytes
+    
+    var res2: UInt8
+    var res3: UInt8
     
     init() {
         diveNo = 0
@@ -181,9 +207,36 @@ struct DiveLog {
         mixFHe = Array(repeating: 0, count: 7)
         mixPpo2BarX100 = Array(repeating: 0, count: 7)
         enabledMixes = 0
-        dummy = Array(repeating: 0, count: 60)
+        
+        MaxTlbg = 0
         res0 = 0
-        res1 = 0
+        
+        TankTurnAlramOn = 0
+        TankEndAlramOn = 0
+        TankTurnAlramBar = 0
+        TankEndAlramBar = 0
+        TankTurnAlramPsi = 0
+        TankEndAlramPsi = 0
+        TankReserveTimeAlramOn = 0
+        TankReserveTimeAlramMin = 0
+        
+        NoDecoAlarmOn = 0
+        ModAlarmOn = 0
+        DecoEntryAlarmOn = 0
+        GasSwitchAlarmOn = 0
+        OxToxAlarmOn = 0
+        OxTox100AlarmOn = 0
+        DepthAlarmOn = 0
+        DiveTimeAlarmOn = 0
+        AscentSpeedAlarmOn = 0
+        TlbgAlarmOn = 0
+        
+        // Thống nhất dummy (giả sử là 36 theo comment của bạn)
+        dummy = Array(repeating: 0, count: 36)
+        
+        res2 = 0
+        res3 = 0
+        
     }
 }
 
@@ -381,8 +434,10 @@ extension SystemSettings {
 struct Mixes {
     var CurrGasNumber_OC: UInt8
     var CurrGasNumber_CC: UInt8
-    var res1: UInt8
-    var res2: UInt8
+    
+    // res1, res2 cho DAV
+    var OC_Dft_FO2: UInt8 // DO NOT MODIFY
+    var OC_Dft_on: UInt8 // FO2 Default 0: Off, 1:On
 
     var OC_FO2: [UInt8] = Array(repeating: 0, count: 8)
     var OC_FHe: [UInt8] = Array(repeating: 0, count: 8)
@@ -425,43 +480,140 @@ struct ScubaSettings {
     var ascentSpeedAlarmFpm: UInt16
 
     var tlbgAlarm: UInt8
+    
+    // New Day Mix 1 Reset To Air
+    var NewDayMix2AirReset: UInt8
+    
+    // Tank Turn Alarm On/Off
+    var TankTurnAlramOn: UInt8 // 0: Off 1: On
+    
+    // Tank End Alarm On/Off
+    var TankEndAlramOn: UInt8 // 0: Off 1: On
+    
+    // Tank Turn Alarm in Bar 
+    var TankTurnAlramBar: UInt16 // Range 69bar – 205bar
+    
+    // Tank End Alarm in Bar
+    var TankEndAlramBar: UInt16 // Range 20bar – 104bar
+    
+    // Tank Turn Alarm in Psi
+    var TankTurnAlramPsi: UInt16 // Range 1000psi – 3000psi
+    
+    // Tank End Alarm in Psi
+    var TankEndAlramPsi: UInt16 // Range 300psi – 1500psi
+    
+    // Reserve Time (DTR) Alarm On/Off 
+    var TankReserveTimeAlramOn: UInt8 // 0: Off 1: On
+    
+    // Reserve Time (DTR) Alarm minutes 
+    var TankReserveTimeAlramMin: UInt8 // Range 0min – 199min
+    
+    // No Deco Alarm On/off
+    var NoDecoAlarmOn: UInt8 //0: Off 1: On
+    
+    // Mod Alarm On/off
+    var ModAlarmOn: UInt8 //0: Off 1: On
+    
+    // Deco Entry Alarm On/off
+    var DecoEntryAlarmOn: UInt8 //0: Off 1: On
+    
+    // Gas Switch Alarm On/off
+    var GasSwitchAlarmOn: UInt8 //0: Off 1: On
+    
+    // OxTox Alaram On/Off
+    var OxToxAlarmOn: UInt8 //0: Off 1: On
+    
+    // OxTox 100 Alaram On/Off
+    var OxTox100AlarmOn: UInt8 //0: Off 1: On
+    
+    // Depth Alarm On/Off
+    var DepthAlarmOn: UInt8 //0: Off 1: On
+    
+    // DiveTime Alarm On/off
+    var DiveTimeAlarmOn: UInt8 //0: Off 1: On
+    
+    // Ascent Speed alarm On/Off
+    var AscentSpeedAlarmOn: UInt8 //0: Off 1: On
+    
+    // Tissue Load Bar Graph Alarm On/off
+    var TlbgAlarmOn: UInt8 //0: Off 1: On
+    
     var res: [UInt8] = []
 }
 
 extension ScubaSettings {
     func toData() -> Data {
-            var data = Data()
-            data.append(recordTimeStamp_s)
-            data.append(contentsOf: mixes.toData())
-
-            data.append(lastStopFt)
-            data.append(lastStopM)
-
-            data.append(gfLow)
-            data.append(gfHigh)
-
-            data.append(safetyStopMode)
-            data.append(safetyStopMin)
-            data.append(ssDepthFt)
-            data.append(ssDepthM)
-
-            data.append(noDecoAlarmMin)
-            data.append(oxToxAlarmPercent)
-
-            data.append(deepStopOn)
-            data.append(deepStopMin)
-
-            data.append(depthAlarmFt)
-            data.append(depthAlarmM)
-
-            data.append(diveTimeAlarmMin)
-            data.append(ascentSpeedAlarmFpm)
-
-            data.append(tlbgAlarm)
-            data.append(contentsOf: res)
-
-            return data
-        }
+        var data = Data()
+        data.append(recordTimeStamp_s)
+        data.append(contentsOf: mixes.toData())
+        
+        data.append(lastStopFt)
+        data.append(lastStopM)
+        
+        data.append(gfLow)
+        data.append(gfHigh)
+        
+        data.append(safetyStopMode)
+        data.append(safetyStopMin)
+        data.append(ssDepthFt)
+        data.append(ssDepthM)
+        
+        data.append(noDecoAlarmMin)
+        data.append(oxToxAlarmPercent)
+        
+        data.append(deepStopOn)
+        data.append(deepStopMin)
+        
+        data.append(depthAlarmFt)
+        data.append(depthAlarmM)
+        
+        data.append(diveTimeAlarmMin)
+        data.append(ascentSpeedAlarmFpm)
+        
+        data.append(tlbgAlarm)
+        
+        data.append(NewDayMix2AirReset)
+        
+        data.append(TankTurnAlramOn)
+        
+        data.append(TankEndAlramOn)
+        
+        data.append(TankTurnAlramBar)
+        
+        data.append(TankEndAlramBar)
+        
+        data.append(TankTurnAlramPsi)
+        
+        data.append(TankEndAlramPsi)
+        
+        data.append(TankReserveTimeAlramOn)
+        
+        data.append(TankReserveTimeAlramMin)
+        
+        data.append(NoDecoAlarmOn)
+        
+        data.append(ModAlarmOn)
+        
+        data.append(DecoEntryAlarmOn)
+        
+        data.append(GasSwitchAlarmOn)
+        
+        data.append(OxToxAlarmOn)
+        
+        data.append(OxTox100AlarmOn)
+        
+        data.append(DepthAlarmOn)
+        
+        data.append(DiveTimeAlarmOn)
+        
+        data.append(AscentSpeedAlarmOn)
+        
+        data.append(TlbgAlarmOn)
+        
+        data.append(contentsOf: res)
+        
+        return data
+    }
     
     static func from(data: Data) throws -> ScubaSettings {
         var offset = 0
@@ -517,8 +669,8 @@ extension ScubaSettings {
         let mixes = Mixes(
             CurrGasNumber_OC: try readUInt8(),
             CurrGasNumber_CC: try readUInt8(),
-            res1: try readUInt8(),
-            res2: try readUInt8(),
+            OC_Dft_FO2: try readUInt8(),
+            OC_Dft_on: try readUInt8(),
             OC_FO2: try readArray(8),
             OC_FHe: try readArray(8),
             OC_Active: try readArray(8),
@@ -548,6 +700,45 @@ extension ScubaSettings {
         let diveTimeAlarmMin = try readUInt16()
         let ascentSpeedAlarmFpm = try readInt16()
         let tlbgAlarm = try readUInt8()
+        
+        let NewDayMix2AirReset = try readUInt8()
+        
+        let TankTurnAlramOn = try readUInt8()
+        
+        let TankEndAlramOn = try readUInt8()
+        
+        let TankTurnAlramBar = try readUInt16()
+        
+        let TankEndAlramBar = try readUInt16()
+        
+        let TankTurnAlramPsi = try readUInt16()
+        
+        let TankEndAlramPsi = try readUInt16()
+        
+        let TankReserveTimeAlramOn = try readUInt8()
+        
+        let TankReserveTimeAlramMin = try readUInt8()
+        
+        let NoDecoAlarmOn = try readUInt8()
+        
+        let ModAlarmOn = try readUInt8()
+        
+        let DecoEntryAlarmOn = try readUInt8()
+        
+        let GasSwitchAlarmOn = try readUInt8()
+        
+        let OxToxAlarmOn = try readUInt8()
+        
+        let OxTox100AlarmOn = try readUInt8()
+        
+        let DepthAlarmOn = try readUInt8()
+        
+        let DiveTimeAlarmOn = try readUInt8()
+        
+        let AscentSpeedAlarmOn = try readUInt8()
+        
+        let TlbgAlarmOn = try readUInt8()
+        
         let res = Array(data[offset...])
 
         // Skip CRC if có
@@ -574,6 +765,27 @@ extension ScubaSettings {
             diveTimeAlarmMin: diveTimeAlarmMin,
             ascentSpeedAlarmFpm: ascentSpeedAlarmFpm,
             tlbgAlarm: tlbgAlarm,
+            
+            NewDayMix2AirReset: NewDayMix2AirReset,
+            TankTurnAlramOn: TankTurnAlramOn,
+            TankEndAlramOn: TankEndAlramOn,
+            TankTurnAlramBar: TankTurnAlramBar,
+            TankEndAlramBar: TankEndAlramBar,
+            TankTurnAlramPsi: TankTurnAlramPsi,
+            TankEndAlramPsi: TankEndAlramPsi,
+            TankReserveTimeAlramOn: TankReserveTimeAlramOn,
+            TankReserveTimeAlramMin: TankReserveTimeAlramMin,
+            NoDecoAlarmOn: NoDecoAlarmOn,
+            ModAlarmOn: ModAlarmOn,
+            DecoEntryAlarmOn: DecoEntryAlarmOn,
+            GasSwitchAlarmOn: GasSwitchAlarmOn,
+            OxToxAlarmOn: OxToxAlarmOn,
+            OxTox100AlarmOn: OxTox100AlarmOn,
+            DepthAlarmOn: DepthAlarmOn,
+            DiveTimeAlarmOn: DiveTimeAlarmOn,
+            AscentSpeedAlarmOn: AscentSpeedAlarmOn,
+            TlbgAlarmOn: TlbgAlarmOn,
+            
             res: res
         )
     }
@@ -584,8 +796,9 @@ extension Mixes {
         var data = Data()
         data.append(CurrGasNumber_OC)
         data.append(CurrGasNumber_CC)
-        data.append(res1)
-        data.append(res2)
+        
+        data.append(OC_Dft_FO2)
+        data.append(OC_Dft_on)
 
         data.append(contentsOf: OC_FO2)
         data.append(contentsOf: OC_FHe)

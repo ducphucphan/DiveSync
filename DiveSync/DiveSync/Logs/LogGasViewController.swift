@@ -45,6 +45,11 @@ extension LogGasViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let modelID = diveLog.stringValue(key: "ModelID").toInt()
+        if modelID == C_WIS5 {
+            return 1
+        }
+        
         let diveMode = diveLog.stringValue(key: "DiveMode").toInt()
         if diveMode >= 100 {
             return 3

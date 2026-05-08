@@ -54,6 +54,8 @@ class DeviceSettingViewController: BaseViewController {
             applyLogicDeciceValues()
         case C_GRA:
             applyCR5DeviceValues()
+        case C_WIS5:
+            applyWisdom5Values()
         default: // DAV
             applyValues()
             break
@@ -371,6 +373,256 @@ class DeviceSettingViewController: BaseViewController {
         }
     }
     
+    func applyWisdom5Values() {
+        if let sections = loadSettingsSections(from: "wisdom5_device"), sections.count > 0 {
+            //settings = sections[0].rows
+            
+            var excludedIDsForModel: [String] = []
+            switch Int(device.modelId ?? 0) {
+            case C_SKI, C_SPI:
+                excludedIDsForModel = ["set_brightness", "set_autoDim"]
+            default: // DAV
+                excludedIDsForModel = ["set_backlight_duration"]
+                break
+            }
+            
+            let rows = sections[0].rows
+            let filtered = rows.filter { row in
+                !excludedIDsForModel.contains(row.id ?? "")
+            }
+            settings = filtered
+            
+            var dbSettings: [String:String] = [:]
+            do {
+                let dcSettings = try DatabaseManager.shared.fetchData(from: "DeviceSettings",
+                                                                      where: "DeviceID=?",
+                                                                      arguments: [device.deviceId])
+                guard let row = dcSettings.first else { return }
+                dbSettings = Utilities.convertRowToMap(row)
+            } catch {
+                PrintLog("Failed to fetch certificates data: \(error)")
+            }
+            
+            do {
+                let gasSettings = try DatabaseManager.shared.fetchData(from: "DeviceGasMixesSettings",
+                                                                       where: "DeviceID=?",
+                                                                       arguments: [device.deviceId])
+                guard let row = gasSettings.first else { return }
+                dbGasSettings = Utilities.convertRowToMap(row)
+            } catch {
+                PrintLog("Failed to fetch certificates data: \(error)")
+            }
+            
+            if dbSettings.count <= 0 { return }
+            
+            // Gas 1 always ON
+            //let gas1On = Utilities.intValue(at: 1, from: dbGasSettings["OC_Active"])
+            let fo2Gas1 = Utilities.intValue(at: 1, from: dbGasSettings["OC_FO2"])
+            let po2Gas1 = Utilities.intValue(at: 1, from: dbGasSettings["OC_MaxPo2"])
+            
+            for i in 0..<settings.count {
+                if let subRows = settings[i].subRows {
+                    // Xử lý row ở đây
+                    for row in subRows {
+                        
+                        let options = row.options
+                        /*
+                        let safetyStopDepthMOpts = row.safetyStopDepth_m
+                        let safetyStopDepthFtOpts = row.safetyStopDepth_ft
+                        let safetyStopTimeOpts = row.safetyStopTime
+                        */
+                        
+                        switch row.id {
+                        case "hour":
+                            if let tf = dbSettings["TimeFormat"]?.toInt() {
+                                row.value = options?[tf]
+                            }
+                        case "dates":
+                            if let df = dbSettings["DateFormat"]?.toInt() {
+                                row.value = options?[df]
+                            }
+                        case "set_date":
+                            row.value = Utilities.getDateTime(Date.now, "MM.dd.yyyy") // Trong device luôn là dạng MM.dd.yyy
+                        case "set_time":
+                            if let tf = dbSettings["TimeFormat"]?.toInt(), tf == 1 { // 12H
+                                row.value = Utilities.getDateTime(Date.now, "hh:mm a")
+                            } else {
+                                row.value = Utilities.getDateTime(Date.now, "HH:mm")
+                            }
+                            
+                        // Alarms
+                        case "mdepth":
+                            let DepthAlarmOn = dbSettings["DepthAlarmOn"]?.toInt() ?? 0
+                            if DepthAlarmOn == 0 {
+                                row.value = OFF
+                            } else {
+                                var mdepth = 0
+                                if DeviceSettings.shared.unit == M {
+                                    mdepth = dbSettings["DepthAlarmM"]?.toInt() ?? 0
+                                    row.value = "\(mdepth) M"
+                                } else {
+                                    mdepth = dbSettings["DepthAlarmFt"]?.toInt() ?? 0
+                                    row.value = "\(mdepth) FT"
+                                }
+                            }
+                            
+                        case "turn_pressure":
+                            let TankTurnAlramOn = dbSettings["TankTurnAlramOn"]?.toInt() ?? 0
+                            if TankTurnAlramOn == 0 {
+                                row.value = OFF
+                            } else {
+                                var tankTurn = 0
+                                if DeviceSettings.shared.unit == M {
+                                    tankTurn = dbSettings["TankTurnAlramBar"]?.toInt() ?? 0
+                                    row.value = "\(tankTurn) BAR"
+                                } else {
+                                    tankTurn = dbSettings["TankTurnAlramPsi"]?.toInt() ?? 0
+                                    row.value = "\(tankTurn) PSI"
+                                }
+                            }
+                        case "end_pressure":
+                               let TankEndAlramOn = dbSettings["TankEndAlramOn"]?.toInt() ?? 0
+                               if TankEndAlramOn == 0 {
+                                   row.value = OFF
+                               } else {
+                                   var tankEnd = 0
+                                   if DeviceSettings.shared.unit == M {
+                                       tankEnd = dbSettings["TankEndAlramBar"]?.toInt() ?? 0
+                                       row.value = "\(tankEnd) BAR"
+                                   } else {
+                                       tankEnd = dbSettings["TankEndAlramPsi"]?.toInt() ?? 0
+                                       row.value = "\(tankEnd) PSI"
+                                   }
+                               }
+                        case "deep_stop":
+                            if let deepStop = dbSettings["DeepStopOn"]?.toInt() {
+                                row.value = options?[deepStop]
+                            }
+                        case "set_light":
+                            if let light = dbSettings["BacklightDimTime"]?.toInt(), light > 0 {
+                                row.value = options?[1]
+                            } else {
+                                row.value = options?[0] // OFF
+                            }
+                        case "water":
+                            if let water = dbSettings["WetContacts"]?.toInt() {
+                                row.value = options?[water]
+                            }
+                        case "dive_mode":
+                            /*
+                            if let modeValue = dbSettings["DiveMode"]?.toInt() {
+                                // Khai báo các row liên quan để xử lý hiển thị
+                                let conservatismRow = subRows.first(where: { $0.id == "conservatism" })
+                                let po2Row = subRows.first(where: { $0.id == "gas1_po2" })
+                                let fo2Row = subRows.first(where: { $0.id == "gas1_fo2" })
+                                
+                                if modeValue == 3 { // GAUGE
+                                    row.value = "GAUGE"
+                                    conservatismRow?.hidden = 1
+                                    po2Row?.hidden = 1
+                                    fo2Row?.hidden = 1
+                                } else { // SCUBA (Gồm AIR và NITROX)
+                                    if fo2Gas1 <= 21 {
+                                        row.value = "AIR"
+                                        conservatismRow?.hidden = 0
+                                        po2Row?.hidden = 0
+                                        fo2Row?.hidden = 1 // AIR thì ẩn FO2
+                                    } else {
+                                        row.value = "NITROX"
+                                        conservatismRow?.hidden = 0
+                                        po2Row?.hidden = 0
+                                        fo2Row?.hidden = 0 // NITROX thì hiện FO2
+                                    }
+                                }
+                            }
+                            */
+                            break
+                        case "conservatism":
+                            if let GFLow = dbSettings["GFLow"]?.toInt(), let GFHigh = dbSettings["GFHigh"]?.toInt() {
+                                var v = 0
+                                if GFHigh >= 90 && GFLow >= 90 {
+                                    v = 0
+                                } else if GFHigh <= 70 && GFLow <= 35 {
+                                    v = 2
+                                } else {
+                                    v = 1
+                                }
+                                
+                                row.value = options?[v]
+                            }
+                        case "gas1_po2":
+                            row.value = String(format: "%d.%02d", po2Gas1/100, po2Gas1 % 100)
+                        case "gas1_fo2":
+                            row.value = String(format: "%d%%", fo2Gas1)
+                        case "sample_rate":
+                            if let sample = dbSettings["DiveLogSamplingTime"]?.toInt() {
+                                row.value = String(format: "%d SEC", sample)
+                            }
+                        case "set_all_alarm":
+                            let asntRow = subRows.first(where: { $0.id == "set_asnt" })
+                            let mdepthRow = subRows.first(where: { $0.id == "mdepth" })
+                            let turnPressureRow = subRows.first(where: { $0.id == "turn_pressure" })
+                            let endPressureRow = subRows.first(where: { $0.id == "end_pressure" })
+                            let reserveTimeRow = subRows.first(where: { $0.id == "reserve_time" })
+                            let setDecoRow = subRows.first(where: { $0.id == "set_deco" })
+                            let setPo2Row = subRows.first(where: { $0.id == "set_po2" })
+                            
+                            var hidden = 0
+                            if let tf = dbSettings["BuzzerMode"]?.toInt(), tf == 0 {
+                                row.value = options?[0] // OFF
+                                hidden = 1
+                            } else {
+                                row.value = options?[1] // ON
+                            }
+                            
+                            asntRow?.hidden = hidden
+                            mdepthRow?.hidden = hidden
+                            turnPressureRow?.hidden = hidden
+                            endPressureRow?.hidden = hidden
+                            reserveTimeRow?.hidden = hidden
+                            setDecoRow?.hidden = hidden
+                            setPo2Row?.hidden = hidden
+                        case "set_asnt":
+                            if let asnt = dbSettings["AscentSpeedAlarmOn"]?.toInt() {
+                                row.value = options?[asnt]
+                            }
+                        case "set_deco":
+                            if let deco = dbSettings["DecoEntryAlarmOn"]?.toInt() {
+                                row.value = options?[deco]
+                            }
+                        case "set_po2":
+                            if let po2Alarm = dbSettings["ModAlarmOn"]?.toInt() {
+                                row.value = options?[po2Alarm]
+                            }
+                        case "reserve_time":
+                            if let TankReserveTimeAlramOn = dbSettings["TankReserveTimeAlramOn"]?.toInt(), TankReserveTimeAlramOn == 0 {
+                                row.value = OFF
+                            } else {
+                                let TankReserveTimeAlramMin = dbSettings["TankReserveTimeAlramMin"]?.toInt()
+                                row.value = String(format: "%d MIN", TankReserveTimeAlramMin ?? 0)
+                            }
+                        default:
+                            break
+                        }
+                    }
+                } else {
+                    let row = settings[i]
+                    let options = row.options
+                    switch row.id {
+                    case "units":
+                        if let unit = dbSettings["Units"]?.toInt() {
+                            row.value = options?[unit]
+                            DeviceSettings.shared.unit = unit
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+            
+        }
+    }
+    
     func applyLogicDeciceValues() {
         if let sections = loadSettingsSections(from: "Logic_device"), sections.count > 0 {
             //settings = sections[0].rows
@@ -423,6 +675,20 @@ class DeviceSettingViewController: BaseViewController {
                             }
                             
                         // Alarms
+                        case "set_all_alarm":
+                            let mdepthRow = subRows.first(where: { $0.id == "mdepth" })
+                            let timeAlarmRow = subRows.first(where: { $0.id == "time_alarm" })
+                            
+                            var hidden = 0
+                            if let tf = dbSettings["BuzzerMode"]?.toInt(), tf == 0 {
+                                row.value = options?[0] // OFF
+                                hidden = 1
+                            } else {
+                                row.value = options?[1] // ON
+                            }
+                            
+                            mdepthRow?.hidden = hidden
+                            timeAlarmRow?.hidden = hidden
                         case "mdepth":
                             let mdepth = dbSettings["DepthAlarmM"]?.toInt() ?? 0
                             let idx = Int((mdepth - 9) / 3) + 1
@@ -956,6 +1222,157 @@ class DeviceSettingViewController: BaseViewController {
         return dcSettings
     }
     
+    func getWisdom5Settings() -> [String: Any] {
+        var dcSettings: [String: Any] = [:]
+        
+        dcSettings["DeviceID"] = device.deviceId
+        dcSettings["SurName"] = ""
+        dcSettings["EmSurName"] = ""
+        
+        for i in 0..<settings.count {
+            if let subRows = settings[i].subRows {
+                // Xử lý row ở đây
+                for row in subRows {
+                    var index = 0
+                    let value = row.value ?? ""
+                    
+                    let options = row.options
+                    if options != nil {
+                        index = options!.firstIndex(of: value) ?? 0
+                    }
+                    
+                    switch row.id {
+                    // System Settings
+                    case "hour":
+                        dcSettings["TimeFormat"] = index
+                    case "set_light":
+                        if index == 0 {
+                            dcSettings["BacklightDimTime"] = 0
+                        } else {
+                            dcSettings["BacklightDimTime"] = 10
+                        }
+                    case "water":
+                        dcSettings["WetContacts"] = index
+                    case "sample_rate":
+                        dcSettings["DiveLogSamplingTime"] = value.toInt()
+                    case "set_all_alarm":
+                        dcSettings["BuzzerMode"] = index
+                    case "set_asnt":
+                        dcSettings["AscentSpeedAlarmOn"] = index
+                    case "set_deco":
+                        dcSettings["DecoEntryAlarmOn"] = index
+                    case "set_po2":
+                        dcSettings["ModAlarmOn"] = index
+                        
+                    // Scuba Settings
+                    case "mdepth":
+                        let valueInt = value.toInt()
+                        dcSettings["DepthAlarmOn"] = (valueInt == 0) ? 0 : 1
+                        if valueInt > 0 {
+                            if DeviceSettings.shared.unit == M {
+                                dcSettings["DepthAlarmM"] = valueInt
+                            } else {
+                                dcSettings["DepthAlarmFt"] = valueInt
+                            }
+                        }
+                    
+                    case "turn_pressure":
+                        let valueInt = value.toInt()
+                        dcSettings["TankTurnAlramOn"] = (valueInt == 0) ? 0 : 1
+                        if valueInt > 0 {
+                            if DeviceSettings.shared.unit == M {
+                                dcSettings["TankTurnAlramBar"] = valueInt
+                            } else {
+                                dcSettings["TankTurnAlramPsi"] = valueInt
+                            }
+                        }
+                    
+                    case "end_pressure":
+                        let valueInt = value.toInt()
+                        dcSettings["TankEndAlramOn"] = (valueInt == 0) ? 0 : 1
+                        if valueInt > 0 {
+                            if DeviceSettings.shared.unit == M {
+                                dcSettings["TankEndAlramBar"] = valueInt
+                            } else {
+                                dcSettings["TankEndAlramPsi"] = valueInt
+                            }
+                        }
+                    case "deep_stop":
+                        dcSettings["DeepStopOn"] = index
+                    case "conservatism":
+                        var GFLow = 90, GFHigh = 90
+                        switch index {
+                        case 1:
+                            GFHigh = 85
+                            GFLow = 35
+                        case 2:
+                            GFHigh = 70
+                            GFLow = 35
+                        default:
+                            break
+                        }
+                        dcSettings["GFHigh"] = GFHigh
+                        dcSettings["GFLow"] = GFLow
+                        
+                    case "reserve_time":
+                        dcSettings["TankReserveTimeAlramOn"] = (index == 0) ? 0 : 1
+                        if index > 0 {
+                            dcSettings["TankReserveTimeAlramMin"] = value.toInt()
+                        }
+
+                    // Gas Info
+                    case "dive_mode":
+                        /*
+                        if index == 2 { // GAUGE
+                            dcSettings["DiveMode"] = 3
+                        } else {
+                            // Cả AIR và NITROX đều lưu là 0 (SCUBA)
+                            dcSettings["DiveMode"] = 0
+                        }
+                        */
+                        break
+                    case "gas1_fo2":
+                        let fo2 = index + 21
+                        dbGasSettings["OC_FO2"] = Utilities.updateValue(in: dbGasSettings["OC_FO2"] ?? "", at: 1, to: fo2)
+                        
+                    case "gas1_po2":
+                        let po2 = Int(value.toDouble() * 100)
+                        dbGasSettings["OC_MaxPo2"] = Utilities.updateValue(in: dbGasSettings["OC_MaxPo2"] ?? "", at: 1, to: po2)
+
+                    default:
+                        break
+                    }
+                }
+            } else {
+                let row = settings[i]
+                var index = 0
+                let value = row.value ?? ""
+                
+                let options = row.options
+                if options != nil {
+                    index = options!.firstIndex(of: value) ?? 0
+                }
+                
+                switch row.id {
+                case "units":
+                    dcSettings["Units"] = index
+                default:
+                    break
+                }
+            }
+        }
+        
+        var dcGasSettings: [String: Any] = [:]
+        dcGasSettings["DeviceID"] = device.deviceId
+        dcGasSettings["OC_Active"] = dbGasSettings["OC_Active"]
+        dcGasSettings["OC_FO2"] = dbGasSettings["OC_FO2"]
+        dcGasSettings["OC_MaxPo2"] = dbGasSettings["OC_MaxPo2"]
+        
+        dcSettings["GasMixes"] = dcGasSettings
+        
+        return dcSettings
+    }
+    
     func printAllSettings(rows: [SettingsRow], level: Int = 0) {
         // Tạo khoảng trắng thụt đầu dòng để dễ phân biệt cấp độ cha-con
         let indentation = String(repeating: "    ", count: level)
@@ -1030,7 +1447,7 @@ class DeviceSettingViewController: BaseViewController {
                     case "fo2":
                         dcSettings["FO2"] = value
                     case "po2":
-                        dcSettings["PO2"] = value
+                        dcSettings["PO2"] = value.toCleanInt(multiplier: 100)
                         
                     case "conservatism":
                         dcSettings["Conservatism"] = index
@@ -1040,10 +1457,11 @@ class DeviceSettingViewController: BaseViewController {
                         let options_ft = row.options_ft
                         
                         if DeviceSettings.shared.unit == M {
-                            dcSettings["LogStartDepth"] = value.toInt()
+                            dcSettings["LogStartDepth"] = value.toCleanInt(multiplier: 10)
                         } else {
-                            if let idx = options_ft?.firstIndex(of: value) {
-                                dcSettings["LogStartDepth"] = options?[idx].toInt()
+                            if let idx = options_ft?.firstIndex(of: value), let mString = options?[idx] {
+                                // Tìm giá trị mét tương ứng rồi nhân 10
+                                dcSettings["LogStartDepth"] = mString.toCleanInt(multiplier: 10)
                             }
                         }
                         
@@ -1315,6 +1733,8 @@ class DeviceSettingViewController: BaseViewController {
             settings = getLogicSettings()
         case C_GRA:
             settings = getCR5Settings()
+        case C_WIS5:
+            settings = getWisdom5Settings()
         default: // DAV
             settings = getPDCSettings()
             break
@@ -1355,7 +1775,7 @@ class DeviceSettingViewController: BaseViewController {
             // Chua ket noi thi thuc hien ket noi
             
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-            guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
                 showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
@@ -1364,7 +1784,7 @@ class DeviceSettingViewController: BaseViewController {
             }
             
             BluetoothDeviceCoordinator.shared
-                .connect(to: matchedDevice.peripheral, discover: true)
+                .connect(to: matchedDevice, discover: true)
                 .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] session in
                     guard self != nil else { return }
@@ -1376,7 +1796,7 @@ class DeviceSettingViewController: BaseViewController {
                     case .cr5Session(let m): manager = m
                     }
                     
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                    if let (bleName, _) = matchedDevice.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
@@ -1500,7 +1920,8 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
             // Nếu có subRows thì push sang màn con
             let vc = UIStoryboard(name: "Device", bundle: nil)
                 .instantiateViewController(withIdentifier: "SubSettingsViewController") as! SubSettingsViewController
-            vc.rows = subRows.filter { $0.hidden != 1 }
+            //vc.rows = subRows.filter { $0.hidden != 1 }
+            vc.rows = subRows
             vc.rowId = row.id
             vc.sectionTitle = row.title.localized
             vc.device = device
@@ -1589,9 +2010,11 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
                         if let id = row.id, id == "units" {
                             DeviceSettings.shared.unit = (value == "M - °C") ? 0 : 1
                             
-                            var defaultValues: [String: String] = [
-                                "mdepth": "OFF",
-                                "safety_stop": "OFF",
+                            let defaultValues: [String: String] = [
+                                "mdepth": OFF,
+                                "turn_pressure": OFF,
+                                "end_pressure": OFF,
+                                "safety_stop": OFF,
                             ]
                             
                             var idsToReload = ["units"]

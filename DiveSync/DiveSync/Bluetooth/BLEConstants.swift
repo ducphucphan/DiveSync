@@ -13,6 +13,7 @@ let C_VIR       = 8682
 let C_DAV       = 6886
 let C_SKI       = 8375
 let C_SPI       = 8380
+let C_WIS5      = 877383
 
 let C_LOG       = 7679
 let C_LOGPLUS   = 7680
@@ -113,6 +114,7 @@ struct BLEConstants {
             "DAV",
             "SKI",
             "SPI",
+            "WIS",
             "SHERWOOD-Logic+",
             "SHERWOOD-Logic",
             "GENESIS-Graviton"

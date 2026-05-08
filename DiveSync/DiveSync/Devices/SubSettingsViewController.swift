@@ -23,6 +23,11 @@ class SubSettingsViewController: BaseViewController {
     var device: Devices!
     
     var rows: [SettingsRow] = []
+    
+    var visibleRows: [SettingsRow] {
+        return rows.filter { $0.hidden != 1 }
+    }
+    
     var rowId: String? = nil
     var sectionTitle: String?
     
@@ -171,7 +176,7 @@ class SubSettingsViewController: BaseViewController {
             // Chua ket noi thi thuc hien ket noi
             
             let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
-            guard let matchedDevice = peripherals.first(where: { $0.peripheral.name == device.Identity }) else {
+            guard let matchedDevice = peripherals.first(where: { $0.advertisementData.localName == device.Identity }) else {
                 PrintLog("Device not found in scannedDevices yet")
                 
                 showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
@@ -180,7 +185,7 @@ class SubSettingsViewController: BaseViewController {
             }
             
             BluetoothDeviceCoordinator.shared
-                .connect(to: matchedDevice.peripheral, discover: true)
+                .connect(to: matchedDevice, discover: true)
                 .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] session in
                     guard let self = self else { return }
@@ -194,7 +199,7 @@ class SubSettingsViewController: BaseViewController {
                     }
                     
                     // 2. Logic Set ModelID (Viết 1 lần cho cả 2)
-                    if let (bleName, _) = matchedDevice.peripheral.peripheral.splitDeviceName(),
+                    if let (bleName, _) = matchedDevice.splitDeviceName(),
                        let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
                         manager.ModelID = dcInfo[2].toInt()
                     }
@@ -309,11 +314,11 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return rows.count
+        return visibleRows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let row = rows[indexPath.row]
+        let row = visibleRows[indexPath.row]
         
         if row.type == .toggle {
             let cell = tableView.dequeueReusableCell(withIdentifier: "DSToggleCell", for: indexPath) as! DSToggleCell
@@ -333,7 +338,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let modelID = Int(device.modelId ?? 0)
         
-        let row = rows[indexPath.row]
+        let row = visibleRows[indexPath.row]
         
         if let disable = row.disable, disable == 1 {
             return
@@ -390,7 +395,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 onSave: { [weak self] newDateString in
                     guard let self = self else { return }
                     
-                    self.rows[indexPath.row].value = newDateString
+                    self.visibleRows[indexPath.row].value = newDateString
                     self.tableview.reloadRows(at: [indexPath], with: .automatic)
                 }
             )
@@ -403,15 +408,20 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 keyType = .emailAddress
             }
             
-            InputAlert.show(title: row.title.localized, saveTitle: "Set".localized.uppercased(), currentValue: row.value ?? "", keyboardType: keyType) { action in
-                switch action {
-                case .save(let value):
-                    self.rows[indexPath.row].value = value?.uppercased()
-                    self.tableview.reloadRows(at: [indexPath], with: .automatic)
-                default:
-                    break
+            InputAlert.show(
+                title: row.title.localized,
+                saveTitle: "Set".localized.uppercased(),
+                currentValue: row.value ?? "",
+                keyboardType: keyType,
+                maxLength: 20) { action in
+                    switch action {
+                    case .save(let value):
+                        self.visibleRows[indexPath.row].value = value?.uppercased()
+                        self.tableview.reloadRows(at: [indexPath], with: .automatic)
+                    default:
+                        break
+                    }
                 }
-            }
             
         case .twoValueSelector:
             guard let currentValue = row.value else {
@@ -458,9 +468,9 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 
                 if let selectedValue = selectedValue, action == .allow {
                     if selectedValue.hasPrefix(OFF) {
-                        self.rows[indexPath.row].value = OFF
+                        self.visibleRows[indexPath.row].value = OFF
                     } else {
-                        self.rows[indexPath.row].value = selectedValue
+                        self.visibleRows[indexPath.row].value = selectedValue
                     }
                     self.tableview.reloadRows(at: [indexPath], with: .automatic)
                 }
@@ -474,7 +484,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             var optionsToUse: [String] = []
 
             if let id = row.id {
-                if id == "mdepth" || id == "log_start_depth" {
+                if id == "mdepth" || id == "log_start_depth" || id == "turn_pressure" || id == "end_pressure" {
                     if DeviceSettings.shared.unit == 0 {
                         if let opts = row.options, !opts.isEmpty {
                             optionsToUse = opts
@@ -623,23 +633,84 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                             
                             reloadAll = true
                         case "dive_mode":
-                            if value != "NITROX" {
-                                for row in rows {
-                                    if ["fo2"].contains(row.id) {
-                                        row.value = "21"
-                                        break
-                                    }
+                            if modelID == C_WIS5 {
+                                /*
+                                let conservatismRow = rows.first(where: { $0.id == "conservatism" })
+                                let po2Row = rows.first(where: { $0.id == "gas1_po2" })
+                                let fo2Row = rows.first(where: { $0.id == "gas1_fo2" })
+                                
+                                switch index {
+                                case 0: // AIR
+                                    conservatismRow?.hidden = 0
+                                    po2Row?.hidden = 0
+                                    fo2Row?.hidden = 1
+                                    fo2Row?.value = "21%"
+                                    po2Row?.value = "1.60"
+                                    
+                                case 1: // NITROX
+                                    conservatismRow?.hidden = 0
+                                    po2Row?.hidden = 0
+                                    fo2Row?.hidden = 0
+                                    fo2Row?.value = "22%"
+                                    
+                                default: // GAUGE (case 2)
+                                    conservatismRow?.hidden = 1
+                                    po2Row?.hidden = 1
+                                    fo2Row?.hidden = 1
+                                    fo2Row?.value = "21%"
+                                    po2Row?.value = "1.60"
                                 }
                                 reloadAll = true
+                                */
+                            } else {
+                                if value != "NITROX" {
+                                    rows.first(where: { $0.id == "fo2" })?.value = "21"
+                                    reloadAll = true
+                                }
+                            }
+                        case "gas1_fo2":
+                            if modelID == C_WIS5 {
+                                /*
+                                if index == 0 { // 21%
+                                    // 1. Tìm dòng dive_mode để chuyển index về 0 (AIR)
+                                    if let diveModeRow = rows.first(where: { $0.id == "dive_mode" }) {
+                                        diveModeRow.value = "AIR"
+                                    }
+                                    
+                                    // 2. Cập nhật lại trạng thái ẩn/hiện cho Wisdom 5 giống như mode AIR
+                                    rows.first(where: { $0.id == "conservatism" })?.hidden = 0
+                                    rows.first(where: { $0.id == "gas1_po2" })?.hidden = 0
+                                    rows.first(where: { $0.id == "gas1_fo2" })?.hidden = 1
+                                    
+                                    reloadAll = true
+                                }
+                                */
                             }
                         case "fo2":
                             if value.toInt() > 21 {
-                                for row in rows {
-                                    if ["dive_mode"].contains(row.id) {
-                                        row.value = "NITROX"
-                                        break
-                                    }
-                                }
+                                rows.first(where: { $0.id == "dive_mode" })?.value = "NITROX"
+                                reloadAll = true
+                            }
+                        case "set_all_alarm":
+                            if modelID == C_WIS5 {
+                                let asntRow = rows.first(where: { $0.id == "set_asnt" })
+                                let mdepthRow = rows.first(where: { $0.id == "mdepth" })
+                                let turnPressureRow = rows.first(where: { $0.id == "turn_pressure" })
+                                let endPressureRow = rows.first(where: { $0.id == "end_pressure" })
+                                let reserveTimeRow = rows.first(where: { $0.id == "reserve_time" })
+                                let setDecoRow = rows.first(where: { $0.id == "set_deco" })
+                                let setPo2Row = rows.first(where: { $0.id == "set_po2" })
+                                
+                                let hidden = (index == 0) ? 1 : 0
+                                
+                                asntRow?.hidden = hidden
+                                mdepthRow?.hidden = hidden
+                                turnPressureRow?.hidden = hidden
+                                endPressureRow?.hidden = hidden
+                                reserveTimeRow?.hidden = hidden
+                                setDecoRow?.hidden = hidden
+                                setPo2Row?.hidden = hidden
+                                
                                 reloadAll = true
                             }
                         default:
@@ -647,7 +718,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                         }
                     }
                     
-                    self.rows[indexPath.row].value = value
+                    self.visibleRows[indexPath.row].value = value
                     if reloadAll {
                         self.tableview.reloadData()
                     } else {
@@ -683,8 +754,10 @@ func presentTimePicker(from viewController: UIViewController,
         let formatter = DateFormatter()
         if Utilities.isLastCharacterLetterRegex(selectedTime) {
             formatter.dateFormat = "hh:mm a"
+            formatter.locale = Locale(identifier: "en_US")
         } else {
             formatter.dateFormat = "HH:mm"
+            picker.locale = Locale(identifier: "en_GB")
         }
         formatter.locale = Locale(identifier: "en_US_POSIX")
         if let date = formatter.date(from: selectedTime) {
