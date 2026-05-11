@@ -137,6 +137,10 @@ struct BLEConstants {
             CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2011")  // Log+ Primary 2
         ]
         
+        static let cr4 = [
+            CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
+        ]
+        
         static let cr5 = [
             CBUUID(string: "6E400001-b5a3-f393-e0a9-e50e24dcca9e")
         ]
@@ -150,6 +154,11 @@ struct BLEConstants {
     struct RWCharLogic {
         static let write = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E2012")
         static let read = CBUUID(string: "00002760-08C2-11E1-9073-0E8AC72E0002")
+    }
+    
+    struct RWCharCR4 {
+        static let write = CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
+        static let read = CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
     }
     
     struct RWCharCR5 {

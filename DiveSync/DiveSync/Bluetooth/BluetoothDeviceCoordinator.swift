@@ -22,12 +22,14 @@ enum ScanMode {
 enum ConnectedDeviceType {
     case normal
     case cr // CR-1, CR-4, CR-5 (3 device làm riêng từ app Dive Story)
+    case cr4
     case cr5
 }
 
 enum ConnectedSession {
     case normalSession(BluetoothDataManager)
     case crSession(BluetoothDeviceCRManager)
+    case cr4Session(BluetoothDeviceCR4Manager)
     case cr5Session(BluetoothDeviceCR5Manager)
 }
 
@@ -56,6 +58,8 @@ final class BluetoothDeviceCoordinator {
     private(set) var activeDataManager: BluetoothDataManager?
     
     private(set) var crDeviceManager: BluetoothDeviceCRManager?
+    
+    private(set) var cr4DeviceManager: BluetoothDeviceCR4Manager?
     
     private(set) var cr5DeviceManager: BluetoothDeviceCR5Manager?
     
@@ -372,6 +376,24 @@ final class BluetoothDeviceCoordinator {
                         )
                         .map {
                             return .crSession(crManager)
+                        }
+                case .cr4:
+                    let cr4Manager = BluetoothDeviceCR4Manager(scannedPeripheral: scannedPeripheral)
+                    self.cr4DeviceManager = cr4Manager
+                    
+                    guard discover else {
+                        ProgressHUD.dismiss()
+                        return .just(.cr4Session(cr4Manager))
+                    }
+                    
+                    return cr4Manager
+                        .discoverServicesAndCharacteristics(
+                            servicesUUID: BLEConstants.SERVICES.cr4,
+                            indicateCharUUID: BLEConstants.RWCharCR4.write,
+                            notifyCharUUIDs: [BLEConstants.RWCharCR4.read]
+                        )
+                        .map {
+                            return .cr4Session(cr4Manager)
                         }
                 case .cr5:
                     let cr5Manager = BluetoothDeviceCR5Manager(scannedPeripheral: scannedPeripheral)

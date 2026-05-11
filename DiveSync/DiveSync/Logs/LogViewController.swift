@@ -134,6 +134,9 @@ class LogViewController: BaseViewController {
         
         switch modelId {
         case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
+            gasDetailsView.isHidden = true
+            settingsUsedView.isHidden = true
+            
             maxAscLb.text = "Max Ascent Rate".localized
         default:
             maxAscLb.text = "Max Ascent Bar".localized
@@ -473,23 +476,24 @@ class LogViewController: BaseViewController {
             let buttonTag = button.tag
             switch buttonTag {
             case 0:
-//                let storyboard = UIStoryboard(name: "Logs", bundle: nil)
-//                let vc = storyboard.instantiateViewController(withIdentifier: "LogGasViewController") as! LogGasViewController
-//                vc.diveLog = diveLog
-//                vc.onUpdated = {[weak self] in
-//                    guard let self = self else { return }
-//                    do {
-//                        let rs = try DatabaseManager.shared.fetchDiveLog(where: "DiveID=\(self.diveLog.intValue(key: "DiveID"))")
-//                        if rs.count > 0 {
-//                            diveLog = rs[0]
-//                            self.onUpdated?(true)
-//                        }
-//                    } catch {
-//                        PrintLog("Failed to load divelog data: \(error)")
-//                    }
-//                }
-//                self.navigationController?.pushViewController(vc, animated: true)
-                
+                /*
+                let storyboard = UIStoryboard(name: "Logs", bundle: nil)
+                let vc = storyboard.instantiateViewController(withIdentifier: "LogGasViewController") as! LogGasViewController
+                vc.diveLog = diveLog
+                vc.onUpdated = {[weak self] in
+                    guard let self = self else { return }
+                    do {
+                        let rs = try DatabaseManager.shared.fetchDiveLog(where: "DiveID=\(self.diveLog.intValue(key: "DiveID"))")
+                        if rs.count > 0 {
+                            diveLog = rs[0]
+                            self.onUpdated?(true)
+                        }
+                    } catch {
+                        PrintLog("Failed to load divelog data: \(error)")
+                    }
+                }
+                self.navigationController?.pushViewController(vc, animated: true)
+                */
                 let storyboard = UIStoryboard(name: "GasDetails", bundle: nil)
                 let vc = storyboard.instantiateViewController(withIdentifier: "GasDetailsViewController") as! GasDetailsViewController
                 vc.diveLog = diveLog

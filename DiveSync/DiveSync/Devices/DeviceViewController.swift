@@ -592,6 +592,7 @@ class DeviceViewController: BaseViewController {
                     switch session {
                     case .normalSession(let m): manager = m
                     case .crSession(let m): manager = m
+                    case .cr4Session(let m): manager = m
                     case .cr5Session(let m): manager = m
                     }
                     

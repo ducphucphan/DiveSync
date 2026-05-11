@@ -134,6 +134,7 @@
 		489DFFFD2DC75EB4005A1443 /* CertificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489DFFFC2DC75EB4005A1443 /* CertificationCell.swift */; };
 		489DFFFF2DC76320005A1443 /* CertificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489DFFFE2DC76320005A1443 /* CertificationViewController.swift */; };
 		48A0C4612D1D310D0023B26B /* ZoomAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A0C4602D1D310D0023B26B /* ZoomAnimationController.swift */; };
+		48A0E87F2FADE3F500BFED3F /* BluetoothDeviceCR4Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A0E87E2FADE3F500BFED3F /* BluetoothDeviceCR4Manager.swift */; };
 		48A1F6E92CF76ED7009A9C52 /* DeviceSettings.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48A1F6E82CF76ED7009A9C52 /* DeviceSettings.storyboard */; };
 		48A3611A2DD99C9000939860 /* SearchLogAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A361192DD99C9000939860 /* SearchLogAlert.swift */; };
 		48A4158C2EB4CEE000FFD2F1 /* splash_screen.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 48A4158B2EB4CEE000FFD2F1 /* splash_screen.jpg */; };
@@ -389,6 +390,7 @@
 		489DFFFC2DC75EB4005A1443 /* CertificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificationCell.swift; sourceTree = "<group>"; };
 		489DFFFE2DC76320005A1443 /* CertificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificationViewController.swift; sourceTree = "<group>"; };
 		48A0C4602D1D310D0023B26B /* ZoomAnimationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomAnimationController.swift; sourceTree = "<group>"; };
+		48A0E87E2FADE3F500BFED3F /* BluetoothDeviceCR4Manager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDeviceCR4Manager.swift; sourceTree = "<group>"; };
 		48A1F6E82CF76ED7009A9C52 /* DeviceSettings.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DeviceSettings.storyboard; sourceTree = "<group>"; };
 		48A361192DD99C9000939860 /* SearchLogAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLogAlert.swift; sourceTree = "<group>"; };
 		48A4158B2EB4CEE000FFD2F1 /* splash_screen.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = splash_screen.jpg; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 			isa = PBXGroup;
 			children = (
 				48283E4B2F3B1EA70014BDD7 /* BluetoothDeviceCRManager.swift */,
+				48A0E87E2FADE3F500BFED3F /* BluetoothDeviceCR4Manager.swift */,
 				483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */,
 			);
 			path = "CR-Devices";
@@ -1334,6 +1337,7 @@
 				4874FD422CE1B8C60027C5F3 /* UIView+Extend.swift in Sources */,
 				48DAA6D92CFD952000FADC10 /* Custom3DMarkerView.swift in Sources */,
 				48ACD0BC2E72C73600752535 /* FirmwareAPI.swift in Sources */,
+				48A0E87F2FADE3F500BFED3F /* BluetoothDeviceCR4Manager.swift in Sources */,
 				489459E72DBCC3E400D1A03D /* DeviceListViewController.swift in Sources */,
 				48F74D6B2DA788860063A582 /* DeviceViewModel.swift in Sources */,
 				484E72962E6838CE008CC744 /* DeviceCollectionViewCell.swift in Sources */,

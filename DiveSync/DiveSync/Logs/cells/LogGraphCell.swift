@@ -448,16 +448,16 @@ extension LogGraphCell: ChartViewDelegate {
             }
             
             switch modelId {
-            case C_GRA, C_LOG, C_LOGPLUS, C_CEN:
-                startTankLb.text = "---"
-                airTimeRemainingLb.text = "---"
-            default:
+            case C_WIS5:
                 if unit == FT {
                     startTankLb.text = String(format: "%d PSI", TankPSI)
                 } else {
                     startTankLb.text = String(format: "%.1f BAR", convertPSI2BAR(Double(TankPSI)))
                 }
                 airTimeRemainingLb.text = Utilities.convertMinutesToHHmm(atr)
+            default:
+                startTankLb.text = "---"
+                airTimeRemainingLb.text = "---"
             }
 
             didSelectedChartEntryPoint?(selectedRow)
