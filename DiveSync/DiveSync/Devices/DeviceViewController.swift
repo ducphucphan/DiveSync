@@ -336,7 +336,12 @@ class DeviceViewController: BaseViewController {
             statsAvgDepthValueLb.text = "\(avgDepth) \(unitString)"
             statsMinTempValueLb.text = "\(minTemp) \(tempUnitString)"
             
-            if modelid != C_LOG && modelid != C_LOGPLUS && modelid != C_GRA && modelid != C_CEN {
+            switch modelid {
+            case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+                statsAltLevelValueLb.text = "SEA".localized
+                statsAltLevelValueLb.alpha = 0
+            default:
+                statsAltLevelValueLb.alpha = 1
                 let level = altLevelStr.toInt()
                 statsAltLevelValueLb.text = (level == 0) ? "SEA" : "LEV\(level)"
             }

@@ -1459,6 +1459,12 @@ final class BluetoothDeviceCR5Manager {
         let ascentRatevalueToSave = (ftPerMin * 100).rounded() / 100 // Kết quả: 82.68
         divedata["AscentSpeedAlarm"] = ascentRatevalueToSave
         
+        let rawDescentRate = Double(header.u16LE(94)) / 100 //100 in 1 meter/sec (ref. salinity), 0 at surface
+        let ftPerMinDescent = convertMeter2Feet(rawDescentRate) * 60
+        // Lưu vào Database (thường làm tròn 1 hoặc 2 chữ số thập phân tùy nhu cầu)
+        let descentRatevalueToSave = (ftPerMinDescent * 100).rounded() / 100 // Kết quả: 82.68
+        divedata["DescentSpeedAlarm"] = descentRatevalueToSave
+        
         let startNitroPressure = header.u16ArrayLE(144, count: 16)
         print("startNitroPressure: \(startNitroPressure)")
         

@@ -225,6 +225,15 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v2_add_DescentSpeedAlarm_to_DeviceLog") { db in
+            // Kiểm tra một cột đại diện để tránh chạy lại nếu đã tồn tại
+            if try !db.columns(in: "DiveLog").contains(where: { $0.name == "DescentSpeedAlarm" }) {
+                try db.alter(table: "DiveLog") { t in
+                    t.add(column: "DescentSpeedAlarm", .text)
+                }
+            }
+        }
+        
         try migrator.migrate(dbQueue)
     }
     

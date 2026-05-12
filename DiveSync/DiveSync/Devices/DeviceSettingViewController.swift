@@ -732,8 +732,15 @@ class DeviceSettingViewController: BaseViewController {
                                 row.value = options?[fo2-21]
                             }
                         case "po2":
-                            if let po2 = dbSettings["PO2"], let index = options?.firstIndex(of: po2) {
-                                row.value = options?[index]
+                            if let rawPo2 = dbSettings["PO2"],
+                               let doubleValue = Double(rawPo2) {
+                                
+                                // Chuyển "150" thành "1.50"
+                                let formattedPo2 = String(format: "%.2f", doubleValue / 100.0)
+                                
+                                if let index = options?.firstIndex(of: formattedPo2) {
+                                    row.value = options?[index]
+                                }
                             }
                         case "log_start_depth":
                             let depth = dbSettings["LogStartDepth"]?.toInt() ?? 0
@@ -1830,6 +1837,13 @@ class DeviceSettingViewController: BaseViewController {
                 else if id == "set_divemode" {
                     let currentValue = rows[i].value ?? ""
                     rows[i].value = convertValueUnit(currentValue: currentValue, toUnit: DeviceSettings.shared.unit)
+                }
+                else if id == "log_start_depth" {
+                    if DeviceSettings.shared.unit == M {
+                        rows[i].value = rows[i].options?.first ?? "1.0 M"
+                    } else {
+                        rows[i].value = rows[i].options_ft?.first ?? "3.2 FT"
+                    }
                 }
             }
 

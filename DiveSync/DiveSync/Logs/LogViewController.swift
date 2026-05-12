@@ -77,7 +77,24 @@ class LogViewController: BaseViewController {
     @IBOutlet weak var shareLb: UILabel!
     @IBOutlet weak var deleteLb: UILabel!
     
+    @IBOutlet weak var mainMetricsStackView: UIStackView!
+    
     //
+    
+    enum MetricType: Int {
+        case diveDate = 1, altitude = 2, mode = 3, conservatism = 4, surfaceInterval = 5
+        case startDive = 6, diveTime = 7, maxDepth = 8, tlbg = 9, maxAscRate = 10
+        case minTemp = 11, maxTemp = 12, oxtox = 13, maxPo2 = 14, startGas = 15, endGas = 16
+        case diveStatus = 17, maxDescRate = 18
+    }
+
+    struct MetricModel {
+        let type: MetricType
+        let title: String
+        let value: String
+        let iconName: String
+    }
+    
     
     //let fullVC = ChartFullScreenViewController()
     
@@ -161,6 +178,9 @@ class LogViewController: BaseViewController {
         super.viewWillAppear(animated)
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(self, selector: #selector(deviceDidRotate), name: UIDevice.orientationDidChangeNotification, object: nil)
+        
+        self.setupFlexibleMetrics()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -220,6 +240,361 @@ class LogViewController: BaseViewController {
         deleteLb.text = "Delete".localized
     }
     
+    
+    private func getActiveMetrics() -> [MetricModel] {
+        var list: [MetricModel] = []
+        
+        // Luôn hiển thị Date (Tag 1)
+        list.append(MetricModel(type: .diveDate, title: "Date".localized, value: getFormattedDate(), iconName: "date"))
+        
+        // Altitude (Tag 2) - Ẩn nếu là model cũ
+        if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .altitude, title: "Altitude Level".localized, value: getAltitudeLevel(), iconName: "altitude"))
+        }
+        
+        // Mode (Tag 3) & Dive Status (Tag 17)
+        list.append(MetricModel(type: .mode, title: "Mode".localized, value: self.getMode(), iconName: "mode"))
+        list.append(MetricModel(type: .diveStatus, title: "Dive Status".localized, value: self.getDiveStatus(), iconName: "dive_status"))
+        
+        
+        // Surface Interval (Tag 5) & Start Dive (Tag 6)
+        list.append(MetricModel(type: .surfaceInterval, title: "Surface Interval".localized, value: getSurfaceInterval(), iconName: "serface_interval"))
+        list.append(MetricModel(type: .startDive, title: "Start Dive".localized, value: getFormattedStartDiveTime(), iconName: "start_dive"))
+        
+        // Dive Time (Tag 7) & Max Depth (Tag 8)
+        list.append(MetricModel(type: .diveTime, title: "Dive Time".localized, value: getDiveTime(), iconName: "dive_time"))
+        list.append(MetricModel(type: .maxDepth, title: "Max Depth".localized, value: getMaxDepth(), iconName: "max_depth"))
+        
+        if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .tlbg, title: "Max TLBG".localized, value: getMaxTLBG(), iconName: "tlbg"))
+        }
+            
+        if modelId == C_WIS5 || manualDive {
+            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate"))
+        } else {
+            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Rate".localized, value: getMaxAscRate(), iconName: "max_accent_rate"))
+        }
+        
+        if [C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .oxtox, title: "Max Descent Rate".localized, value: getMaxDescRate(), iconName: "max_accent_rate"))
+        }
+        
+        list.append(MetricModel(type: .minTemp, title: "Min Temperature".localized, value: getMinTemp(), iconName: "min_temp"))
+        list.append(MetricModel(type: .maxTemp, title: "Max Temperature".localized, value: getMaxTemp(), iconName: "max_temp"))
+        if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .oxtox, title: "OXTOX end dive".localized, value: getOXTOX(), iconName: "o2"))
+        }
+        
+        if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .maxPo2, title: "Max PPO2".localized, value: getMaxPPO2(), iconName: "max_po2"))
+        }
+        
+        if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .startGas, title: "Start Gas".localized, value: getStartGas(), iconName: "start_gas"))
+            list.append(MetricModel(type: .endGas, title: "End Gas".localized, value: getEndGas(), iconName: "end_gas"))
+        }
+        
+        list.append(MetricModel(type: .conservatism, title: "Conservatism".localized, value: getConservatism(), iconName: "conservatism"))
+        
+        return list
+    }
+    
+    private func getFormattedDate() -> String {
+        let diveDateTime = diveLog.stringValue(key: "DiveStartLocalTime")
+        
+        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+        
+        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+        
+        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: datePattern)
+        
+        return diveDate
+    }
+    
+    private func getFormattedStartDiveTime() -> String {
+        let diveDateTime = diveLog.stringValue(key: "DiveStartLocalTime")
+        
+        let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+        
+        let timePattern = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
+        
+        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: timePattern)
+        
+        return diveTime
+    }
+    
+    private func getSurfaceInterval() -> String {
+        let surfTime = diveLog.stringValue(key: "SurfTime").toInt()
+        if surfTime == 0 {
+            return "-:--"
+        } else {
+            return String(format: "%02d:%02d", surfTime/3600, (surfTime % 3600) / 60)
+        }
+    }
+    
+    private func getDiveTime() -> String {
+        let totalDiveTime = diveLog.stringValue(key: "TotalDiveTime").toInt()
+        return String(format: "%02d:%02d", totalDiveTime/3600, (totalDiveTime % 3600) / 60)
+    }
+    
+    private func getMaxDepth() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let unitString = unitOfDive == M ? "M":"FT"
+        
+        var mdepth = diveLog.stringValue(key: "MaxDepthFT")
+        
+        if unitOfDive == M {
+            mdepth = formatNumber(converFeet2Meter(mdepth.toDouble()))
+        } else {
+            mdepth = formatNumber(mdepth.toDouble(), decimalIfNeeded: 0)
+        }
+        return String(format: "%@ %@", mdepth, unitString)
+    }
+    
+    private func getMaxTLBG() -> String {
+        let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
+        var limitOfTLBG = 0
+        switch modelId {
+        case C_WIS5:
+            limitOfTLBG = 8
+        default:
+            limitOfTLBG = 5
+        }
+        
+        var maxTlbg = diveLog.stringValue(key: "MaxTLBG").toInt()
+        if maxTlbg == 0 { maxTlbg = 1 }
+        var value = String(format: "%d/%d", maxTlbg, limitOfTLBG)
+        if isDeco == 1 || maxTlbg > limitOfTLBG {
+            maxTlbg = limitOfTLBG
+            value = String(format: "%d/%d", maxTlbg, limitOfTLBG)
+        }
+        
+        var mode = diveLog.stringValue(key: "DiveMode").toInt()
+        if mode >= 100 { mode = mode % 100 }
+        if mode == 3 || hasViolationMode() { // GAUGE
+            value = "---"
+        }
+        
+        return value
+    }
+    
+    private func getMaxAscBar() -> String {
+        let MaxAscentSpeedLev = diveLog.stringValue(key: "MaxAscentSpeedLev")
+        
+        var value =  String(format: "%@", MaxAscentSpeedLev.isEmpty ? "---" : MaxAscentSpeedLev)
+        if (manualDive) {
+            value = String(format: "%@", MaxAscentSpeedLev.isEmpty ? "1" : MaxAscentSpeedLev)
+        }
+        
+        return value
+    }
+    
+    private func getMaxAscRate() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let unitString = unitOfDive == M ? "M":"FT"
+        
+        var ascentSpeedAlarm = diveLog.stringValue(key: "AscentSpeedAlarm")
+        if unitOfDive == M {
+            ascentSpeedAlarm = formatNumber(converFeet2Meter(ascentSpeedAlarm.toDouble()))
+        } else {
+            ascentSpeedAlarm = formatNumber(ascentSpeedAlarm.toDouble(), decimalIfNeeded: 0)
+        }
+        
+        return String(format: "%@ %@/MIN", ascentSpeedAlarm, unitString)
+    }
+    
+    private func getMaxDescRate() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let unitString = unitOfDive == M ? "M":"FT"
+        
+        var descentSpeedAlarm = diveLog.stringValue(key: "DescentSpeedAlarm")
+        if unitOfDive == M {
+            descentSpeedAlarm = formatNumber(converFeet2Meter(descentSpeedAlarm.toDouble()))
+        } else {
+            descentSpeedAlarm = formatNumber(descentSpeedAlarm.toDouble(), decimalIfNeeded: 0)
+        }
+        
+        return String(format: "%@ %@/MIN", descentSpeedAlarm, unitString)
+    }
+    
+    private func getMinTemp() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let tempUnitString = unitOfDive == M ? "°C":"°F"
+        
+        var minTemp = diveLog.stringValue(key: "MinTemperatureF")
+        if unitOfDive == M {
+            minTemp = formatNumber(convertF2C(minTemp.toDouble()))
+        } else {
+            minTemp = formatNumber(minTemp.toDouble(), decimalIfNeeded: 0)
+        }
+        return String(format: "%@ %@", minTemp, tempUnitString)
+    }
+    
+    private func getMaxTemp() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let tempUnitString = unitOfDive == M ? "°C":"°F"
+        
+        var maxTemp = diveLog.stringValue(key: "MaxTemperatureF")
+        if unitOfDive == M {
+            maxTemp = formatNumber(convertF2C(maxTemp.toDouble()))
+        } else {
+            maxTemp = formatNumber(maxTemp.toDouble(), decimalIfNeeded: 0)
+        }
+        return String(format: "%@ %@", maxTemp, tempUnitString)
+    }
+    
+    private func getOXTOX() -> String {
+        return String(format: "%d %%", diveLog.stringValue(key: "EndingOxToxPercent").toInt())
+    }
+    
+    private func getMaxPPO2() -> String {
+        return String(format: "%.2f", diveLog.stringValue(key: "MaxPpo2").toDouble())
+    }
+    
+    private func getStartGas() -> String {
+        var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
+        if startingMixIdx == 0 { startingMixIdx = 1 }
+        
+        var endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
+        if endingMixIdx == 0 { endingMixIdx = 1 }
+        
+        let mix1Fo2Percent = diveLog.stringValue(key: "Mix1Fo2Percent").toInt()
+        let mix2Fo2Percent = diveLog.stringValue(key: "Mix2Fo2Percent").toInt()
+        let mix3Fo2Percent = diveLog.stringValue(key: "Mix3Fo2Percent").toInt()
+        let mix4Fo2Percent = diveLog.stringValue(key: "Mix4Fo2Percent").toInt()
+        
+        var startingFo2Percent = 0
+        if startingMixIdx <= 4 && endingMixIdx <= 4 {
+            switch startingMixIdx {
+            case 1:
+                startingFo2Percent = mix1Fo2Percent
+            case 2:
+                startingFo2Percent = mix2Fo2Percent
+            case 3:
+                startingFo2Percent = mix3Fo2Percent
+            case 4:
+                startingFo2Percent = mix4Fo2Percent
+            default:
+                break
+            }
+        }
+        
+        return "Gas".localized + " \(startingMixIdx) - " + Utilities.fo2GasValue(gasNo: startingMixIdx, fo2: startingFo2Percent)
+    }
+    
+    private func getEndGas() -> String {
+        var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
+        if startingMixIdx == 0 { startingMixIdx = 1 }
+        
+        var endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
+        if endingMixIdx == 0 { endingMixIdx = 1 }
+        
+        let mix1Fo2Percent = diveLog.stringValue(key: "Mix1Fo2Percent").toInt()
+        let mix2Fo2Percent = diveLog.stringValue(key: "Mix2Fo2Percent").toInt()
+        let mix3Fo2Percent = diveLog.stringValue(key: "Mix3Fo2Percent").toInt()
+        let mix4Fo2Percent = diveLog.stringValue(key: "Mix4Fo2Percent").toInt()
+        
+        var endingFo2Percent = 0
+        if startingMixIdx <= 4 && endingMixIdx <= 4 {
+            switch endingMixIdx {
+            case 1:
+                endingFo2Percent = mix1Fo2Percent
+            case 2:
+                endingFo2Percent = mix2Fo2Percent
+            case 3:
+                endingFo2Percent = mix3Fo2Percent
+            case 4:
+                endingFo2Percent = mix4Fo2Percent
+            default:
+                break
+            }
+        }
+        
+        return "Gas".localized + " \(endingMixIdx) - " + Utilities.fo2GasValue(gasNo: endingMixIdx, fo2: endingFo2Percent)
+    }
+    
+    private func setupFlexibleMetrics() {
+        // 1. Reset StackView chính
+        mainMetricsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        mainMetricsStackView.axis = .vertical
+        mainMetricsStackView.spacing = 0
+        
+        let metrics = getActiveMetrics()
+        
+        // 2. Chia cặp dữ liệu
+        let chunks = stride(from: 0, to: metrics.count, by: 2).map {
+            Array(metrics[$0..<min($0 + 2, metrics.count)])
+        }
+        
+        for (index, pair) in chunks.enumerated() {
+            let rowStack = UIStackView()
+            rowStack.axis = .horizontal
+            rowStack.distribution = .fill // Để tự định nghĩa độ rộng line
+            rowStack.alignment = .fill
+            
+            // 3. Đổ màu xen kẽ chuẩn theo ảnh bạn gửi
+            // Hàng 0, 2, 4... màu xám nhạt | Hàng 1, 3, 5... màu trắng
+            if index % 2 == 0 {
+                rowStack.backgroundColor = .G_2
+            }
+            
+            // Cột bên trái
+            let leftItem = createMetricView(data: pair[0])
+            rowStack.addArrangedSubview(leftItem)
+            
+            if pair.count > 1 {
+                // 4. Tạo đường line giữa 2 column (Siêu mảnh)
+                let line = UIView()
+                line.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
+                line.translatesAutoresizingMaskIntoConstraints = false
+                rowStack.addArrangedSubview(line)
+                
+                // Cột bên phải
+                let rightItem = createMetricView(data: pair[1])
+                rowStack.addArrangedSubview(rightItem)
+                
+                // 5. Thiết lập Constraints để line mỏng và 2 cột bằng nhau
+                NSLayoutConstraint.activate([
+                    line.widthAnchor.constraint(equalToConstant: 1.0), // Độ rộng line là 1px
+                    leftItem.widthAnchor.constraint(equalTo: rightItem.widthAnchor) // Chia đôi 50/50
+                ])
+            } else {
+                // Trường hợp hàng cuối chỉ có 1 item
+                let spacer = UIView()
+                spacer.backgroundColor = .clear
+                rowStack.addArrangedSubview(spacer)
+                leftItem.widthAnchor.constraint(equalTo: spacer.widthAnchor).isActive = true
+            }
+            
+            // 6. Chiều cao row là 70 theo yêu cầu
+            rowStack.translatesAutoresizingMaskIntoConstraints = false
+            mainMetricsStackView.addArrangedSubview(rowStack)
+            rowStack.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        }
+    }
+
+    private func createMetricView(data: MetricModel) -> MetricItemView {
+        let view = MetricItemView.loadFromNib()
+        view.titleLabel.text = data.title
+        view.valueLabel.text = data.value
+        
+        // Sử dụng icon từ Assets hoặc SF Symbols tùy dự án của bạn
+        view.iconImageView.image = UIImage(named: data.iconName) ?? UIImage(systemName: data.iconName)
+        
+        // QUAN TRỌNG: Phải để clear để thấy được màu của hàng (rowStack)
+        view.backgroundColor = .clear
+        
+        view.actionButton.tag = data.type.rawValue
+        view.actionButton.addTarget(self, action: #selector(addManualInfoTapped(_:)), for: .touchUpInside)
+        
+        return view
+    }
+    
     private func fillDiveData() {
         
         PrintLog(diveLog)
@@ -251,152 +626,9 @@ class LogViewController: BaseViewController {
             diveNameLb.text = "Dive Computer Name".localized
         }
         
-        let diveDateTime = diveLog.stringValue(key: "DiveStartLocalTime")
-        
-        let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
-        let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
-        
-        let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
-        let timePattern = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
-        
-        let diveDate = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: datePattern)
-        let diveTime = Utilities.convertDateFormat(from: diveDateTime, fromFormat: "dd/MM/yyyy HH:mm:ss", toFormat: timePattern)
-        
-        diveDateLb.text = diveDate
-        sdvaLueLb.text = diveTime
-        altLevelLb.text = getAltitudeLevel()
-        
-        let isDeco = diveLog.stringValue(key: "IsDecoDive").toInt()
-        var limitOfTLBG = 0
-        switch modelId {
-        case C_WIS5:
-            limitOfTLBG = 8
-        default:
-            limitOfTLBG = 5
-        }
-        
-        var maxTlbg = diveLog.stringValue(key: "MaxTLBG").toInt()
-        if maxTlbg == 0 { maxTlbg = 1 }
-        ltbgValueLb.text = String(format: "%d/%d", maxTlbg, limitOfTLBG)
-        if isDeco == 1 || maxTlbg > limitOfTLBG {
-            maxTlbg = limitOfTLBG
-            ltbgValueLb.text = String(format: "%d/%d", maxTlbg, limitOfTLBG)
-        }
-        
-        var mode = diveLog.stringValue(key: "DiveMode").toInt()
-        if mode >= 100 { mode = mode % 100 }
-        if mode == 3 || hasViolationMode() { // GAUGE
-            ltbgValueLb.text = "---"
-        }
-        
-        modeLb.text = getMode()
-        diveStatusLb.text = getDiveStatus()
-        consValueLb.text = getConservatism()
-        
-        let totalDiveTime = diveLog.stringValue(key: "TotalDiveTime").toInt()
-        dtValueLb.text = String(format: "%02d:%02d", totalDiveTime/3600, (totalDiveTime % 3600) / 60)
-        
-        let surfTime = diveLog.stringValue(key: "SurfTime").toInt()
-        if surfTime == 0 {
-            siValueLb.text = "-:--"
-        } else {
-            siValueLb.text = String(format: "%02d:%02d", surfTime/3600, (surfTime % 3600) / 60)
-        }
-        
-        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
-        
-        let unitString = unitOfDive == M ? "M":"FT"
-        let tempUnitString = unitOfDive == M ? "°C":"°F"
-        
-        var mdepth = diveLog.stringValue(key: "MaxDepthFT")
-        var maxTemp = diveLog.stringValue(key: "MaxTemperatureF")
-        var minTemp = diveLog.stringValue(key: "MinTemperatureF")
-        var ascentSpeedAlarm = diveLog.stringValue(key: "AscentSpeedAlarm")
-        let MaxAscentSpeedLev = diveLog.stringValue(key: "MaxAscentSpeedLev")
-        if unitOfDive == M {
-            mdepth = formatNumber(converFeet2Meter(mdepth.toDouble()))
-            maxTemp = formatNumber(convertF2C(maxTemp.toDouble()))
-            minTemp = formatNumber(convertF2C(minTemp.toDouble()))
-            ascentSpeedAlarm = formatNumber(converFeet2Meter(ascentSpeedAlarm.toDouble()))
-        } else {
-            mdepth = formatNumber(mdepth.toDouble(), decimalIfNeeded: 0)
-            maxTemp = formatNumber(maxTemp.toDouble(), decimalIfNeeded: 0)
-            minTemp = formatNumber(minTemp.toDouble(), decimalIfNeeded: 0)
-            ascentSpeedAlarm = formatNumber(ascentSpeedAlarm.toDouble(), decimalIfNeeded: 0)
-        }
-        mdepthValueLb.text = String(format: "%@ %@", mdepth, unitString)
-        maxTempValueLb.text = String(format: "%@ %@", maxTemp, tempUnitString)
-        minTempValueLb.text = String(format: "%@ %@", minTemp, tempUnitString)
-        
-        oxtoxValueLb.text = String(format: "%d %%", diveLog.stringValue(key: "EndingOxToxPercent").toInt())
-        
-        switch modelId {
-        case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
-            ascValueLb.text = String(format: "%@ %@/MIN", ascentSpeedAlarm, unitString)
-        default:
-            ascValueLb.text = String(format: "%@", MaxAscentSpeedLev.isEmpty ? "---" : MaxAscentSpeedLev)
-            if (manualDive) {
-                ascValueLb.text = String(format: "%@", MaxAscentSpeedLev.isEmpty ? "1" : MaxAscentSpeedLev)
-            }
-        }
-        
-        maxPo2ValueLb.text = String(format: "%.2f", diveLog.stringValue(key: "MaxPpo2").toDouble())
-        
-        var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
-        if startingMixIdx == 0 { startingMixIdx = 1 }
-        
-        var endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
-        if endingMixIdx == 0 { endingMixIdx = 1 }
-        
-        let mix1Fo2Percent = diveLog.stringValue(key: "Mix1Fo2Percent").toInt()
-        let mix2Fo2Percent = diveLog.stringValue(key: "Mix2Fo2Percent").toInt()
-        let mix3Fo2Percent = diveLog.stringValue(key: "Mix3Fo2Percent").toInt()
-        let mix4Fo2Percent = diveLog.stringValue(key: "Mix4Fo2Percent").toInt()
-        
-        var startingFo2Percent = 0
-        var endingFo2Percent = 0
-        if startingMixIdx <= 4 && endingMixIdx <= 4 {
-            switch startingMixIdx {
-            case 1:
-                startingFo2Percent = mix1Fo2Percent
-            case 2:
-                startingFo2Percent = mix2Fo2Percent
-            case 3:
-                startingFo2Percent = mix3Fo2Percent
-            case 4:
-                startingFo2Percent = mix4Fo2Percent
-            default:
-                break
-            }
-            
-            switch endingMixIdx {
-            case 1:
-                endingFo2Percent = mix1Fo2Percent
-            case 2:
-                endingFo2Percent = mix2Fo2Percent
-            case 3:
-                endingFo2Percent = mix3Fo2Percent
-            case 4:
-                endingFo2Percent = mix4Fo2Percent
-            default:
-                break
-            }
-        }
-        
-        startGasValueLb.text = "Gas".localized + " \(startingMixIdx) - " + Utilities.fo2GasValue(gasNo: startingMixIdx, fo2: startingFo2Percent)
-        endGasValueLb.text = "Gas".localized + " \(endingMixIdx) - " + Utilities.fo2GasValue(gasNo: endingMixIdx, fo2: endingFo2Percent)
-        
         // Favorite
         isFavorite = (diveLog.intValue(key: "IsFavorite") != 0)
         favoriteBtn.setImage(UIImage(named: isFavorite ? "favorite" : "un_favorite"), for: .normal)
-        
-        switch modelId {
-        case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
-            ltbgValueLb.text = "---"
-            oxtoxValueLb.text = "---"
-        default:
-            break
-        }
     }
     
     private func loadDiveProfile(diveId: Int) {
@@ -662,15 +894,12 @@ extension LogViewController {
         
         let unitOfDive = diveLog.stringValue(key: "Units").toInt()
         
-        let diveDate = diveDateLb.text ?? ""
-        let diveTime = sdvaLueLb.text ?? ""
+        let currentDiveDate = getFormattedDate() // Hàm bạn dùng trong getActiveMetrics
+        let currentStartDiveTime = getFormattedStartDiveTime()
         
         if let button = sender as? UIButton {
             let buttonTag = button.tag
-            
-            PrintLog("TAG: \(buttonTag)")
-            switch buttonTag {
-            case 0: // Device Name
+            if buttonTag == 0 {
                 var currentValue = diveNameLb.text ?? ""
                 if (currentValue == "Dive Computer Name".localized) {
                     currentValue = ""
@@ -684,285 +913,224 @@ extension LogViewController {
                         break
                     }
                 }
-            case 1: // Dive Date
-                let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
-                let currentInputFormat = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
+            } else {
+                let type = MetricType(rawValue: button.tag);
+                PrintLog("type: \(String(describing: type))")
                 
-                EditProfilePopupManager.showBirthDatePicker(
-                    in: self,
-                    title: "Dive Date".localized,
-                    currentValue: diveDate,
-                    inputFormat: currentInputFormat,
-                    onSave: { [weak self] newDateString in
-                        guard let self = self else { return }
-                        self.diveDateLb.text = newDateString
-                        self.saveDiveDateTime(diveDate: newDateString, diveTime: diveTime)
-                    }
-                )
-            case 2: // Alt Level
-                let altOpts = ["SEA", "LEV1", "LEV2", "LEV3", "LEV4"]
-                ItemSelectionAlert.showMessage(
-                    message: "Altitude Level".localized,
-                    options: altOpts,
-                    selectedValue: altLevelLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.altLevelLb.text = value
-                    self.saveDiveData(key: "AltitudeLevel", value: index ?? 0)
-                }
-            case 3: // Mode
-                let opts = ["Computer".localized.uppercased(), "Gauge".localized.uppercased()]
-                ItemSelectionAlert.showMessage(
-                    message: "Mode".localized,
-                    options: opts,
-                    selectedValue: modeLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.modeLb.text = value
+                switch type {
+                case .diveDate:
+                    let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
+                    let currentInputFormat = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
                     
-                    var saveValue = 100
-                    if index != 1 {
-                        saveValue = saveValue + (index ?? 0)
-                    }
-                    self.saveDiveData(key: "DiveMode", value: saveValue)
-                }
-            case 17: // Dive Status
-                let opts = ["NO DECO".localized, "DECO".localized, "VIOLATION".localized]
-                ItemSelectionAlert.showMessage(
-                    message: "Dive Status".localized,
-                    options: opts,
-                    selectedValue: diveStatusLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.diveStatusLb.text = value
-                    
-                    var isDeco: Int = index ?? 0
-                    var isViolation = 0
-                    if index == 2 { // Violation
-                        isViolation = 192 // Cả bit 6 và bit 7 của Errors điều bật.
-                        isDeco = 0
-                    }
-                    
-                    self.saveDiveData(key: "IsDecoDive", value: isDeco)
-                    self.saveDiveData(key: "Errors", value: isViolation)
-                }
-            case 4:
-                let altOpts = ["C0", "C1", "C2"]
-                ItemSelectionAlert.showMessage(
-                    message: "Conservatism".localized,
-                    options: altOpts,
-                    selectedValue: consValueLb.text,
-                    notesValue: "GF"
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.consValueLb.text = value
-                    
-                    var gfHigh = 90
-                    var gfLow = 90
-                    if index == 1 {
-                        gfHigh = 85
-                        gfLow = 35
-                    } else if index == 2 {
-                        gfHigh = 70
-                        gfLow = 35
-                    }
-                    
-                    self.saveDiveData(key: "GfHighPercent", value: gfHigh)
-                    self.saveDiveData(key: "GfLowPercent", value: gfLow)
-                }
-            case 5:
-                
-                if let siTime = siValueLb.text?.components(separatedBy: ":"), siTime.count == 2 {
-                    let leftOpts: [String] = (0...23).map { String(format: "%02d", $0) }
-                    let rightOpts: [String] = (0...59).map { String(format: "%02d", $0) }
-                    Set2ValueSettingAlert.showMessage(message: siTitleLb.text ?? "",
-                                                      leftValue: siTime[0],
-                                                      rightValue: siTime[1],
-                                                      leftOptions: leftOpts,
-                                                      rightOptions: rightOpts) { [weak self] action, selectedValue in
-                        guard let self = self else { return }
-                        if let selectedValue = selectedValue, action == .allow {
-                            self.siValueLb.text = selectedValue.replacingOccurrences(of: " - ", with: ":")
-                            
-                            let siTimeSelected = selectedValue.components(separatedBy: " - ")
-                            if siTimeSelected.count == 2 {
-                                self.saveDiveData(key: "SurfTime", value: siTimeSelected[0].toInt()*3600 + siTimeSelected[1].toInt()*60)
-                            }
+                    EditProfilePopupManager.showBirthDatePicker(
+                        in: self,
+                        title: "Dive Date".localized,
+                        currentValue: currentDiveDate,
+                        inputFormat: currentInputFormat,
+                        onSave: { [weak self] newDateString in
+                            guard let self = self else { return }
+                            self.saveDiveDateTime(diveDate: newDateString, diveTime: currentStartDiveTime)
                         }
-                    }
-                }
-                
-            case 6: // Dive Time
-                // 1. Lấy định dạng thời gian từ Settings
-                let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
-                
-                // 2. Xác định định dạng trả về cho Picker (0: 12h, 1: 24h)
-                let currentOutputFormat = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
-                
-                // 3. Truyền format động vào presentTimePicker
-                presentTimePicker(from: self, selectedTime: diveTime, outputFormat: currentOutputFormat) { value in
-                    self.sdvaLueLb.text = value
-                    // Hàm này sẽ tự xử lý để lưu chuẩn dd/MM/yyyy HH:mm:ss vào DB như đã nói ở trên
-                    self.saveDiveDateTime(diveDate: diveDate, diveTime: value)
-                }
-            case 7:
-                if let dt = dtValueLb.text?.components(separatedBy: ":"), dt.count == 2 {
-                    let leftOpts: [String] = (0...99).map { String(format: "%02d", $0) }
-                    let rightOpts: [String] = (0...59).map { String(format: "%02d", $0) }
-                    Set2ValueSettingAlert.showMessage(leftValue: dt[0],
-                                                      rightValue: dt[1],
-                                                      leftOptions: leftOpts,
-                                                      rightOptions: rightOpts) { [weak self] action, selectedValue in
-                        guard let self = self else { return }
-                        if let selectedValue = selectedValue, action == .allow {
-                            self.dtValueLb.text = selectedValue.replacingOccurrences(of: " - ", with: ":")
-                            
-                            let dtSelected = selectedValue.components(separatedBy: " - ")
-                            if dtSelected.count == 2 {
-                                self.saveDiveData(key: "TotalDiveTime", value: dtSelected[0].toInt()*3600 + dtSelected[1].toInt()*60)
-                            }
-                        }
-                    }
-                }
-            case 8: // Max Depth
-                var currentMdepth = mdepthValueLb.text ?? ""
-                currentMdepth = currentMdepth.components(separatedBy: " ").first ?? ""
-                let unitStr = unitOfDive == M ? "M":"FT"
-                let notes = unitOfDive == M ? "* From 0 m to 999.9 m":"* From 0 ft to 3300 ft"
-                MDepthInputAlert.showMessage(selectedValue: currentMdepth, notesValue: notes, unitValue:unitStr) { action, value in
-                    self.mdepthValueLb.text = value + " " + unitStr
+                    )
                     
-                    var valueDouble = value.toDouble() * 10 // Dive Depth in meters x 10
-                    if unitOfDive == FT {
-                        valueDouble = converFeet2Meter(valueDouble)
-                    }
-                    self.saveDiveData(key: "MaxDepthFT", value: valueDouble )
-                }
-                
-                break
-            case 9: // TLBG BAR
-                let text = ltbgValueLb.text ?? ""
-                let firstNumber = text.components(separatedBy: "/").first ?? ""
-                let opts:[String] = (1...5).map { String(format: "%d", $0) }
-                ItemSelectionAlert.showMessage(
-                    message: "TLBG Bar".localized,
-                    options: opts,
-                    selectedValue: firstNumber
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.ltbgValueLb.text = String(format: "%@/5", value ?? "1")
-                    self.saveDiveData(key: "MaxTLBG", value: (index ?? 0) + 1)
-                }
-            case 10: // Max Asc Rate
-                var currentAscValue = ascValueLb.text ?? ""
-                
-                switch modelId {
-                case C_CEN, C_GRA, C_LOG, C_LOGPLUS:
-                    currentAscValue = currentAscValue.components(separatedBy: " ").first ?? ""
-                    let unitStr = unitOfDive == M ? "M/MIN":"FT/MIN"
-                    MDepthInputAlert.showMessage(message: "Max Ascent Rate".localized, selectedValue: currentAscValue, unitValue:unitStr) { action, value in
-                        self.ascValueLb.text = value + " " + unitStr
-                        
-                        var valueDouble = value.toDouble()
-                        if unitOfDive == M {
-                            valueDouble = convertMeter2Feet(valueDouble )
-                        }
-                        self.saveDiveData(key: "AscentSpeedAlarm", value: valueDouble )
-                    }
-                default:
-                    let currentAscValue = ascValueLb.text ?? ""
-                    let opts:[String] = (1...5).map { String(format: "%d", $0) }
+                case .altitude:
+                    let altOpts = ["SEA", "LEV1", "LEV2", "LEV3", "LEV4"]
                     ItemSelectionAlert.showMessage(
-                        message: "Max Ascent Bar".localized,
-                        options: opts,
-                        selectedValue: currentAscValue
+                        message: "Altitude Level".localized,
+                        options: altOpts,
+                        selectedValue: getAltitudeLevel()
                     ) { [weak self] action, value, index in
-                        guard let self = self else { return }
-                        self.ascValueLb.text = value
-                        self.saveDiveData(key: "MaxAscentSpeedLev", value: (index ?? 0) + 1)
-                    }
-                }
-                
-                break
-            case 11: // Min Temp
-                var opts: [String] = (0...99).map { String(format: "%d °C", $0) }
-                if unitOfDive == FT {
-                    opts = (32...210).map { String(format: "%d °F", $0) }
-                }
-                ItemSelectionAlert.showMessage(
-                    message: "Min Temp".localized,
-                    options: opts,
-                    selectedValue: minTempValueLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.minTempValueLb.text = value
-                    
-                    if let value = value {
-                        // Temperature in Celcisuis x 10
-                        var saveValue = (value.components(separatedBy: " ").first ?? "").toDouble() * 10
-                        if unitOfDive == FT {
-                            saveValue = convertF2C(saveValue)
+                        if action == .allow {
+                            self?.saveDiveData(key: "AltitudeLevel", value: index ?? 0)
                         }
-                        self.saveDiveData(key: "MinTemperatureF", value: saveValue)
                     }
-                }
-                break
-            case 12: // Max Temp
-                var opts: [String] = (0...99).map { String(format: "%d °C", $0) }
-                if unitOfDive == FT {
-                    opts = (32...210).map { String(format: "%d °F", $0) }
-                }
-                ItemSelectionAlert.showMessage(
-                    message: "Max Temp".localized,
-                    options: opts,
-                    selectedValue: maxTempValueLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.maxTempValueLb.text = value
                     
-                    if var value = value {
-                        // Temperature in Celcisuis x 10
-                        var saveValue = (value.components(separatedBy: " ").first ?? "").toDouble() * 10
-                        if unitOfDive == FT {
-                            saveValue = convertF2C(saveValue)
+                case .mode:
+                    let opts = ["Computer".localized.uppercased(), "Gauge".localized.uppercased()]
+                    ItemSelectionAlert.showMessage(
+                        message: "Mode".localized,
+                        options: opts,
+                        selectedValue: self.getMode()
+                    ) { [weak self] action, value, index in
+                        if action == .allow {
+                            // Nếu chọn Gauge (index 1) thì lưu 103, ngược lại lưu 100
+                            let saveValue = (index == 1) ? 103 : 100
+                            self?.saveDiveData(key: "DiveMode", value: saveValue)
                         }
-                        self.saveDiveData(key: "MaxTemperatureF", value: saveValue)
                     }
-                }
-                break
-            case 13: // OXTOX
-                let opts: [String] = (0...200).map { String(format: "%d %%", $0) }
-                ItemSelectionAlert.showMessage(
-                    message: "OXTOX".localized,
-                    options: opts,
-                    selectedValue: oxtoxValueLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.oxtoxValueLb.text = value
                     
-                    let saveValue = value?.components(separatedBy: " ").first ?? "0"
-                    self.saveDiveData(key: "EndingOxToxPercent", value: saveValue)
+                case .diveStatus:
+                    let opts = ["NO DECO".localized, "DECO".localized, "VIOLATION".localized]
+                    ItemSelectionAlert.showMessage(
+                        message: "Dive Status".localized,
+                        options: opts,
+                        selectedValue: getDiveStatus()
+                    ) { [weak self] action, value, index in
+                        if action == .allow {
+                            var isDeco: Int = index ?? 0
+                            var isViolation = 0
+                            if index == 2 { // Violation
+                                isViolation = 192
+                                isDeco = 0
+                            }
+                            self?.saveDiveData(key: "IsDecoDive", value: isDeco)
+                            self?.saveDiveData(key: "Errors", value: isViolation)
+                        }
+                    }
+                    
+                case .conservatism:
+                    let consOpts = ["C0", "C1", "C2"]
+                    ItemSelectionAlert.showMessage(
+                        message: "Conservatism".localized,
+                        options: consOpts,
+                        selectedValue: getConservatism(),
+                        notesValue: "GF"
+                    ) { [weak self] action, value, index in
+                        if action == .allow {
+                            var gfHigh = 90, gfLow = 90
+                            if index == 1 { gfHigh = 85; gfLow = 35 }
+                            else if index == 2 { gfHigh = 70; gfLow = 35 }
+                            self?.saveDiveData(key: "GfHighPercent", value: gfHigh)
+                            self?.saveDiveData(key: "GfLowPercent", value: gfLow)
+                        }
+                    }
+                    
+                case .surfaceInterval:
+                    let siValue = getSurfaceInterval()
+                    let siTime = siValue.components(separatedBy: ":")
+                    if siTime.count == 2 {
+                        let leftOpts = (0...23).map { String(format: "%02d", $0) }
+                        let rightOpts = (0...59).map { String(format: "%02d", $0) }
+                        Set2ValueSettingAlert.showMessage(
+                            message: "Surface Interval".localized,
+                            leftValue: siTime[0],
+                            rightValue: siTime[1],
+                            leftOptions: leftOpts,
+                            rightOptions: rightOpts
+                        ) { [weak self] action, selectedValue in
+                            if let selectedValue = selectedValue, action == .allow {
+                                let parts = selectedValue.components(separatedBy: " - ")
+                                if parts.count == 2 {
+                                    let totalSeconds = (parts[0].toInt() * 3600) + (parts[1].toInt() * 60)
+                                    self?.saveDiveData(key: "SurfTime", value: totalSeconds)
+                                }
+                            }
+                        }
+                    }
+                    
+                case .startDive:
+                    let timeFormatId = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
+                    let outputFormat = (timeFormatId == 0) ? "hh:mm a" : "HH:mm"
+                    presentTimePicker(from: self, selectedTime: currentStartDiveTime, outputFormat: outputFormat) { [weak self] value in
+                        self?.saveDiveDateTime(diveDate: currentDiveDate, diveTime: value)
+                    }
+                    
+                case .diveTime:
+                    let dtValue = getDiveTime().components(separatedBy: ":")
+                    if dtValue.count == 2 {
+                        let leftOpts = (0...999).map { String(format: "%02d", $0) }
+                        let rightOpts = (0...59).map { String(format: "%02d", $0) }
+                        Set2ValueSettingAlert.showMessage(
+                            leftValue: dtValue[0],
+                            rightValue: dtValue[1],
+                            leftOptions: leftOpts,
+                            rightOptions: rightOpts
+                        ) { [weak self] action, selectedValue in
+                            if let selectedValue = selectedValue, action == .allow {
+                                let parts = selectedValue.components(separatedBy: " - ")
+                                if parts.count == 2 {
+                                    let totalSeconds = (parts[0].toInt() * 60) + parts[1].toInt()
+                                    self?.saveDiveData(key: "TotalDiveTime", value: totalSeconds)
+                                }
+                            }
+                        }
+                    }
+                    
+                case .maxDepth:
+                    let currentMdepth = getMaxDepth().components(separatedBy: " ").first ?? ""
+                    let unitStr = unitOfDive == M ? "M" : "FT"
+                    let notes = unitOfDive == M ? "* From 0 m to 999.9 m" : "* From 0 ft to 3300 ft"
+                    MDepthInputAlert.showMessage(selectedValue: currentMdepth, notesValue: notes, unitValue: unitStr) { [weak self] action, value in
+                        if action == .allow {
+                            var valueDouble = value.toDouble()
+                            if unitOfDive == M {
+                                valueDouble = convertMeter2Feet(valueDouble)
+                            }
+                            self?.saveDiveData(key: "MaxDepthFT", value: valueDouble)
+                        }
+                    }
+                    
+                case .tlbg:
+                    let currentTlbg = getMaxTLBG().components(separatedBy: "/").first ?? "1"
+                    let opts = (1...5).map { "\($0)" }
+                    ItemSelectionAlert.showMessage(message: "TLBG Bar".localized, options: opts, selectedValue: currentTlbg) { [weak self] action, value, index in
+                        if action == .allow {
+                            self?.saveDiveData(key: "MaxTLBG", value: (index ?? 0) + 1)
+                        }
+                    }
+                    
+                case .maxAscRate:
+                    if modelId == C_WIS5 || manualDive {
+                        let currentBar = getMaxAscBar()
+                        let opts = (1...5).map { "\($0)" }
+                        ItemSelectionAlert.showMessage(message: "Max Ascent Bar".localized, options: opts, selectedValue: currentBar) { [weak self] action, value, index in
+                            if action == .allow {
+                                self?.saveDiveData(key: "MaxAscentSpeedLev", value: (index ?? 0) + 1)
+                            }
+                        }
+                    } else {
+                        let currentRate = getMaxAscRate().components(separatedBy: " ").first ?? ""
+                        let unitStr = unitOfDive == M ? "M/MIN" : "FT/MIN"
+                        MDepthInputAlert.showMessage(message: "Max Ascent Rate".localized, selectedValue: currentRate, unitValue: unitStr) { [weak self] action, value in
+                            if action == .allow {
+                                var valueDouble = value.toDouble()
+                                if unitOfDive == M {
+                                    valueDouble = convertMeter2Feet(valueDouble )
+                                }
+                                self?.saveDiveData(key: "AscentSpeedAlarm", value: valueDouble)
+                            }
+                        }
+                    }
+                    
+                case .minTemp, .maxTemp:
+                    let isMin = (type == .minTemp)
+                    let title = isMin ? "Min Temperature".localized : "Max Temperature".localized
+                    let currentVal = isMin ? getMinTemp() : getMaxTemp()
+                    let key = isMin ? "MinTemperatureF" : "MaxTemperatureF"
+                    
+                    var opts = (0...99).map { "\($0) °C" }
+                    if unitOfDive == FT { opts = (32...210).map { "\($0) °F" } }
+                    
+                    ItemSelectionAlert.showMessage(message: title, options: opts, selectedValue: currentVal) { [weak self] action, value, index in
+                        if let value = value, action == .allow {
+                            var saveValue = (value.components(separatedBy: " ").first ?? "").toDouble()
+                            if unitOfDive == M {
+                                saveValue = convertC2F(saveValue)
+                            }
+                            self?.saveDiveData(key: key, value: saveValue)
+                        }
+                    }
+                    
+                case .oxtox:
+                    let opts = (0...200).map { "\($0) %" }
+                    ItemSelectionAlert.showMessage(message: "OXTOX".localized, options: opts, selectedValue: getOXTOX()) { [weak self] action, value, index in
+                        if let value = value, action == .allow {
+                            let saveValue = value.components(separatedBy: " ").first ?? "0"
+                            self?.saveDiveData(key: "EndingOxToxPercent", value: saveValue)
+                        }
+                    }
+                    
+                case .maxPo2:
+                    let opts = stride(from: 0.21, through: 2.0, by: 0.01).map { String(format: "%.2f", $0) }
+                    ItemSelectionAlert.showMessage(message: "Max PPO2".localized, options: opts, selectedValue: getMaxPPO2()) { [weak self] action, value, index in
+                        if action == .allow {
+                            self?.saveDiveData(key: "MaxPpo2", value: value ?? "0.21")
+                        }
+                    }
+                    
+                default:
+                    break
                 }
-                break
-            case 14: // Max PPO2
-                let opts: [String] = stride(from: 0.21, through: 2.0, by: 0.01)
-                    .map { String(format: "%.2f", $0) }
-                ItemSelectionAlert.showMessage(
-                    message: "Max PPO2".localized,
-                    options: opts,
-                    selectedValue: maxPo2ValueLb.text
-                ) { [weak self] action, value, index in
-                    guard let self = self else { return }
-                    self.maxPo2ValueLb.text = value
-                    self.saveDiveData(key: "MaxPpo2", value: value ?? 0.21)
-                }
-                break
-            case 15: // Start GAS
-                break
-            case 16: // End GAS
-                break
-            default:
-                break
             }
         }
         
@@ -999,10 +1167,27 @@ extension LogViewController {
     }
     
     private func saveDiveData(key: String, value: Any) {
+        let diveID = self.diveLog.intValue(key: "DiveID")
+        
+        // 1. Update vào DB
         DatabaseManager.shared.updateTable(tableName: "DiveLog",
                                            params: [key: value],
-                                           conditions: "where DiveID=\(self.diveLog.intValue(key: "DiveID"))")
+                                           conditions: "where DiveID=\(diveID)")
+        
+        // 2. Lấy lại dữ liệu MỚI NHẤT từ DB gán ngược vào diveLog
+        // Bạn nên dùng hàm fetchRow hoặc fetchData để lấy lại record vừa update
+        let results = try? DatabaseManager.shared.fetchData(from: "DiveLog",
+                                                            where: "DiveID=?",
+                                                            arguments: [diveID])
+        if let updatedRow = results?.first {
+            self.diveLog = updatedRow // Cập nhật biến local
+        }
+        
+        // 3. Báo cho màn hình danh sách biết để load lại (nếu người dùng back ra)
         self.onUpdated?(true)
+        
+        // 4. Vẽ lại giao diện với dữ liệu đã cập nhật trong self.diveLog
+        self.setupFlexibleMetrics()
     }
     
 }
@@ -1080,7 +1265,7 @@ extension LogViewController {
     private func getAltitudeLevel() -> String {
         switch modelId {
         case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
-            return "---"
+            return "SEA".localized
         default:
             let level = diveLog.stringValue(key: "AltitudeLevel").toInt()
             if level == 0 {

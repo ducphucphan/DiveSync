@@ -58,6 +58,8 @@
 		484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D52CE1B2EF0082039E /* AppDelegate.swift */; };
 		484C44D82CE1B2EF0082039E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D72CE1B2EF0082039E /* SceneDelegate.swift */; };
 		484E72962E6838CE008CC744 /* DeviceCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484E72952E6838CE008CC744 /* DeviceCollectionViewCell.swift */; };
+		48528D972FB1B659003586B2 /* MetricItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48528D962FB1B659003586B2 /* MetricItemView.swift */; };
+		48528D992FB1B66E003586B2 /* MetricItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48528D982FB1B66E003586B2 /* MetricItemView.xib */; };
 		48537A842CFFF66500AB116F /* CustomLineChartRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */; };
 		485718F52E6E818700ADAA25 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485718F42E6E818700ADAA25 /* AppSettings.swift */; };
 		485A87562E8CD6E800741E77 /* PermissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485A87552E8CD6E800741E77 /* PermissionViewController.swift */; };
@@ -321,6 +323,8 @@
 		484C44DE2CE1B2F00082039E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		484C44E32CE1B2F00082039E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		484E72952E6838CE008CC744 /* DeviceCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCollectionViewCell.swift; sourceTree = "<group>"; };
+		48528D962FB1B659003586B2 /* MetricItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricItemView.swift; sourceTree = "<group>"; };
+		48528D982FB1B66E003586B2 /* MetricItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricItemView.xib; sourceTree = "<group>"; };
 		48537A832CFFF66500AB116F /* CustomLineChartRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLineChartRenderer.swift; sourceTree = "<group>"; };
 		485718F42E6E818700ADAA25 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		485A87552E8CD6E800741E77 /* PermissionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionViewController.swift; sourceTree = "<group>"; };
@@ -583,6 +587,7 @@
 		481404F52DC8F347000489A1 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
+				48528D952FB1B62C003586B2 /* Views */,
 				48970C3E2E3776DD00BBAC9E /* DivePhotos */,
 				486882212E3098A300C98C8E /* sorts */,
 				481404F82DC8F4B4000489A1 /* cells */,
@@ -703,6 +708,15 @@
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
 			);
 			path = DiveSync;
+			sourceTree = "<group>";
+		};
+		48528D952FB1B62C003586B2 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				48528D962FB1B659003586B2 /* MetricItemView.swift */,
+				48528D982FB1B66E003586B2 /* MetricItemView.xib */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		48541C532D9BE12400B39977 /* Devices */ = {
@@ -1275,6 +1289,7 @@
 				48637DDE2CF885080046EFB5 /* DCDevice.xib in Resources */,
 				48D21E352D0D3EBC004E8018 /* HelveticaNeueLTProHv.otf in Resources */,
 				4876E3FB2FAC94CE00A9AE48 /* CR4_device.json in Resources */,
+				48528D992FB1B66E003586B2 /* MetricItemView.xib in Resources */,
 				48CE8DDA2DAD198000A2DF33 /* DSToggleCell.xib in Resources */,
 				48D21E202D0D3EBC004E8018 /* HelveticaNeueLTProMdEx.otf in Resources */,
 				48D21E1B2D0D3EBC004E8018 /* HelveticaNeueLTProLtIt.otf in Resources */,
@@ -1360,6 +1375,7 @@
 				484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */,
 				486F23D92EA0E4F100A655D9 /* HTTPMethod.swift in Sources */,
 				20AF12B82CF71A02006642A0 /* Devices.swift in Sources */,
+				48528D972FB1B659003586B2 /* MetricItemView.swift in Sources */,
 				4887C30F2DC5110100742DF3 /* EditDatePickerViewController.swift in Sources */,
 				4803EF9D2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift in Sources */,
 				48E66E442D0C19C6005ACECE /* DPDKeyboardListener.swift in Sources */,
@@ -1648,7 +1664,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1691,7 +1707,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
