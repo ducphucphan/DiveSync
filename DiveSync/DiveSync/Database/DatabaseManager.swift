@@ -234,6 +234,31 @@ class DatabaseManager {
             }
         }
         
+        migrator.registerMigration("v4_CENTAURI_DeviceSettings") { db in
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "PowerSaving" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    t.add(column: "PowerSaving", .text)
+                    t.add(column: "ScubaAutoStartDepth", .text)
+                    t.add(column: "DepthAlarmEnable", .text)
+                    t.add(column: "FreeDiveTimeAlarmEnable", .text)
+                    t.add(column: "FreeDiveDepthAlarmEnable", .text)
+                    t.add(column: "FreeDiveSurfaceTimeAlarmEnable", .text)
+                }
+            }
+            
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "TimeAlarmEnable" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    t.add(column: "TimeAlarmEnable", .text)
+                }
+            }
+            
+            if try !db.columns(in: "DeviceSettings").contains(where: { $0.name == "TimeZone" }) {
+                try db.alter(table: "DeviceSettings") { t in
+                    t.add(column: "TimeZone", .text)
+                }
+            }
+        }
+        
         try migrator.migrate(dbQueue)
     }
     
@@ -310,16 +335,38 @@ extension DatabaseManager {
         let dbQueue = DatabaseManager.shared.getDatabaseQueue()
         
         do {
-            return try dbQueue.read { db in
+            // 1. Lấy dữ liệu từ Database (Chưa sắp xếp hoặc sắp xếp tạm)
+            let results = try dbQueue.read { db -> [Devices] in
                 if let keys = nameKeys, !keys.isEmpty {
+                    // Tạo danh sách dấu hỏi tương ứng với số lượng keys (ví dụ: ?, ?, ?)
                     let placeholders = keys.map { _ in "?" }.joined(separator: ", ")
                     let sql = "SELECT * FROM DEVICES WHERE Identity IN (\(placeholders))"
+                    
+                    // StatementArguments(keys) sẽ điền giá trị thực vào các dấu ?
                     return try Devices.fetchAll(db, sql: sql, arguments: StatementArguments(keys))
                 } else {
                     let sql = "SELECT * FROM DEVICES"
                     return try Devices.fetchAll(db, sql: sql)
                 }
             }
+
+            // 2. Định nghĩa Formatter để hiểu định dạng ngày tháng của bạn
+            let formatter = DateFormatter()
+            // Format "MM/dd/yy hh:mm a" khớp với "05/15/26 10:53AM"
+            formatter.dateFormat = "MM/dd/yy hh:mma"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+
+            // 3. Sắp xếp lại mảng kết quả bằng Swift (Xử lý đúng AM/PM và giờ 12h)
+            return results.sorted { (dev1, dev2) -> Bool in
+                // Chuyển chuỗi LastSync thành đối tượng Date để so sánh
+                // Nếu null hoặc sai định dạng, mặc định coi như ngày rất cũ (1970)
+                let date1 = formatter.date(from: dev1.LastSync ?? "") ?? Date(timeIntervalSince1970: 0)
+                let date2 = formatter.date(from: dev2.LastSync ?? "") ?? Date(timeIntervalSince1970: 0)
+                
+                // Dùng dấu > để sắp xếp Giảm dần (Cái nào mới nhất lên đầu)
+                return date1 > date2
+            }
+            
         } catch {
             PrintLog("Failed to fetch data: \(error)")
             return []

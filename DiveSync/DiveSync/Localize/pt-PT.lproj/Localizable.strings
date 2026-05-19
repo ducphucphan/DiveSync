@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "O firmware do seu computador de mergulho está atualizado!";
 "Are you sure to want to delete this device?" = "Tem certeza de que deseja excluir este dispositivo?";
 "Downloading firmware v" = "Baixando firmware v";
-" Firmware file not found on server." = "Arquivo de firmware não encontrado no servidor.";
+"Firmware file not found on server." = "Arquivo de firmware não encontrado no servidor.";
 " Download failed" = "Falha no download";
 "I agree" = "Eu concordo";
 "I do not agree" = "Eu não concordo";

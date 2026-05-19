@@ -117,8 +117,8 @@ struct BLEConstants {
             "WIS",
             "SHERWOOD-Logic+",
             "SHERWOOD-Logic",
-            "GENESIS-Graviton"
-            //"CENTAURI"
+            "GENESIS-Graviton",
+            "CENTAURI"
         ]
     }
     
@@ -138,7 +138,7 @@ struct BLEConstants {
         ]
         
         static let cr4 = [
-            CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
+            CBUUID(string: "f000ffe0-ab12-45ec-84c8-46483f4626e9")
         ]
         
         static let cr5 = [
@@ -157,8 +157,8 @@ struct BLEConstants {
     }
     
     struct RWCharCR4 {
-        static let write = CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
-        static let read = CBUUID(string: "F000FFE2-ab12-45ec-84c8-46483f4626e9")
+        static let write = CBUUID(string: "F000FFE1-ab12-45ec-84c8-46483f4626e9")
+        static let read = CBUUID(string: "F000FFE1-ab12-45ec-84c8-46483f4626e9")
     }
     
     struct RWCharCR5 {

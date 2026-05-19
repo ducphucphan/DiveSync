@@ -140,8 +140,8 @@
                         "id": "conservatism",
                         "type": "modeSelector",
                         "title": "Conservatism",
-                        "value": "CF1 Conserve",
-                        "options": ["CF1 Conserve", "CF2 Normal", "CF3 Aggressive"]
+                        "value": "CF1",
+                        "options": ["CF1", "CF2", "CF3"]
                     },
                     {
                         "id": "mdepth",

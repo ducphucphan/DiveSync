@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "Firmware à jour";
 "Are you sure to want to delete this device?" = "Supprimer cet appareil ?";
 "Downloading firmware v" = "Téléchargement du firmware v";
-" Firmware file not found on server." = "Firmware introuvable sur le serveur";
+"Firmware file not found on server." = "Firmware introuvable sur le serveur";
 " Download failed" = "Échec du téléchargement";
 "I agree" = "J’accepte";
 "I do not agree" = "Je refuse";

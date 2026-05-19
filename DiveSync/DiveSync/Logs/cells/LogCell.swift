@@ -68,7 +68,7 @@ class LogCell: UITableViewCell {
         let deviceNameStr = row.stringValue(key: "DeviceName")
         var deviceSerialNo = ""
         switch modelID {
-        case C_LOG, C_LOGPLUS, C_GRA:
+        case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
             deviceSerialNo = row.stringValue(key: "SerialNo")
         default:
             deviceSerialNo = String(format: "%05d", row.stringValue(key: "SerialNo").toInt())

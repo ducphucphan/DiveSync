@@ -9,7 +9,7 @@ struct CommandSentence {
     var checksum: UInt8 = 0
     var commandGroup: UInt8
     var data: [UInt8]?
-    var dataLen: Int = 0
+    var dataLen: Int = 0 // DATA LEN này cần cho CR4, mấy device khác không cần.
     var idx: Int? = -1
     var direction: UInt8
     var subCommand: UInt8
@@ -21,7 +21,8 @@ struct CommandSentence {
          directionWR: UInt8,
          reserved: Bool,
          index: Int?,
-         data: [UInt8]?) {
+         data: [UInt8]?,
+         dateLen: Int = 0) {
         
         self.commandGroup = commandGroup
         self.subCommand = subCommand
@@ -29,13 +30,15 @@ struct CommandSentence {
         self.data = data
         self.reserved = reserved
         self.idx = index
+        self.dataLen = dateLen
         
         self.checksum = CommandSentence.getChecksum(
             b: commandGroup,
             b2: subCommand,
             b3: directionWR,
             bArr: data,
-            index: index
+            index: index,
+            dataLen: dataLen
         )
     }
     
@@ -58,7 +61,8 @@ struct CommandSentence {
             b2: subCommand,
             b3: directionWR,
             bArr: self.data,
-            index: -1
+            index: -1,
+            dataLen: self.dataLen
         )
     }
     
@@ -68,6 +72,7 @@ struct CommandSentence {
         if idx != -1 { size += 1 }
         if let data = data { size += data.count }
         if reserved { size += 1 }
+        if dataLen > 0 { size += 1 }
         
         var buf = [UInt8](repeating: 0, count: size)
         
@@ -76,6 +81,11 @@ struct CommandSentence {
         buf[2] = direction
         
         var pos = 3
+        
+        if dataLen > 0 {
+            buf[pos] = UInt8(dataLen & 0xFF)
+            pos += 1
+        }
         
         if reserved {
             buf[pos] = 0
@@ -99,8 +109,12 @@ struct CommandSentence {
     }
     
     // Hàm tính Checksum (Convert từ Java logic)
-    static func getChecksum(b: UInt8, b2: UInt8, b3: UInt8, bArr: [UInt8]?, index: Int? = -1) -> UInt8 {
+    static func getChecksum(b: UInt8, b2: UInt8, b3: UInt8, bArr: [UInt8]?, index: Int? = -1, dataLen: Int) -> UInt8 {
         var sum: UInt8 = b &+ b2 &+ b3
+        
+        if dataLen > 0 {
+            sum += UInt8(dataLen & 0xFF)
+        }
         
         if let bArr = bArr {
             for d in bArr {

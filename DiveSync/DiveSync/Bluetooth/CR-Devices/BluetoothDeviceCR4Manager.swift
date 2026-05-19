@@ -35,30 +35,6 @@ final class BluetoothDeviceCR4Manager {
         case write = 0x00
     }
     
-    enum CmdError: UInt8, Error {
-        case checksumError       = 0x02
-        case unidentifiedCommand = 0x03
-        case writeOnly           = 0x04
-        case readOnly            = 0x05
-        case parameterError      = 0x06
-        case cmdForbidden        = 0x07
-        case dataLengthError     = 0x08
-        case noFileError         = 0x09
-        
-        var description: String {
-            switch self {
-            case .checksumError:       return "Checksum error"
-            case .unidentifiedCommand: return "Unidentified command"
-            case .writeOnly:           return "Write-only command"
-            case .readOnly:            return "Read-only command"
-            case .parameterError:      return "Parameter error"
-            case .cmdForbidden:        return "Command forbidden"
-            case .dataLengthError:     return "Data length error"
-            case .noFileError:         return "No file error"
-            }
-        }
-    }
-    
     enum BleCommandKey: String, Hashable, CaseIterable {
         case kSerialNumber
         case kFirmwareRev
@@ -107,6 +83,20 @@ final class BluetoothDeviceCR4Manager {
         case kBacklightLevel
         case kBuzzer
         case kVibration
+        
+        // HISTOTY
+        case kTotalScubaDivingTime
+        case kMaximumDivingDepthofScubadives
+        case kTotalScubaDives
+        case kTotalFreeDiving
+        case kFreeDivingforTheLongestTime
+        case kFreeDivingDeepestDepth
+        
+        // LOGS
+        case kGetLastDiveLogNumber
+        case kGetCompactLogHeader
+        case kGetFullLogHeader
+        case kGetLogIndexData
         
         // SPECIAL
         case kSYS_SETTING_WRITE
@@ -162,18 +152,18 @@ final class BluetoothDeviceCR4Manager {
                 return .init(mainCmd: .B0, subCmd: 0x13, indexed: false, payloadLen: 1)
             
             case .kFreeDiveTimeAlarmThreshold1:
-                return .init(mainCmd: .B0, subCmd: 0x14, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x14, indexed: false, payloadLen: 2)
             case .kFreeDiveTimeAlarmThreshold2:
-                return .init(mainCmd: .B0, subCmd: 0x15, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x15, indexed: false, payloadLen: 2)
             case .kFreeDiveTimeAlarmThreshold3:
-                return .init(mainCmd: .B0, subCmd: 0x16, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x16, indexed: false, payloadLen: 2)
             
             case .kFreeDiveDepthAlarmThreshold1:
-                return .init(mainCmd: .B0, subCmd: 0x17, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x17, indexed: false, payloadLen: 2)
             case .kFreeDiveDepthAlarmThreshold2:
-                return .init(mainCmd: .B0, subCmd: 0x18, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x18, indexed: false, payloadLen: 2)
             case .kFreeDiveDepthAlarmThreshold3:
-                return .init(mainCmd: .B0, subCmd: 0x19, indexed: false, payloadLen: 1)
+                return .init(mainCmd: .B0, subCmd: 0x19, indexed: false, payloadLen: 2)
             
             case .kFreeDiveSurfaceTimeAlarmThreshold1:
                 return .init(mainCmd: .B0, subCmd: 0x1A, indexed: false, payloadLen: 1)
@@ -199,11 +189,34 @@ final class BluetoothDeviceCR4Manager {
             case .kLanguage:
                 return .init(mainCmd: .B0, subCmd: 0x30, indexed: false, payloadLen: 1)
                 
+            case .kTotalScubaDivingTime:
+                return .init(mainCmd: .A0, subCmd: 0x06, indexed: false, payloadLen: 4)
+            case .kMaximumDivingDepthofScubadives:
+                return .init(mainCmd: .A0, subCmd: 0x07, indexed: false, payloadLen: 2)
+            case .kTotalScubaDives:
+                return .init(mainCmd: .A0, subCmd: 0x08, indexed: false, payloadLen: 2)
+            case .kTotalFreeDiving:
+                return .init(mainCmd: .A0, subCmd: 0x09, indexed: false, payloadLen: 2)
+            case .kFreeDivingforTheLongestTime:
+                return .init(mainCmd: .A0, subCmd: 0x0A, indexed: false, payloadLen: 2)
+            case .kFreeDivingDeepestDepth:
+                return .init(mainCmd: .A0, subCmd: 0x0B, indexed: false, payloadLen: 2)
+                
+            case .kGetLastDiveLogNumber:
+                return .init(mainCmd: .A0, subCmd: 0x04, indexed: false, payloadLen: 2)
+            case .kGetCompactLogHeader:
+                return .init(mainCmd: .C0, subCmd: 0x01, indexed: false, payloadLen: 36)
+            case .kGetFullLogHeader:
+                return .init(mainCmd: .C0, subCmd: 0x02, indexed: false, payloadLen: 156)
+            case .kGetLogIndexData:
+                return .init(mainCmd: .C0, subCmd: 0x03, indexed: false, payloadLen: 128)
                 
             case .kSYS_SETTING_WRITE:
                 return .init(mainCmd: .B0, subCmd: 0x27, indexed: false, payloadLen: 0)
             case .kSYS_SETTING_READ:
                 return .init(mainCmd: .B0, subCmd: 0x28, indexed: false, payloadLen: 0)
+                
+            
             }
         }
         
@@ -269,12 +282,9 @@ final class BluetoothDeviceCR4Manager {
     
     
     
-    let timezoneOffsets: [Double] = [
-        -12.0, -11.0, -10.0, -9.0, -8.0, -7.0, -6.0, -5.0, -4.5, -4.0,
-         -3.5, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 3.5, 4.0,
-         5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0
-    ]
+    let timezoneOffsets: [Double] = [-12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, +0, +1, +2, +3, +4, +5, +6, +7, +8, +9, +10, +11, +12]
     
+    var logStatistics: [String: Any] = [:]
     
     
     // ============================================
@@ -324,7 +334,7 @@ final class BluetoothDeviceCR4Manager {
                 self.notifyCharacteristics.removeAll()
                 
                 for char in characteristics {
-                    
+                    PrintLog(char.uuid)
                     if char.uuid == indicateCharUUID {
                         self.writeCharacteristic = char
                         self.indicateCharacteristic = char
@@ -426,13 +436,16 @@ final class BluetoothDeviceCR4Manager {
             )
         }
         
+        let dataLength = payload.count
+        
         let sentence = CommandSentence(
             commandGroup: command,
             subCommand: subcommand,
             directionWR: rw,
             reserved: isReserved,
             index: index,
-            data: payload
+            data: payload,
+            dateLen: dataLength
         )
         let bytes = sentence.getBytes()
         let dataToSend = Data(bytes)
@@ -462,7 +475,7 @@ final class BluetoothDeviceCR4Manager {
             rw: rw,
             isReserved: isReserved,
             index: index,
-            payload: payload
+            payload: payload,
         )
         .flatMap { [weak self] _ in
             self?.waitForResponse() ?? .empty()
@@ -482,62 +495,49 @@ final class BluetoothDeviceCR4Manager {
     // ============================================
     
     // RESPONSE FORMAT
-    //C1 41 01 00 00 0B 00 F1
-    //[0] C1  header (response of C0 group)
-    //[1] 41  sub = Free Depth Alarm
-    //[2] 01  len/count of logical entries
-    //[3] 00  index
-    //[4] 00  reserved
-    //[5] 0B  value LSB
-    //[6] 00  value MSB
-    //[7] F1  CRC
-    //Value: 0x000B = 11
     private func parseResponse(_ data: Data) throws -> Data? {
         let bytes = [UInt8](data)
         
-        guard bytes.count >= 3 else {
+        // Tối thiểu phải có 5 bytes: Cmd, Sub, R/W, Len, Checksum (ngay cả khi data len = 0)
+        guard bytes.count >= 5 else {
             return nil
         }
         
-        let groupByte = UInt8((Int(bytes[0]) - 1) & 0xFF)
+        // 1. Xác định Command gốc (Request = Response - 1)
+        let commandByte = bytes[0] - 1
         let subByte = bytes[1]
+        // let rwByte = bytes[2] // Thường là 0x00 (Write) hoặc 0x01 (Read)
         
-        if let commandKey = BleCommandKey.from(mainCmd: groupByte, subCmd: subByte) {
-            let meta = commandKey.bleCommand
+        // 2. Lấy độ dài data được khai báo trong gói tin
+        let dataLength = Int(bytes[3])
+        
+        // 3. Kiểm tra tính toàn vẹn (Checksum) - Tùy chọn nhưng nên có
+        // Checksum = ~ (command + subcommand + rw + length + data) [cite: 48]
+        let expectedChecksum = bytes.last!
+        var sum: UInt8 = 0
+        // Tính tổng các byte từ index 0 đến trước byte checksum cuối cùng
+        for i in 0..<(bytes.count - 1) {
+            sum = sum &+ bytes[i] // Sử dụng &+ để xử lý tràn số (overflow) tương đương uint8
+        }
+        let calculatedChecksum = ~sum
+        
+        if calculatedChecksum != expectedChecksum {
+            print("❌ Checksum mismatch! Calc: \(calculatedChecksum), Expected: \(expectedChecksum)")
+            // return nil // Bạn có thể bỏ comment nếu muốn chặn dữ liệu sai
+        }
+
+        // 4. Trích xuất Payload
+        // Theo spec, data bắt đầu từ index 4 [cite: 40]
+        let dataStartPos = 4
+        let dataEndPos = dataStartPos + dataLength
+        
+        // Kiểm tra an toàn để không cắt mảng vượt quá độ dài thực tế nhận được
+        if bytes.count >= dataEndPos + 1 { // +1 cho byte checksum
+            let payloadData = Data(bytes[dataStartPos..<dataEndPos])
             
-            var pos = 3
-            var outIndex: Int = -1
-            
-            // 1. Xử lý Index
-            if meta.indexed {
-                if bytes.count > pos {
-                    outIndex = Int(bytes[pos])
-                    pos += 1
-                }
-            }
-            
-            // 2. Xử lý skip byte nếu là loại 2 bytes
-            if meta.payloadLen == 2 {
-                pos += 1
-            }
-                        
-            // 3. Trích xuất Payload thô dưới dạng Data
-            var payloadData: Data? = nil
-            
-            if meta.payloadLen > 0 {
-                // Kiểm tra an toàn để không cắt mảng vượt quá độ dài bytes nhận được
-                let endPos = pos + meta.payloadLen
-                if bytes.count >= endPos {
-                    let range = pos..<endPos
-                    payloadData = Data(bytes[range])
-                }
-            }
-            
-            // Debug thử
-            if let pData = payloadData {
-                print("Command: \(commandKey), Index: \(outIndex), Payload: \(pData as NSData)")
-            } else {
-                print("Command: \(commandKey), Index: \(outIndex), Payload: Empty")
+            // Debug
+            if let commandKey = BleCommandKey.from(mainCmd: commandByte, subCmd: subByte) {
+                print("Command: \(commandKey), Data Len: \(dataLength), Payload: \(payloadData as NSData)")
             }
             
             return payloadData
@@ -560,20 +560,59 @@ final class BluetoothDeviceCR4Manager {
         responses.removeAll()
         
         let commands: [BleCommandKey] = [
+            .kSYS_SETTING_READ,
             .kSerialNumber,
             .kFirmwareRev,
-            .kUnit,
-            .kLanguage,
-            .kBacklightLevel,
-            .kBuzzer,
-            .kVibration,
+            
             .kTimeFormat,
             .kDateFormat,
             .kTimeZone,
+            .kSetDate,
+            .kSetTime,
+            
+            .kUnit,
+            .kLanguage,
+            .kBuzzer,
+            .kVibration,
+            .kSetPower,
+            .kSetAutoDiveType,
+            .kScubaAutoStartDepth,
+            
+            .kNitroxSetting,
+            .kPPO2Setting,
+            .kSafetyFactorSetting,
             .kSamplingRate,
+            .kBacklightLevel,
+            
+            .kScubaDepthAlarm,
+            .kThresholdScubaDepthAlarm,
+            .kScubaTimeAlarm,
+            .kThresholdScubaTimeAlarm,
+            
+            .kFreeDiveTimeAlarm,
+            .kFreeDiveTimeAlarmThreshold1,
+            .kFreeDiveTimeAlarmThreshold2,
+            .kFreeDiveTimeAlarmThreshold3,
+            
+            .kFreeDiveDepthAlarm,
+            .kFreeDiveDepthAlarmThreshold1,
+            .kFreeDiveDepthAlarmThreshold2,
+            .kFreeDiveDepthAlarmThreshold3,
+            
+            .kFreeDiveSurfaceTimeAlarm,
+            .kFreeDiveSurfaceTimeAlarmThreshold1,
+            .kFreeDiveSurfaceTimeAlarmThreshold2,
+            .kFreeDiveSurfaceTimeAlarmThreshold3,
+            
+            .kTotalScubaDivingTime,
+            .kMaximumDivingDepthofScubadives,
+            .kTotalScubaDives,
+            .kTotalFreeDiving,
+            .kFreeDivingforTheLongestTime,
+            //.kFreeDivingDeepestDepth
         ]
         
-        var steps: [ReadStep] = commands.flatMap { cmd in
+        let steps: [ReadStep] = commands.flatMap { cmd in
             
             cmd.readPayloads.map { payload in
                 
@@ -581,7 +620,7 @@ final class BluetoothDeviceCR4Manager {
                     self.sendSimpleCommandWithResponse(
                         command: cmd.bleCommand.mainCmd.rawValue,
                         subcommand: cmd.bleCommand.subCmd,
-                        rw: BleType.read.rawValue,
+                        rw: (cmd == .kSYS_SETTING_READ) ? BleType.write.rawValue : BleType.read.rawValue,
                         payload: payload
                     )
                     .do(onNext: { [weak self] response in
@@ -622,6 +661,7 @@ final class BluetoothDeviceCR4Manager {
         
         
         runSequential(steps)
+            .do(onError: { print("Lỗi xuất hiện từ runSequential: \($0)") })
             .flatMap { [weak self] _ -> Observable<DeviceReadResult> in
                 guard let self else {
                     return .error("" as! Error)
@@ -629,7 +669,11 @@ final class BluetoothDeviceCR4Manager {
                 
                 if let list = responses[.kSerialNumber], let first = list.first {
                     let trimmedData = first.data
-                    self.SerialNo = trimmedData.asciiString ?? ""
+                    
+                    // Lọc bỏ các byte không phải ASCII chuẩn (như byte BA) trước khi chuyển sang String
+                    let cleanData = trimmedData.filter { $0 >= 32 && $0 <= 126 }
+                    
+                    self.SerialNo = cleanData.asciiString ?? ""
                     print("SerialNo = \(self.SerialNo)")
                 }
                 
@@ -641,7 +685,7 @@ final class BluetoothDeviceCR4Manager {
                 
                 switch syncType {
                 case .kUploadDateTime:
-                    return self.U_LogicWriteTimeSync()
+                    return self.U_WriteTimeSync()
                 case .kUploadSetting:
                     return self.U_CR4WriteSetting()
                 default:
@@ -661,7 +705,7 @@ final class BluetoothDeviceCR4Manager {
                 
                 ProgressHUD.dismiss()
                 
-                guard let m = BluetoothDeviceCoordinator.shared.cr5DeviceManager else { return }
+                guard let m = BluetoothDeviceCoordinator.shared.cr4DeviceManager else { return }
                 
                 var props: [String: Any] = [
                     "ModelID": m.ModelID,
@@ -709,8 +753,7 @@ final class BluetoothDeviceCR4Manager {
                 
                 BluetoothDeviceCoordinator.shared.disconnect()
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg.localized)
-            },
-                       onError: { error in
+            }, onError: { error in
                 ProgressHUD.dismiss()
                 BluetoothDeviceCoordinator.shared.disconnect()
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(error.localizedDescription.localized)")
@@ -729,13 +772,9 @@ final class BluetoothDeviceCR4Manager {
         
         dcSettings["DeviceID"] = DatabaseManager.shared.lastDevicID(modelId: ModelID, serialNo: self.SerialNo)
         
-        if let first = responses[.kUnit]?.first {
-            units = first.data.toInt()
-            dcSettings["Units"] = units
-        }
-        
         if let first = responses[.kSerialNumber]?.first {
-            self.SerialNo = first.data.asciiString ?? ""
+            let cleanData = first.data.filter { $0 >= 32 && $0 <= 126 }
+            self.SerialNo = cleanData.asciiString ?? ""
         }
         
         if let first = responses[.kTimeFormat]?.first{
@@ -744,6 +783,15 @@ final class BluetoothDeviceCR4Manager {
         
         if let first = responses[.kDateFormat]?.first {
             dcSettings["DateFormat"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kTimeZone]?.first {
+            dcSettings["TimeZone"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kUnit]?.first {
+            units = first.data.toInt()
+            dcSettings["Units"] = units
         }
         
         if let first = responses[.kLanguage]?.first {
@@ -758,216 +806,131 @@ final class BluetoothDeviceCR4Manager {
             dcSettings["Vibration"] = first.data.toInt()
         }
         
-//        if let first = responses[.kDiveMode]?.first {
-//            dcSettings["DiveMode"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kDiveStartDepth]?.first {
-//            dcSettings["LogStartDepth"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kFo2]?.first {
-//            dcSettings["FO2"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kPo2]?.first {
-//            dcSettings["PO2"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kConservatism]?.first {
-//            dcSettings["Conservatism"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kBacklightLevel]?.first {
-//            dcSettings["BacklightDimLevel"] = first.data.toInt()
-//        }
-//        
-//        if let first = responses[.kBacklightTime]?.first {
-//            dcSettings["BacklightDimTime"] = first.data.toInt()
-//        }
+        if let first = responses[.kSetPower]?.first {
+            dcSettings["PowerSaving"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kBacklightLevel]?.first {
+            dcSettings["BacklightDimLevel"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kSetAutoDiveType]?.first {
+            dcSettings["DiveMode"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kScubaAutoStartDepth]?.first {
+            dcSettings["ScubaAutoStartDepth"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kNitroxSetting]?.first {
+            dcSettings["FO2"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kPPO2Setting]?.first {
+            dcSettings["PO2"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kSafetyFactorSetting]?.first {
+            dcSettings["Conservatism"] = first.data.toInt()
+        }
         
         if let first = responses[.kSamplingRate]?.first {
             dcSettings["DiveLogSamplingTime"] = first.data.toInt()
         }
         
-//        if let first = responses[.kDivingLogStopTime]?.first {
-//            dcSettings["LogStopTime"] = first.data.toInt()
-//        }
+        if let first = responses[.kScubaDepthAlarm]?.first {
+            dcSettings["DepthAlarmEnable"] = first.data.toInt()
+        }
         
-//        if let first = responses[.kDepthAlarmEnable]?.first {
-//            let DepthAlarmEnable = first.data.toInt()
-//            if DepthAlarmEnable == 0 {
-//                dcSettings["DepthAlarmM"] = -1 // OFF
-//                dcSettings["DepthAlarmFt"] = -1
-//            } else {
-//                dcSettings["DepthAlarmM"] = 0 // ON
-//                dcSettings["DepthAlarmFt"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kDepthAlarmM]?.first {
-//            if let DepthAlarmEnable = dcSettings["DepthAlarmM"] as? Int, DepthAlarmEnable != -1 {
-//                dcSettings["DepthAlarmM"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kDepthAlarmFT]?.first {
-//            if let DepthAlarmEnable = dcSettings["DepthAlarmFt"] as? Int, DepthAlarmEnable != -1 {
-//                dcSettings["DepthAlarmFt"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kTimeAlarmEnable]?.first {
-//            let TimeAlarmEnable = first.data.toInt()
-//            if TimeAlarmEnable == 0 {
-//                dcSettings["DiveTimeAlarmMin"] = -1 // OFF
-//            } else {
-//                dcSettings["DiveTimeAlarmMin"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kTimeAlarm]?.first {
-//            if let TimeAlarmEnable = dcSettings["DiveTimeAlarmMin"] as? Int, TimeAlarmEnable != -1 {
-//                dcSettings["DiveTimeAlarmMin"] = first.data.toInt()
-//            }
-//        }
+        if let first = responses[.kThresholdScubaDepthAlarm]?.first {
+            dcSettings["DepthAlarmM"] = first.data.toInt()
+        }
         
-//        if let first = responses[.kFreeDepth1AlarmEnable]?.first {
-//            let FreeDepth1AlarmEnable = first.data.toInt()
-//            if FreeDepth1AlarmEnable == 0 {
-//                dcSettings["FREE_DEPTH_ALARM1"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_DEPTH_ALARM1"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeDepth2AlarmEnable]?.first {
-//            let FreeDepth2AlarmEnable = first.data.toInt()
-//            if FreeDepth2AlarmEnable == 0 {
-//                dcSettings["FREE_DEPTH_ALARM2"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_DEPTH_ALARM2"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeDepth3AlarmEnable]?.first {
-//            let FreeDepth3AlarmEnable = first.data.toInt()
-//            if FreeDepth3AlarmEnable == 0 {
-//                dcSettings["FREE_DEPTH_ALARM3"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_DEPTH_ALARM3"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeDepth1Alarm]?.first {
-//            if let FreeDepth1AlarmEnable = dcSettings["FREE_DEPTH_ALARM1"] as? Int, FreeDepth1AlarmEnable != -1 {
-//                dcSettings["FREE_DEPTH_ALARM1"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeDepth2Alarm]?.first {
-//            if let FreeDepth2AlarmEnable = dcSettings["FREE_DEPTH_ALARM2"] as? Int, FreeDepth2AlarmEnable != -1 {
-//                dcSettings["FREE_DEPTH_ALARM2"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeDepth3Alarm]?.first {
-//            if let FreeDepth3AlarmEnable = dcSettings["FREE_DEPTH_ALARM3"] as? Int, FreeDepth3AlarmEnable != -1 {
-//                dcSettings["FREE_DEPTH_ALARM3"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime1AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_TIME_ALARM1"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_TIME_ALARM1"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime2AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_TIME_ALARM2"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_TIME_ALARM2"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime3AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_TIME_ALARM3"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_TIME_ALARM3"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime1Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_TIME_ALARM1"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_TIME_ALARM1"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime2Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_TIME_ALARM2"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_TIME_ALARM2"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeTime3Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_TIME_ALARM3"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_TIME_ALARM3"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI1AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_SI_ALARM1"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_SI_ALARM1"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI2AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_SI_ALARM2"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_SI_ALARM2"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI3AlarmEnable]?.first {
-//            let Enabled = first.data.toInt()
-//            if Enabled == 0 {
-//                dcSettings["FREE_SI_ALARM3"] = -1 // OFF
-//            } else {
-//                dcSettings["FREE_SI_ALARM3"] = 0
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI1Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_SI_ALARM1"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_SI_ALARM1"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI2Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_SI_ALARM2"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_SI_ALARM2"] = first.data.toInt()
-//            }
-//        }
-//        
-//        if let first = responses[.kFreeSI3Alarm]?.first {
-//            if let Enabled = dcSettings["FREE_SI_ALARM3"] as? Int, Enabled != -1 {
-//                dcSettings["FREE_SI_ALARM3"] = first.data.toInt()
-//            }
-//        }
+        if let first = responses[.kScubaTimeAlarm]?.first {
+            dcSettings["TimeAlarmEnable"] = first.data.toInt()
+        }
         
-        //print(dcSettings)
+        if let first = responses[.kThresholdScubaTimeAlarm]?.first {
+            dcSettings["DiveTimeAlarmMin"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveDepthAlarm]?.first {
+            dcSettings["FreeDiveDepthAlarmEnable"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveDepthAlarmThreshold1]?.first {
+            dcSettings["FREE_DEPTH_ALARM1"] = first.data.u16LE(0)
+        }
+        
+        if let first = responses[.kFreeDiveDepthAlarmThreshold2]?.first {
+            dcSettings["FREE_DEPTH_ALARM2"] = first.data.u16LE(0)
+        }
+        
+        if let first = responses[.kFreeDiveDepthAlarmThreshold3]?.first {
+            dcSettings["FREE_DEPTH_ALARM3"] = first.data.u16LE(0)
+        }
+        ///
+        
+        if let first = responses[.kFreeDiveTimeAlarm]?.first {
+            dcSettings["FreeDiveTimeAlarmEnable"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveTimeAlarmThreshold1]?.first {
+            dcSettings["FREE_TIME_ALARM1"] = first.data.u16LE(0)
+        }
+        
+        if let first = responses[.kFreeDiveTimeAlarmThreshold2]?.first {
+            dcSettings["FREE_TIME_ALARM2"] = first.data.u16LE(0)
+        }
+        
+        if let first = responses[.kFreeDiveTimeAlarmThreshold3]?.first {
+            dcSettings["FREE_TIME_ALARM3"] = first.data.u16LE(0)
+        }
+        ///
+        
+        if let first = responses[.kFreeDiveSurfaceTimeAlarm]?.first {
+            dcSettings["FreeDiveSurfaceTimeAlarmEnable"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveSurfaceTimeAlarmThreshold1]?.first {
+            dcSettings["FREE_SI_ALARM1"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveSurfaceTimeAlarmThreshold2]?.first {
+            dcSettings["FREE_SI_ALARM2"] = first.data.toInt()
+        }
+        
+        if let first = responses[.kFreeDiveSurfaceTimeAlarmThreshold3]?.first {
+            dcSettings["FREE_SI_ALARM3"] = first.data.toInt()
+        }
+        
+        // HISTORY
+        if let first = responses[.kTotalScubaDivingTime]?.first {
+            let totalScubarTime = first.data.u32LE(0)
+            PrintLog("totalScubarTime: \(totalScubarTime)")
+        }
+        if let first = responses[.kMaximumDivingDepthofScubadives]?.first {
+            let maxDepth = first.data.u16LE(0)
+            PrintLog("maxDepth: \(maxDepth)")
+        }
+        if let first = responses[.kTotalScubaDives]?.first {
+            let totalScubaDives = first.data.u16LE(0)
+            PrintLog("totalScubaDives: \(totalScubaDives)")
+        }
+        if let first = responses[.kTotalFreeDiving]?.first {
+            let totalFreeDiving = first.data.u16LE(0)
+            PrintLog("totalFreeDiving: \(totalFreeDiving)")
+        }
+        if let first = responses[.kFreeDivingforTheLongestTime]?.first {
+            let freeDivingforTheLongestTime = first.data.u16LE(0)
+            PrintLog("freeDivingforTheLongestTime: \(freeDivingforTheLongestTime)")
+        }
+        if let first = responses[.kFreeDivingDeepestDepth]?.first {
+            let freeDivingDeepestDepth = first.data.u16LE(0)
+            PrintLog("freeDivingDeepestDepth: \(freeDivingDeepestDepth)")
+        }
+        
+        print(dcSettings)
         DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: dcSettings)
         
         return .just(.success)
@@ -1005,32 +968,67 @@ final class BluetoothDeviceCR4Manager {
             let writeUnits = row.stringValue(key: "Units").toInt()
             
             // 3. Chuẩn bị danh sách lệnh ghi
-            var commandsToWrite: [BleCommandKey] = [
+            let commandsToWrite: [BleCommandKey] = [
                 .kUnit,
                 .kLanguage,
+                .kSetPower,
                 .kBacklightLevel,
                 .kBuzzer,
                 .kVibration,
-                .kTimeFormat,
-                .kDateFormat,
+                .kSetAutoDiveType,
+                .kScubaAutoStartDepth,
+                
+                .kNitroxSetting,
+                .kPPO2Setting,
+                .kSafetyFactorSetting,
+                .kScubaLogStopTime,
                 .kSamplingRate,
+                
+                .kScubaDepthAlarm,
+                .kScubaTimeAlarm,
+                .kThresholdScubaDepthAlarm,
+                .kThresholdScubaTimeAlarm,
+                
+                .kFreeDiveTimeAlarm,
+                .kFreeDiveDepthAlarm,
+                .kFreeDiveSurfaceTimeAlarm,
+                
+                .kFreeDiveTimeAlarmThreshold1,
+                .kFreeDiveTimeAlarmThreshold2,
+                .kFreeDiveTimeAlarmThreshold3,
+                
+                .kFreeDiveDepthAlarmThreshold1,
+                .kFreeDiveDepthAlarmThreshold2,
+                .kFreeDiveDepthAlarmThreshold3,
+                
+                .kFreeDiveSurfaceTimeAlarmThreshold1,
+                .kFreeDiveSurfaceTimeAlarmThreshold2,
+                .kFreeDiveSurfaceTimeAlarmThreshold3,
+                
+                .kSYS_SETTING_WRITE
+                
             ]
             
-//            if writeUnits == M {
-//                commandsToWrite.append(.kDepthAlarmM)
-//            } else {
-//                commandsToWrite.append(.kDepthAlarmFT)
-//            }
-            
-            
             let steps: [ReadStep] = commandsToWrite.flatMap { cmd -> [ReadStep] in
+                // Trường hợp đặc biệt cho lệnh xác nhận hệ thống
+                if cmd == .kSYS_SETTING_WRITE {
+                    let systemStep: ReadStep = {
+                        self.sendSimpleCommandWithResponse(
+                            command: cmd.bleCommand.mainCmd.rawValue,
+                            subcommand: cmd.bleCommand.subCmd,
+                            rw: BleType.write.rawValue,
+                            payload: [], // Hoặc payload mặc định của lệnh xác nhận
+                        )
+                        .map { _ in () }
+                    }
+                    return [systemStep]
+                }
                 
                 guard let configs = cmd.getWritePayloads(from: row, units: writeUnits) else {
                     return []
                 }
                 
                 return configs.map { config -> ReadStep in
-                    
                     let step: ReadStep = {
                         self.sendSimpleCommandWithResponse(
                             command: cmd.bleCommand.mainCmd.rawValue,
@@ -1324,7 +1322,7 @@ final class BluetoothDeviceCR4Manager {
         
     }
     
-    func U_LogicWriteTimeSync() -> Observable<DeviceReadResult> {
+    func U_WriteTimeSync() -> Observable<DeviceReadResult> {
         
         if let (bleName, _) = scannedPeripheral.splitDeviceName(),
            let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
@@ -1358,13 +1356,9 @@ final class BluetoothDeviceCR4Manager {
             // 1️⃣ Build finalDate
             // =====================================================
             
-            // Giả sử bạn lấy được timezone của device (ví dụ là 8)0F
-            let deviceTimeZoneOffset = currentDeviceTimeZone
-            let systemTimeZoneOffset = Double(TimeZone.current.secondsFromGMT()) / 3600.0
+            let systemTimeZoneOffset = getSystemTimeZoneIndex()
             
-            // Tính toán độ lệch (tính bằng giây)
-            // Nếu máy +7, device +8 -> chênh lệch là -3600 giây (phải lùi lại 1 tiếng để khi device +8 cộng vào là vừa đủ)
-            let offsetDifference = TimeInterval((systemTimeZoneOffset - deviceTimeZoneOffset) * 3600.0)
+            let dateFormatValue = row.uint8Value(key: "DateFormat") // 0: yyyy.MM.dd, 1: MM.dd.yyyy, 2: dd.MM.yyyy
             
             var finalDate: Date
             let isSystem = DeviceSettings.shared.useSystemDateTime
@@ -1381,43 +1375,51 @@ final class BluetoothDeviceCR4Manager {
                 formatter.locale = Locale(identifier: "en_US_POSIX")
                 formatter.timeZone = TimeZone.current
                 
-                if hasWhitespace {
-                    formatter.dateFormat = "dd.MM.yyyy hh:mm a"
-                } else {
-                    formatter.dateFormat = "dd.MM.yyyy HH:mm"
+                // Xác định phần định dạng ngày dựa trên dateFormatValue
+                var datePartFormat = ""
+                switch dateFormatValue {
+                case 0: datePartFormat = "yyyy.MM.dd"
+                case 1: datePartFormat = "MM.dd.yyyy"
+                case 2: datePartFormat = "dd.MM.yyyy"
+                default: datePartFormat = "dd.MM.yyyy"
                 }
+                
+                // Xác định phần định dạng giờ
+                let timePartFormat = hasWhitespace ? "hh:mm a" : "HH:mm"
+                
+                formatter.dateFormat = "\(datePartFormat) \(timePartFormat)"
                 
                 let fullString = "\(dateString) \(timeString)"
                 finalDate = formatter.date(from: fullString) ?? Date()
             }
             
-            // Cộng thêm khoảng chênh lệch để "ép" timestamp về đúng ý đồ của Device
-            finalDate = finalDate.addingTimeInterval(offsetDifference)
-            
             // =====================================================
-            // 2️⃣ Build TimeSync payload
+            // 2️⃣ Chuẩn bị dữ liệu cho Date và Time (New Spec)
             // =====================================================
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: finalDate)
             
-            let timestamp = UInt32(finalDate.timeIntervalSince1970) // Số giây tính từ 1970 - Luôn là chuẩn UTC
+            // Year lấy 2 số cuối (ví dụ 2026 -> 26) theo spec [Year<100]
+            let yearValue = UInt8((components.year ?? 2026) % 100)
+            let monthValue = UInt8(components.month ?? 1)
+            let dayValue = UInt8(components.day ?? 1)
+            let hourValue = UInt8(components.hour ?? 0)
+            let minuteValue = UInt8(components.minute ?? 0)
+            let secondValue = UInt8(components.second ?? 0)
             
-            let utcBytes: [UInt8] = [
-                UInt8(timestamp & 0xFF),
-                UInt8((timestamp >> 8) & 0xFF),
-                UInt8((timestamp >> 16) & 0xFF),
-                UInt8((timestamp >> 24) & 0xFF)
-            ]
+            let datePayload: [UInt8] = [yearValue, monthValue, dayValue]
+            let timePayload: [UInt8] = [hourValue, minuteValue, secondValue]
             
             // =====================================================
             // 3️⃣ Build TimeFormat payload
             // =====================================================
             
             let timeFormatValue = row.uint8Value(key: "TimeFormat")
-            let dateFormatValue = row.uint8Value(key: "DateFormat")
-            let dstValue = row.uint8Value(key: "DST")
+            let timeZoneValue = isSystem ? UInt8(systemTimeZoneOffset) : row.uint8Value(key: "TimeZone")
             
             let timeFormatPayload: [UInt8] = [timeFormatValue]
             let dateFormatPayload: [UInt8] = [dateFormatValue]
-            let dstPayload: [UInt8] = [dstValue]
+            let timeZonePayload: [UInt8] = [timeZoneValue]
             
             // =====================================================
             // 4️⃣ Create steps
@@ -1445,13 +1447,45 @@ final class BluetoothDeviceCR4Manager {
                 .map { _ in () }
             }
             
-            let timeSyncStep: ReadStep = {
+            let timeZoneStep: ReadStep = {
+                self.sendSimpleCommandWithResponse(
+                    command: BleCommandKey.kTimeZone.bleCommand.mainCmd.rawValue,
+                    subcommand: BleCommandKey.kTimeZone.bleCommand.subCmd,
+                    rw: BleType.write.rawValue,   // ✅ WRITE
+                    isReserved: false,
+                    payload: timeZonePayload
+                )
+                .map { _ in () }
+            }
+            
+            let setDateStep: ReadStep = {
+                self.sendSimpleCommandWithResponse(
+                    command: BleCommandKey.kSetDate.bleCommand.mainCmd.rawValue,
+                    subcommand: BleCommandKey.kSetDate.bleCommand.subCmd,
+                    rw: BleType.write.rawValue,   // ✅ WRITE
+                    isReserved: false,
+                    payload: datePayload
+                )
+                .map { _ in () }
+            }
+            
+            let setTimeStep: ReadStep = {
                 self.sendSimpleCommandWithResponse(
                     command: BleCommandKey.kSetTime.bleCommand.mainCmd.rawValue,
                     subcommand: BleCommandKey.kSetTime.bleCommand.subCmd,
                     rw: BleType.write.rawValue,   // ✅ WRITE
                     isReserved: false,
-                    payload: utcBytes
+                    payload: timePayload
+                )
+                .map { _ in () }
+            }
+            
+            let setSystemStep: ReadStep = {
+                self.sendSimpleCommandWithResponse(
+                    command: BleCommandKey.kSYS_SETTING_WRITE.bleCommand.mainCmd.rawValue,
+                    subcommand: BleCommandKey.kSYS_SETTING_WRITE.bleCommand.subCmd,
+                    rw: BleType.write.rawValue,   // ✅ WRITE
+                    payload: []
                 )
                 .map { _ in () }
             }
@@ -1460,7 +1494,12 @@ final class BluetoothDeviceCR4Manager {
             // 5️⃣ Run sequential (Format trước, Sync sau)
             // =====================================================
             
-            return runSequential([timeFormatStep, dateFormatStep, timeSyncStep])
+            var steps: [ReadStep] = [timeFormatStep, dateFormatStep, setDateStep, setTimeStep, setSystemStep]
+            if isSystem {
+                steps = [timeFormatStep, dateFormatStep, timeZoneStep, setDateStep, setTimeStep, setSystemStep]
+            }
+            
+            return runSequential(steps)
                 .map { _ in DeviceReadResult.success }
                 .catch { error in
                         .just(.failure(error: error.localizedDescription))
@@ -1474,7 +1513,7 @@ final class BluetoothDeviceCR4Manager {
     
     func U_DownloadLogcDives() -> Observable<DeviceReadResult> {
         return getNumOfLogs()
-            .flatMap { [weak self] (result, records) -> Observable<DeviceReadResult> in
+            .flatMap { [weak self] result -> Observable<DeviceReadResult> in
                 
                 guard let self = self else {
                     return .just(.failure(error: "Manager released"))
@@ -1490,275 +1529,77 @@ final class BluetoothDeviceCR4Manager {
                     return .just(.noDiveData)
                     
                 case .success:
-                    let totalLogs = records.count
-                    PrintLog("🚀 Start downloading \(totalLogs) logs")
                     
-                    // 1. Tạo danh sách các Observable tải file
-                    let downloadObservables = records.enumerated().map { (idx, logInfo) in
-                        return self.downloadFullFile(log: logInfo)
-                            .do(onNext: { _ in
-                                // ✅ Cập nhật ProgressHUD (Ví dụ tính 100% khi xong 1 block/file)
-                                // Nếu muốn phần trăm chi tiết hơn, bạn phải truyền closure vào downloadFullFile
-                                let statusMessage = String(format: "%@ %d/%d (100%%)",
-                                                           "Downloading dive".localized,
-                                                           idx + 1,
-                                                           totalLogs)
-                                
-                                DispatchQueue.main.async {
-                                    ProgressHUD.animate(statusMessage)
-                                }
-                            })
-                    }
+//                    PrintLog("🚀 Start downloading \(self.numOfLogs) logs")
+//                    
+//                    let totalLogs = Int(self.numOfLogs)
+//                        
+//                        let observables = (0..<totalLogs).map { logId in
+//                            return self.sendGetLog(logIndex: logId, onProgress: { percent in
+//                                // ✅ Hiển thị: Downloading dive 1/10 (45%)
+//                                let statusMessage = String(format: "%@ %d/%d (%d%%)",
+//                                                           "Downloading dive".localized,
+//                                                           logId + 1,
+//                                                           totalLogs,
+//                                                           percent)
+//                                
+//                                // Cập nhật lên UI thread
+//                                DispatchQueue.main.async {
+//                                    ProgressHUD.animate(statusMessage)
+//                                }
+//                            })
+//                        }
+//                    
+//                    return Observable.concat(observables)
+//                        .toArray()
+//                        .map { records in
+//                            // Lọc bỏ nil để chỉ còn lại những log thực sự được tải về
+//                            let newDownloadedRecords = records.compactMap { $0 }
+//                                                        
+//                            newDownloadedRecords.forEach { record in
+//                                do { try self.U_ConvertDives(record) } catch { }
+//                            }
+//                            
+//                            return newDownloadedRecords.isEmpty ? .noDiveData : .success
+//                        }
+//                        .asObservable()
                     
-                    // 2. Chạy tuần tự bằng concat, gom vào mảng bằng toArray
-                    return Observable.concat(downloadObservables)
-                        .toArray()
-                        .asObservable()
-                        .map { (downloadedRecords: [DiveRecord?]) in
-                            
-                            // 3. Lọc bỏ nil (các file tải lỗi)
-                            let validRecords = downloadedRecords.compactMap { $0 }
-                            
-                            PrintLog("✅ Tải xong \(validRecords.count)/\(totalLogs) files. Bắt đầu convert...")
-                            
-                            // 4. Gọi hàm Convert cho từng record
-                            validRecords.forEach { record in
-                                do {
-                                    try self.U_ConvertDives(record)
-                                    PrintLog("CONVERT RECORD")
-                                } catch {
-                                    PrintLog("⚠️ Convert lỗi cho dive #\(record.diveNo): \(error)")
-                                }
-                            }
-                            
-                            // 5. Trả về kết quả cuối cùng cho UI
-                            return validRecords.isEmpty ? .noDiveData : .success
-                        }
+                    return .just(.success)
+                    
                 }
             }
     }
     
-    func directoryBrowseAllFile() -> Observable<[Data]> {
-        guard let characteristic = writeCharacteristic else {
-            return .error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write characteristic not found"]))
-        }
+    func getNumOfLogs() -> Observable<DeviceReadResult> {
         
-        guard let indicateChar = indicateCharacteristic, let notifyChar = directoryAllFileChar else {
-            return .error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write characteristic not found"]))
-        }
+        let cmd = BleCommandKey.kGetLastDiveLogNumber
         
-        let cmdBuf: [UInt8] = [0x38, 0x00, 0x44, 0x49, 0x56, 0x45, 0x4C, 0x4F, 0x47]
-        
-        // Tạo trình lắng nghe trước
-        let responseCollector = self.notifySubject
-        // 1. Thay vì chỉ gom [Data], ta gom vào một Tuple chứa cả mảng và UUID vừa nhận
-            .scan(into: (list: [Data](), lastUUID: CBUUID?.none)) { (accumulator, next) in
-                if next.uuid == notifyChar.uuid {
-                    accumulator.list.append(next.data)
-                } else if next.uuid == indicateChar.uuid {
-                    accumulator.list.insert(next.data, at: 0)
-                }
-                // Lưu lại UUID vừa nhận để tầng dưới (take) kiểm tra
-                accumulator.lastUUID = next.uuid
-            }
-        // 2. Bây giờ 'state' là (list: [Data], lastUUID: CBUUID?)
-            .take(until: { state in
-                return state.lastUUID == indicateChar.uuid
-            }, behavior: .inclusive) // .inclusive LÀ ĐỂ LẤY CẢ PACKAGE SAU CÙNG.
-        // 3. Sau khi lấy xong, ta chỉ cần mảng [Data] cuối cùng
-            .map { $0.list }
-            .takeLast(1)
-            .ifEmpty(default: [])
-        
-        // Sau đó mới thực hiện ghi và nối (concat) với collector
-        return scannedPeripheral.peripheral.writeValue(Data(cmdBuf), for: characteristic, type: .withoutResponse)
-            .asObservable()
-            .flatMap { _ in responseCollector }
-    }
-    
-    func readFileAtBlock(fileIndex: Int, blockIndex: Int, maxPackets: Int) -> Observable<Data> {
-        guard let characteristic = writeCharacteristic,
-              let indicateChar = indicateCharacteristic,
-              let notifyChar = readDataChar else {
-            return .error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Characteristics not found"]))
-        }
-        
-        // 1. Tạo Command Buffer (0x39...)
-        var bArr = [UInt8](repeating: 0, count: 14)
-        bArr[0] = 0x39
-        bArr[1] = UInt8(fileIndex & 0xFF)
-        bArr[2] = UInt8((fileIndex >> 8) & 0xFF)
-        bArr[3] = UInt8(blockIndex & 0xFF)
-        bArr[4] = UInt8((blockIndex >> 8) & 0xFF)
-        bArr[5] = UInt8(maxPackets & 0xFF)
-        let folderName = "DIVELOG"
-        let nameBytes = Array(folderName.utf8)
-        for i in 0..<min(8, nameBytes.count) { bArr[6 + i] = nameBytes[i] }
-        
-        // 2. Gom dữ liệu và Checksum
-        let responseCollector = self.notifySubject
-            .scan(into: (fullData: Data(), indicateData: Data?.none, lastUUID: CBUUID?.none, packetCount: 0, currentChecksum: UInt32(0))) { (state, next) in
-                state.lastUUID = next.uuid
-                
-                if next.uuid == notifyChar.uuid {
-                    state.packetCount += 1
-                    
-                    if next.data.count > 1 {
-                        // 1. Luôn lấy 19 bytes data (bỏ byte index 0 ở mỗi gói)
-                        let data19Bytes = next.data.subdata(in: 1..<next.data.count)
-                        
-                        // 2. Cộng vào checksum (vì bạn đã debug thấy Rx khớp với Calc With Header)
-                        state.currentChecksum += data19Bytes.reduce(0) { $0 + UInt32($1) }
-                        
-                        // 3. LUÔN append vào fullData (bao gồm cả gói đầu tiên packetCount == 1)
-                        state.fullData.append(data19Bytes)
-                        
-                        // PrintLog để bạn theo dõi
-                        if state.packetCount == 1 {
-                            PrintLog("📄 Đã nhận gói Header/FileName (Gói 1), size: \(data19Bytes.count)")
-                        }
-                    }
-                } else if next.uuid == indicateChar.uuid {
-                    state.indicateData = next.data
-                }
-            }
-            .take(until: { $0.lastUUID == indicateChar.uuid }, behavior: .inclusive)
-            .takeLast(1)
-            .flatMap { state -> Observable<Data> in
-                guard let indicate = state.indicateData, indicate.count >= 8 else {
-                    return .error(NSError(domain: "BLE", code: -2, userInfo: [NSLocalizedDescriptionKey: "Indicate data error"]))
-                }
-                
-                let receivedChecksum = indicate.extractUInt32(fromOffset: 4, endian: .little)
-                
-                if receivedChecksum == state.currentChecksum {
-                    PrintLog("✅ Block \(blockIndex) Checksum OK (\(receivedChecksum))")
-                    return .just(state.fullData)
-                } else {
-                    PrintLog("❌ Block \(blockIndex) Checksum Mismatch! Rx: \(receivedChecksum), Calc: \(state.currentChecksum)")
-                    return .error(NSError(domain: "BLE", code: -3, userInfo: [NSLocalizedDescriptionKey: "Checksum mismatch"]))
-                }
-            }
-        
-        // 3. Thực thi ghi lệnh
-        return scannedPeripheral.peripheral.writeValue(Data(bArr), for: characteristic, type: .withoutResponse)
-            .asObservable()
-            .flatMap { _ in responseCollector }
-    }
-    
-    func getNumOfLogs() -> Observable<(result: DeviceReadResult, records: [FileInfoRecord])> {
-        return directoryBrowseAllFile()
-            .flatMap { [weak self] dataList -> Observable<(result: DeviceReadResult, records: [FileInfoRecord])> in
-                guard let self = self else {
-                    return .just((.failure(error: "Manager released"), []))
-                }
-                
-                if dataList.isEmpty {
-                    self.numOfLogs = 0
-                    PrintLog("📒 NumOfLog = 0 (No data)")
-                    return .just((.noDiveData, []))
-                }
-                
-                // 1. Lấy Header (Gói 0)
-                let headerData = dataList[0]
-                let fileCount = Int(headerData.extractInt16(fromOffset: 1, endian: .little))
-                self.numOfLogs = fileCount
-                
-                PrintLog("📒 NumOfLog = \(self.numOfLogs) (Parsed from Directory)")
-                
-                // 2. Parse các Record còn lại (Gói 1...n)
-                let parsedRecords = dataList.dropFirst().compactMap { data -> FileInfoRecord? in
-                    guard data.count >= 18 else { return nil } // u16 + 8b + u32 + u32 = 18
-                    
-                    let index = Int(data.extractInt16(fromOffset: 0, endian: .little))
-                    let name = data.subdata(in: 2..<10).asciiString ?? ""
-                    let size = data.extractUInt32(fromOffset: 10, endian: .little)
-                    let checksum = data.extractUInt32(fromOffset: 14, endian: .little)
-                    
-                    return FileInfoRecord(index: index, fileName: name, fileSize: size, checksum: checksum)
-                }
-                
-                PrintLog("📒 Found \(fileCount) files, Parsed \(parsedRecords.count) records")
-                
-                let status: DeviceReadResult = (fileCount == 0) ? .noDiveData : .success
-                return .just((status, parsedRecords))
-            }
-            .catch { error in
-                PrintLog("❌ Error browsing directory: \(error.localizedDescription)")
-                return .just((.failure(error: error.localizedDescription), []))
-            }
-    }
-    
-    /*
-     Read the data content of the specified file in the folder.
-     
-     Important Notes:
-     1. Each block contains 256 packets, each packet being 19 bytes.
-     2. Only one packet of data is transmitted at a time.
-     3. A brief pause occurs every 27 packets.
-     4. Reading each block always starts from Packet Index = 0.
-     5. The checksum is calculated by adding all bytes of the read data.
-     6. Entering 00 for the Number of packets represents 256 packets.
-     7. If a read command is sent during the read process, the device will skip it.
-     8. Do not perform other file operations during the read process (otherwise, the read may fail or result in an error).
-     */
-    func downloadFullFile(log: FileInfoRecord) -> Observable<DiveRecord?> {
-        
-        if DatabaseManager.shared.isExistDiveLog(diveNo: (log.index + 1), modelId: self.ModelID, serialNo: self.SerialNo) {
-            return .just(nil)
-        }
-        
-        let blockSize = 256 * 19 // 4864 bytes
-        let totalBlocks = Int(ceil(Double(log.fileSize) / Double(blockSize)))
-        
-        PrintLog("📂 Tải file \(log.fileName): \(log.fileSize) bytes -> \(totalBlocks) blocks")
-        
-        // Biến tạm để gom toàn bộ dữ liệu của file qua các block
-        var collectedFileData = Data()
-        
-        let blockObservables = (0..<totalBlocks).map { bIndex -> Observable<Data> in
-            // Tính số packet cho block này
-            var numPackets = 0 // 0 tương đương với 256 theo spec số 6
-            if bIndex == totalBlocks - 1 {
-                let remainingBytes = Int(log.fileSize) % blockSize
-                if remainingBytes > 0 {
-                    numPackets = Int(ceil(Double(remainingBytes) / 19.0))
-                }
+        return sendSimpleCommandWithResponse(
+            command: cmd.bleCommand.mainCmd.rawValue,
+            subcommand: cmd.bleCommand.subCmd,
+            rw: BleType.read.rawValue,
+            payload: []
+        )
+        .flatMap { [weak self] response -> Observable<DeviceReadResult> in
+            
+            guard let self = self else {
+                return .just(.failure(error: "Manager released"))
             }
             
-            // Gọi hàm mới trả về Observable<Data>
-            return self.readFileAtBlock(fileIndex: log.index, blockIndex: bIndex, maxPackets: numPackets)
-                .do(onNext: { blockData in
-                    collectedFileData.append(blockData)
-                    PrintLog("✅ Đã nhận Block \(bIndex), size block: \(blockData.count) bytes. Tổng tích lũy: \(collectedFileData.count)")
-                })
-        }
-        
-        // Nếu file rỗng
-        if blockObservables.isEmpty {
-            return .just(nil)
-        }
-        
-        return Observable.concat(blockObservables)
-            .takeLast(1) // Đợi tải xong block cuối cùng
-            .map {_ -> DiveRecord? in
-                // Cắt dữ liệu theo đúng fileSize thực tế để loại bỏ byte rác ở packet cuối
-                let cleanData = collectedFileData.prefix(Int(log.fileSize))
-                
-                PrintLog("🚀 Hoàn tất tải file #\(log.index). Tạo DiveRecord...")
-                
-                // Tạo đối tượng DiveRecord
-                return DiveRecord(
-                    diveNo: log.index,
-                    logData: cleanData,
-                    profiles: [] // Bạn có thể thêm logic parse profile vào đây nếu cần
-                )
+            if let error = response.error {
+                return .just(.failure(error: error.localizedDescription))
             }
-            .catch { error in
-                PrintLog("❌ Lỗi khi tải file \(log.fileName): \(error.localizedDescription)")
-                // Trả về nil khi có lỗi để luồng chính không bị ngắt nhưng vẫn biết là thất bại
-                return .just(nil)
-            }
+            
+            let value = response.data.u16LE(0)
+            numOfLogs = Int(value)
+            
+            PrintLog("📒 NumOfLog = \(numOfLogs)")
+            
+            return .just(numOfLogs == 0 ? .noDiveData : .success)
+        }
+        .catch { error in
+                .just(.failure(error: error.localizedDescription))
+        }
     }
 }
 
@@ -1793,351 +1634,78 @@ extension BluetoothDeviceCR4Manager.BleCommandKey {
             return [row.uint8Value(key: "Language")]
         case .kBacklightLevel:
             return [row.uint8Value(key: "BacklightDimLevel")]
-//        case .kBacklightTime:
-//            return [row.uint8Value(key: "BacklightDimTime")]
-//        case .kBuzzer:
-//            return [row.uint8Value(key: "BuzzerMode")]
-//        case .kVibration:
-//            return [row.uint8Value(key: "Vibration")]
-//        case .kDiveMode:
-//            return [row.uint8Value(key: "DiveMode")]
-//        case .kDiveStartDepth:
-//            return [row.uint8Value(key: "LogStartDepth")]
-//        case .kTimeFormat:
-//            return [row.uint8Value(key: "TimeFormat")]
-//        case .kDateFormat:
-//            return [row.uint8Value(key: "DateFormat")]
-//        case .kFo2:
-//            return [row.uint8Value(key: "FO2")]
-//        case .kPo2:
-//            return [row.uint8Value(key: "PO2")]
-//        case .kConservatism:
-//            return [row.uint8Value(key: "Conservatism")]
-//        case .kDepthAlarmEnable:
-//            var value = -1
-//            if units == M {
-//                value = row.stringValue(key: "DepthAlarmM").toInt()
-//            } else {
-//                value = row.stringValue(key: "DepthAlarmFt").toInt()
-//            }
-//            
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kDepthAlarmM, .kDepthAlarmFT:
-//            var value = -1
-//            if units == M {
-//                value = row.stringValue(key: "DepthAlarmM").toInt()
-//            } else {
-//                value = row.stringValue(key: "DepthAlarmFt").toInt()
-//            }
-//            
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            /*
-//             if value == OFF {
-//             dcSettings["DiveTimeAlarmMin"] = -1
-//             } else {
-//             dcSettings["DiveTimeAlarmMin"] = value.toInt()
-//             }
-//             */
-//        case .kTimeAlarmEnable:
-//            let value = row.stringValue(key: "DiveTimeAlarmMin").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kTimeAlarm:
-//            let value = row.stringValue(key: "DiveTimeAlarmMin").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return [UInt8(value & 0xFF)]
-//            }
+        case .kBuzzer:
+            return [row.uint8Value(key: "BuzzerMode")]
+        case .kVibration:
+            return [row.uint8Value(key: "Vibration")]
+        case .kSetPower:
+            return [row.uint8Value(key: "PowerSaving")]
+        case .kSetAutoDiveType:
+            return [row.uint8Value(key: "DiveMode")]
+        case .kScubaAutoStartDepth:
+            return [row.uint8Value(key: "ScubaAutoStartDepth")]
+            
+        case .kNitroxSetting:
+            return [row.uint8Value(key: "FO2")]
+        case .kPPO2Setting:
+            return [row.uint8Value(key: "PO2")]
+        case .kSafetyFactorSetting:
+            return [row.uint8Value(key: "Conservatism")]
         case .kSamplingRate:
             return [row.uint8Value(key: "DiveLogSamplingTime")]
-//        case .kDivingLogStopTime:
-//            return [row.uint8Value(key: "LogStopTime")]
+        case .kScubaLogStopTime:
+            return [row.uint8Value(key: "LogStopTime")]
             
+        case .kScubaDepthAlarm:
+            return [row.uint8Value(key: "DepthAlarmEnable")]
+        case .kScubaTimeAlarm:
+            return [row.uint8Value(key: "TimeAlarmEnable")]
+        case .kThresholdScubaDepthAlarm:
+            return [row.uint8Value(key: "DepthAlarmM")]
+        case .kThresholdScubaTimeAlarm:
+            return [row.uint8Value(key: "DiveTimeAlarmMin")]
             
-//        case .kFreeDepth1AlarmEnable:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM1").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeDepth1Alarm:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM1").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeDepth2AlarmEnable:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM2").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeDepth2Alarm:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM2").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeDepth3AlarmEnable:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM3").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeDepth3Alarm:
-//            let value = row.stringValue(key: "FREE_DEPTH_ALARM3").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeTime1AlarmEnable:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM1").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeTime1Alarm:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM1").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeTime2AlarmEnable:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM2").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeTime2Alarm:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM2").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeTime3AlarmEnable:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM3").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeTime3Alarm:
-//            let value = row.stringValue(key: "FREE_TIME_ALARM3").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//            
-//        case .kFreeSI1AlarmEnable:
-//            let value = row.stringValue(key: "FREE_SI_ALARM1").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeSI1Alarm:
-//            let value = row.stringValue(key: "FREE_SI_ALARM1").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeSI2AlarmEnable:
-//            let value = row.stringValue(key: "FREE_SI_ALARM2").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeSI2Alarm:
-//            let value = row.stringValue(key: "FREE_SI_ALARM2").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
-//            
-//        case .kFreeSI3AlarmEnable:
-//            let value = row.stringValue(key: "FREE_SI_ALARM3").toInt()
-//            if value == -1 { // OFF
-//                return [0x00]
-//            } else {
-//                return [0x01]
-//            }
-//        case .kFreeSI3Alarm:
-//            let value = row.stringValue(key: "FREE_SI_ALARM3").toInt()
-//            if value == -1 { // OFF thi khong can ghi
-//                return nil
-//            } else {
-//                return value.to2Bytes()
-//            }
+        case .kFreeDiveTimeAlarm:
+            return [row.uint8Value(key: "FreeDiveTimeAlarmEnable")]
+        case .kFreeDiveDepthAlarm:
+            return [row.uint8Value(key: "FreeDiveDepthAlarmEnable")]
+        case .kFreeDiveSurfaceTimeAlarm:
+            return [row.uint8Value(key: "FreeDiveSurfaceTimeAlarmEnable")]
+        
+        case .kFreeDiveTimeAlarmThreshold1:
+            let value = row.stringValue(key: "FREE_TIME_ALARM1").toInt()
+            return value.to2Bytes()
+        case .kFreeDiveTimeAlarmThreshold2:
+            let value = row.stringValue(key: "FREE_TIME_ALARM2").toInt()
+            return value.to2Bytes()
+        case .kFreeDiveTimeAlarmThreshold3:
+            let value = row.stringValue(key: "FREE_TIME_ALARM3").toInt()
+            return value.to2Bytes()
+        
+        case .kFreeDiveDepthAlarmThreshold1:
+            return [row.uint8Value(key: "FREE_DEPTH_ALARM1")]
+        case .kFreeDiveDepthAlarmThreshold2:
+            return [row.uint8Value(key: "FREE_DEPTH_ALARM2")]
+        case .kFreeDiveDepthAlarmThreshold3:
+            return [row.uint8Value(key: "FREE_DEPTH_ALARM3")]
+        
+        case .kFreeDiveSurfaceTimeAlarmThreshold1:
+            return [row.uint8Value(key: "FREE_SI_ALARM1")]
+        case .kFreeDiveSurfaceTimeAlarmThreshold2:
+            return [row.uint8Value(key: "FREE_SI_ALARM2")]
+        case .kFreeDiveSurfaceTimeAlarmThreshold3:
+            return [row.uint8Value(key: "FREE_SI_ALARM3")]
+            
         default:
             return nil // Các trường như SerialNumber, FirmwareRev thường là Read-only
         }
     }
     
     func getWritePayloads(from row: Row, units: Int) -> [BluetoothDeviceCR4Manager.BleWriteConfig]? {
-        switch self {
-//        case .kTimeAlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true)]
-//            }
-//            return nil
-//        case .kTimeAlarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//        case .kDepthAlarmM:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true, index: 0)]
-//            }
-//            return nil
-//        case .kDepthAlarmFT:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true, index: 1)]
-//            }
-//            return nil
-//        case .kDepthAlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-            
-//        case .kFreeDepth1AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//        case .kFreeDepth1Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true, index: 0)]
-//            }
-//            return nil
-//            
-//        case .kFreeDepth2AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 1)]
-//            }
-//            return nil
-//        case .kFreeDepth2Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true, index: 1)]
-//            }
-//            return nil
-//            
-//        case .kFreeDepth3AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 2)]
-//            }
-//            return nil
-//        case .kFreeDepth3Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: true, index: 2)]
-//            }
-//            return nil
-//            
-//        case .kFreeTime1AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//        case .kFreeTime1Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//            
-//        case .kFreeTime2AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 1)]
-//            }
-//            return nil
-//        case .kFreeTime2Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 1)]
-//            }
-//            return nil
-//            
-//        case .kFreeTime3AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 2)]
-//            }
-//            return nil
-//        case .kFreeTime3Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 2)]
-//            }
-//            return nil
-//            
-//        case .kFreeSI1AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//        case .kFreeSI1Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 0)]
-//            }
-//            return nil
-//            
-//        case .kFreeSI2AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 1)]
-//            }
-//            return nil
-//        case .kFreeSI2Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 1)]
-//            }
-//            return nil
-//            
-//        case .kFreeSI3AlarmEnable:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 2)]
-//            }
-//            return nil
-//        case .kFreeSI3Alarm:
-//            if let data = getWritePayload(from: row, units: units) {
-//                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false, index: 2)]
-//            }
-//            return nil
-        default:
-            if let data = getWritePayload(from: row, units: units) {
-                return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false)] // Mặc định là true
-            }
-            return nil
+        if let data = getWritePayload(from: row, units: units) {
+            return [BluetoothDeviceCR4Manager.BleWriteConfig(payload: data, isReserved: false)]
         }
+        return nil
     }
 }
 
@@ -2157,4 +1725,20 @@ extension BluetoothDeviceCR4Manager {
         return formatter.string(from: date)
     }
     
+    func getSystemTimeZoneIndex() -> UInt8 {
+        
+        // 1. Lấy số giây lệch so với UTC (ví dụ VN +7 là 25200 giây)
+        let secondsFromGMT = TimeZone.current.secondsFromGMT()
+        
+        // 2. Chuyển sang đơn vị giờ (Double)
+        let currentOffset = Double(secondsFromGMT) / 3600.0
+        
+        // 3. Tìm index của currentOffset trong mảng
+        // Nếu không tìm thấy (trường hợp hiếm), mặc định trả về index 12 (UTC+0)
+        if let index = timezoneOffsets.firstIndex(of: currentOffset) {
+            return UInt8(index)
+        }
+        
+        return 12 // Mặc định là UTC+0
+    }
 }

@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "Your dive computer firmware is up to date!";
 "Are you sure to want to delete this device?" = "Are you sure to want to delete this device?";
 "Downloading firmware v" = "Downloading firmware v";
-" Firmware file not found on server." = " Firmware file not found on server.";
+"Firmware file not found on server." = "Firmware file not found on server.";
 " Download failed" = " Download failed";
 "I agree" = "I agree";
 "I do not agree" = "I do not agree";

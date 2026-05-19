@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "Dalış bilgisayarınızın ürün yazılımı güncel!";
 "Are you sure to want to delete this device?" = "Bu cihazı silmek istediğinizden emin misiniz?";
 "Downloading firmware v" = "Ürün yazılımı indiriliyor v";
-" Firmware file not found on server." = "Sunucuda ürün yazılımı dosyası bulunamadı.";
+"Firmware file not found on server." = "Sunucuda ürün yazılımı dosyası bulunamadı.";
 " Download failed" = "İndirme başarısız";
 "I agree" = "Kabul ediyorum";
 "I do not agree" = "Kabul etmiyorum";

@@ -80,7 +80,9 @@ final class BluetoothDeviceCoordinator {
             switch ModelID {
             case C_LOG, C_LOGPLUS:
                 return .cr
-            case C_CEN, C_GRA:
+            case C_CEN:
+                return .cr4
+            case C_GRA:
                 return .cr5
             default:
                 return .normal
@@ -329,6 +331,7 @@ final class BluetoothDeviceCoordinator {
         connectionDisposable = nil
         
         let connectObs = central.establishConnection(scannedPeripheral.peripheral)
+            .timeout(.seconds(20), scheduler: MainScheduler.instance)
             .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
                 onDispose: {
                 PrintLog("🔌 Disconnected")

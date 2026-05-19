@@ -126,6 +126,8 @@ class SubSettingsViewController: BaseViewController {
                     dateTimeSetting["SetDate"] = value
                 case "set_time":
                     dateTimeSetting["SetTime"] = value
+                case "set_timezone":
+                    dateTimeSetting["TimeZone"] = index
                 default:
                     break
                 }
@@ -485,7 +487,14 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             var optionsToUse: [String] = []
 
             if let id = row.id {
-                if id == "mdepth" || id == "log_start_depth" || id == "turn_pressure" || id == "end_pressure" {
+                if  id == "mdepth" ||
+                    id == "log_start_depth" ||
+                    id == "turn_pressure" ||
+                    id == "end_pressure" ||
+                    id == "depth_alarm" ||
+                    id == "cr4_free_depth_alarm1" ||
+                    id == "cr4_free_depth_alarm2" ||
+                    id == "cr4_free_depth_alarm3" {
                     if DeviceSettings.shared.unit == 0 {
                         if let opts = row.options, !opts.isEmpty {
                             optionsToUse = opts
@@ -519,7 +528,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             var notes: String? = nil
             if row.id == "conservatism" {
                 switch modelID {
-                case C_LOG, C_LOGPLUS, C_GRA:
+                case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
                     notes = nil
                 default:
                     notes = "GF"
@@ -597,7 +606,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                             var toFormat = ""
                             
                             switch modelID {
-                            case C_GRA:
+                            case C_GRA, C_CEN:
                                 // Ví dụ: value1 = "DD.MM.YY", value2 = "MM.DD.YY"
                                 fromFormat = getStandardFormat(from: currentValue) // Trả về "dd.MM.yyyy"
                                 toFormat = getStandardFormat(from: value)   // Trả về "MM.dd.yyyy"

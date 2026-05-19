@@ -268,15 +268,12 @@ class LogViewController: BaseViewController {
         if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
             list.append(MetricModel(type: .tlbg, title: "Max TLBG".localized, value: getMaxTLBG(), iconName: "tlbg"))
         }
-            
-        if modelId == C_WIS5 || manualDive {
-            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate"))
-        } else {
-            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Rate".localized, value: getMaxAscRate(), iconName: "max_accent_rate"))
-        }
         
         if [C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Rate".localized, value: getMaxAscRate(), iconName: "max_accent_rate"))
             list.append(MetricModel(type: .oxtox, title: "Max Descent Rate".localized, value: getMaxDescRate(), iconName: "max_accent_rate"))
+        } else {
+            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate"))
         }
         
         list.append(MetricModel(type: .minTemp, title: "Min Temperature".localized, value: getMinTemp(), iconName: "min_temp"))
@@ -612,7 +609,7 @@ class LogViewController: BaseViewController {
         if manualDive == false {
             var deviceSerialNo = ""
             switch modelId {
-            case C_LOG, C_LOGPLUS, C_GRA:
+            case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
                 deviceSerialNo = diveLog.stringValue(key: "SerialNo")
             default:
                 deviceSerialNo = String(format: "%05d", diveLog.stringValue(key: "SerialNo").toInt())
@@ -1325,7 +1322,7 @@ extension LogViewController {
         let gfLow = diveLog.stringValue(key: "GfLowPercent").toInt()
         
         switch modelId {
-        case C_GRA, C_LOG, C_LOGPLUS:
+        case C_GRA, C_LOG, C_LOGPLUS, C_CEN:
             if gfHigh >= 95 && gfLow >= 45 {
                 return "CF3" // Aggressive
             } else if gfHigh <= 75 && gfLow <= 35 {

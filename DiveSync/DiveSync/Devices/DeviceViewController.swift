@@ -236,7 +236,7 @@ class DeviceViewController: BaseViewController {
         deviceName.text = device.ModelName ?? ""
         
         switch modelid {
-        case C_LOG, C_LOGPLUS, C_GRA:
+        case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
             autoSyncView.alpha = 1
             updateDCView.isHidden = true
             serialNoLb.text = "Serial Number".localized + ": \(device.SerialNo ?? "")"
@@ -451,9 +451,12 @@ class DeviceViewController: BaseViewController {
         searchType = .kSetting
         syncType = .kConnectOnly
         
+        BluetoothDeviceCoordinator.shared.delegate = self
+        
         // Connect
         BluetoothDeviceCoordinator.shared
             .connect(to: matchedDevice, discover: true)
+            .timeout(.seconds(25), scheduler: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] session in
                 guard self != nil else { return }
@@ -475,7 +478,11 @@ class DeviceViewController: BaseViewController {
             }, onError: { error in
                 ProgressHUD.dismiss()
                 
-                if case BluetoothError.peripheralDisconnected = error {
+                // --- ĐÂY LÀ PHẦN KIỂM TRA TIMEOUT ---
+                if let rxError = error as? RxError, case .timeout = rxError {
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "Connection Failed".localized)
+                }
+                else if case BluetoothError.peripheralDisconnected = error {
                     PrintLog("ℹ️ Peripheral disconnected (user requested)")
                 } else {
                     if case BluetoothError.peripheralDisconnected = error, BluetoothDeviceCoordinator.shared.isExpectedDisconnect {
@@ -681,6 +688,10 @@ class DeviceViewController: BaseViewController {
                                         //self.updateDeviceStateUI()
                                     }
                                 }
+                            } else {
+                                DialogViewController.showMessage(title: "Firmware Update".localized, message: "Firmware file not found on server.".localized)
+                                
+                                BluetoothDeviceCoordinator.shared.disconnect()
                             }
                         }
                     }
@@ -811,6 +822,8 @@ extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
                     }
                     
                 }
+            } else {
+                showAlert(on: self, message: msg)
             }
         }
         

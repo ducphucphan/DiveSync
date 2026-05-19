@@ -29,7 +29,7 @@ class SettingCell: UITableViewCell {
         titleLb.text = row.title.localized
         valueLb.text = row.value
         
-        if let value = row.value, row.id == "conservatism", modelId != C_LOG, modelId != C_LOGPLUS, modelId != C_GRA {
+        if let value = row.value, row.id == "conservatism", modelId != C_LOG, modelId != C_LOGPLUS, modelId != C_GRA, modelId != C_CEN {
             if value.toInt() == 0 {
                 valueLb.text = value + " (GF: 90 - 90)"
             } else if value.toInt() == 1 {

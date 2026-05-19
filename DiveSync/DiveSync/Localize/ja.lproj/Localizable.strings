@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "ダイブコンピュータのファームウェアは最新版です！";
 "Are you sure to want to delete this device?" = "このデバイスを削除してもよろしいですか？";
 "Downloading firmware v" = "ファームウェア v をダウンロード中";
-" Firmware file not found on server." = "サーバー上でファームウェアファイルが見つかりません。";
+"Firmware file not found on server." = "サーバー上でファームウェアファイルが見つかりません。";
 " Download failed" = "ダウンロードに失敗しました";
 "I agree" = "同意する";
 "I do not agree" = "同意しない";

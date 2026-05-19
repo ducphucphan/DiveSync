@@ -120,7 +120,7 @@
 "Your dive computer firmware is up to date!" = "您的潜水电脑固件已更新至最新版本！";
 "Are you sure to want to delete this device?" = "确定要删除此设备吗？";
 "Downloading firmware v" = "下载固件 v";
-" Firmware file not found on server." = "服务器未找到固件文件。";
+"Firmware file not found on server." = "服务器未找到固件文件。";
 " Download failed" = "下载失败";
 "I agree" = "我同意";
 "I do not agree" = "我不同意";
