@@ -45,11 +45,11 @@ class OwnerInfoViewController: BaseViewController {
     @IBOutlet weak var nameLb: UILabel!
     @IBOutlet weak var addImgLb: UILabel!
     
-    let titleData = ["Weight", "Height", "Gender", "Blood Type", "Birth Date", "Address",
+    let titleData = ["Owner's Name", "Weight", "Height", "Gender", "Blood Type", "Birth Date", "Address",
                      "City", "State/Province", "Zip/Post Code", "Phone Number",
                      "E-mail", "Certifications", "Emergency Contact Name", "Emergency Contact Phone"]
     
-    let keys = ["weight", "height", "gender", "blood_type", "birthdate", "address",
+    let keys = ["fullname", "weight", "height", "gender", "blood_type", "birthdate", "address",
                 "city", "state_province", "zipcode", "phone", "mail", "cert",
                 "emergency_contact_name", "emergency_contact_phone"]
     
@@ -74,8 +74,13 @@ class OwnerInfoViewController: BaseViewController {
         
         if let userInfos = DatabaseManager.shared.runSQL("select * from userinfo WHERE id=1"), userInfos.count > 0 {
             self.profileValues = userInfos.first ?? [:]
-            self.nameLb.text = self.profileValues.string(for: "fullname", default: "John Doe")
+            self.updateHeaderName()
         }
+    }
+    
+    private func updateHeaderName() {
+        let name = self.profileValues.string(for: "fullname", default: "John Doe")
+        self.nameLb.text = name.isEmpty ? "John Doe" : name
     }
     
     @IBAction func editUserName(_ sender: Any) {
@@ -86,6 +91,9 @@ class OwnerInfoViewController: BaseViewController {
                 self.nameLb.text = value
                 DatabaseManager.shared.updateTable(tableName: "userinfo",
                                                    params: ["fullname":value ?? ""])
+                
+                self.profileValues["fullname"] = value
+                self.tableView.reloadData()
             default:
                 break
             }
@@ -153,7 +161,7 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
             if let stringValue = value as? String, !stringValue.isEmpty {
                 displayValue = stringValue
             } else {
-                displayValue = "-"
+                displayValue = (key == "fullname") ? "John Doe" : "-"
             }
             
             // Cập nhật logic format cho ngày sinh
@@ -164,6 +172,7 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
             }
             
             cell.bindCell(title: titleData[indexPath.row].localized.capitalized, value: displayValue)
+            cell.accessoryType = .none
         }
         
         cell.backgroundColor = .clear
@@ -182,7 +191,7 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
         
         switch fieldType {
         case .plainText:
-            InputAlert.show(title: titleText, currentValue: currentValue) { action in
+            InputAlert.show(title: titleText, currentValue: (currentValue == "-") ? "" : currentValue) { action in
                 switch action {
                 case .save(let value):
                     self.updateValue(value ?? "", at: indexPath)
@@ -280,6 +289,10 @@ extension OwnerInfoViewController: UITableViewDataSource, UITableViewDelegate {
         // Cập nhật lại UI local
         profileValues[key] = valueToSave
         tableView.reloadRows(at: [indexPath], with: .automatic)
+        
+        if key == "fullname" {
+            self.updateHeaderName()
+        }
     }
 }
 

@@ -269,15 +269,22 @@ class LogViewController: BaseViewController {
             list.append(MetricModel(type: .tlbg, title: "Max TLBG".localized, value: getMaxTLBG(), iconName: "tlbg"))
         }
         
-        if [C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
+        if [C_LOG, C_LOGPLUS, C_GRA].contains(modelId) {
             list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Rate".localized, value: getMaxAscRate(), iconName: "max_accent_rate"))
             list.append(MetricModel(type: .oxtox, title: "Max Descent Rate".localized, value: getMaxDescRate(), iconName: "max_accent_rate"))
         } else {
-            list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate"))
+            if modelId != C_CEN {
+                list.append(MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate"))
+            }
         }
         
         list.append(MetricModel(type: .minTemp, title: "Min Temperature".localized, value: getMinTemp(), iconName: "min_temp"))
-        list.append(MetricModel(type: .maxTemp, title: "Max Temperature".localized, value: getMaxTemp(), iconName: "max_temp"))
+        
+        // Chỉ add maxTemp nếu KHÔNG PHẢI là C_CEN hoặc C_GRA (vì C_LOG và C_LOGPLUS vẫn có maxTemp)
+        if ![C_CEN, C_GRA].contains(modelId) {
+            list.append(MetricModel(type: .maxTemp, title: "Max Temperature".localized, value: getMaxTemp(), iconName: "max_temp"))
+        }
+        
         if ![C_LOG, C_LOGPLUS, C_GRA, C_CEN].contains(modelId) {
             list.append(MetricModel(type: .oxtox, title: "OXTOX end dive".localized, value: getOXTOX(), iconName: "o2"))
         }

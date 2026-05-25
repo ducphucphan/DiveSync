@@ -49,8 +49,18 @@ class LogGraphCell: UICollectionViewCell {
     
     var maxTime = 0.0
     var maxDepth = 0.0
+    
+    var modelId: Int = 0
         
-    var diveLog:Row!
+    var diveLog: Row! {
+        didSet {
+            if let log = diveLog {
+                modelId = log.stringValue(key: "ModelID").toInt()
+            }
+        }
+    }
+    
+    let newLook = false
     
     var diveProfile: [Row] = [] {
         didSet {
@@ -182,7 +192,29 @@ class LogGraphCell: UICollectionViewCell {
         fillSet.setColor(UIColor.B_3)
         fillSet.fillAlpha = 1
         fillSet.drawFilledEnabled = true
-        fillSet.fillColor = UIColor.B_3
+        
+        if newLook {
+            // --- ĐOẠN THAY ĐỔI Ở ĐÂY ---
+            // 1. Định nghĩa mảng màu từ nhạt (alpha thấp) đến đậm (B_3 gốc)
+            let gradientColors = [
+                UIColor(hex: "0x43839C").cgColor, // Màu lợt ở phía dưới
+                UIColor(hex: "0x206780").cgColor, // Màu lợt ở phía dưới
+                UIColor.B_3.cgColor                          // Màu đậm ở phía trên (đỉnh đồ thị)
+            ] as CFArray
+            
+            // 2. Cấu hình vị trí chuyển màu (từ 0.0 đến 1.0)
+            let colorLocations: [CGFloat] = [1.0, 0.5, 0.0]
+            
+            // 3. Tạo CGGradient
+            if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradientColors, locations: colorLocations) {
+                // Sử dụng LinearGradientFill thay vì Fill
+                fillSet.fill = LinearGradientFill(gradient: gradient, angle: 90.0)
+            }
+            // ----------------------------
+        } else {
+            fillSet.fillColor = UIColor.B_3
+        }
+        
         fillSet.valueTextColor = .clear
         
         ///
@@ -195,9 +227,15 @@ class LogGraphCell: UICollectionViewCell {
         var currentState: DiveStrokeState?
 
         func color(for state: DiveStrokeState) -> UIColor {
-            switch state {
+            let finalState = [C_CEN, C_LOG, C_LOGPLUS, C_GRA].contains(modelId) ? .normal : state
+            
+            switch finalState {
             case .normal:
-                return UIColor.B_3          // giống fill
+                if newLook {
+                    return .white.withAlphaComponent(0.5)          // giống fill
+                } else {
+                    return UIColor.B_3
+                }
             case .ascentFast:
                 return .red
             case .deco:
@@ -265,6 +303,14 @@ class LogGraphCell: UICollectionViewCell {
         // Gán dữ liệu vào biểu đồ
         lineChartView.data = LineChartData(dataSets: dataSets)
         //lineChartView.data = LineChartData(dataSet: fillSet)
+        
+        if newLook {
+            lineChartView.renderer = ShadowLineChartRenderer(
+                dataProvider: lineChartView,
+                animator: lineChartView.chartAnimator,
+                viewPortHandler: lineChartView.viewPortHandler
+            )
+        }
         
         // Add optional styling
         lineChartView.legend.enabled = false
@@ -378,6 +424,19 @@ class LogGraphCell: UICollectionViewCell {
         lineChartView.marker = marker
         */
         
+        if newLook {
+            // ---- THÊM ĐOẠN CODE DƯỚI ĐÂY ----
+            // Tự động highlight điểm chính giữa đồ thị sau khi vẽ xong
+            if !chartEntries.isEmpty {
+                let midIndex = chartEntries.count / 2
+                let midEntry = chartEntries[midIndex]
+                
+                // Thực hiện highlight điểm ở giữa (dataSetIndex: 0 đại diện cho fillSet)
+                lineChartView.highlightValue(x: midEntry.x, dataSetIndex: 0, callDelegate: true)
+            }
+            // ---------------------------------
+        }
+        
         // Custom chổ này để bỏ đường đứt nét tại vị trí zero, thay vào đó là đường bình thường không đứt nét.
         lineChartView.xAxisRenderer = CustomXAxisRenderer(viewPortHandler: lineChartView.viewPortHandler, axis: lineChartView.xAxis, transformer: lineChartView.getTransformer(forAxis: .left))
     }
@@ -413,7 +472,6 @@ extension LogGraphCell: ChartViewDelegate {
             )
             showAlarms(alarms)
             
-            let modelId = diveLog.stringValue(key: "ModelID").toInt()
             let unit = diveLog.stringValue(key: "Units").toInt()
             let DepthFT = selectedRow.stringValue(key: "DepthFT").toDouble() / 10
             if unit == FT {
@@ -486,7 +544,11 @@ extension LogGraphCell {
         soft.drawCirclesEnabled = false
         soft.drawValuesEnabled = false
         soft.drawFilledEnabled = false
-        soft.lineWidth = 3.0
+        if newLook {
+            soft.lineWidth = 2.0
+        } else {
+            soft.lineWidth = 3.0
+        }
         soft.mode = .linear
         soft.setColor(baseColor.withAlphaComponent(0.33))
         
@@ -537,6 +599,32 @@ class CustomXAxisRenderer: XAxisRenderer {
             context.strokePath()
         }
 
+        context.restoreGState()
+    }
+}
+
+class ShadowLineChartRenderer: LineChartRenderer {
+    
+    override func drawData(context: CGContext) {
+        context.saveGState()
+        
+        // Cấu hình đổ bóng vệt dài hơn
+        context.setShadow(
+            // Tăng height từ 2.0 lên 8.0 (hoặc hơn) để kéo vệt bóng dài xuống dưới
+            // Nếu muốn bóng đổ hơi chéo sang phải, bạn có thể chỉnh width: 2.0
+            offset: CGSize(width: 0.0, height: 4.0),
+            
+            // Tăng blur lên một chút để bóng trông tự nhiên khi kéo dài
+            blur: 8.0,
+            
+            // Giữ nguyên hoặc giảm nhẹ alpha (0.25) vì khi bóng dài ra,
+            // màu nhạt đi một chút trông sẽ sang và mượt hơn
+            color: UIColor.black.withAlphaComponent(0.5).cgColor
+        )
+        
+        // Gọi hàm drawData của siêu lớp để tiến hành vẽ đường line
+        super.drawData(context: context)
+        
         context.restoreGState()
     }
 }

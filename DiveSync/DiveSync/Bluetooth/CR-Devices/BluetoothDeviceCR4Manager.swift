@@ -280,7 +280,8 @@ final class BluetoothDeviceCR4Manager {
     private var discoveredChars: [Characteristic] = []
     private var enabledUUIDs = Set<CBUUID>()
     
-    
+    private let MAX_BYTES_IN_BLOCK = 128
+    private let HEADER_BYTES_LENGTH = 156
     
     let timezoneOffsets: [Double] = [-12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, +0, +1, +2, +3, +4, +5, +6, +7, +8, +9, +10, +11, +12]
     
@@ -522,7 +523,7 @@ final class BluetoothDeviceCR4Manager {
         let calculatedChecksum = ~sum
         
         if calculatedChecksum != expectedChecksum {
-            print("❌ Checksum mismatch! Calc: \(calculatedChecksum), Expected: \(expectedChecksum)")
+            PrintLog("❌ Checksum mismatch! Calc: \(calculatedChecksum), Expected: \(expectedChecksum)")
             // return nil // Bạn có thể bỏ comment nếu muốn chặn dữ liệu sai
         }
 
@@ -537,7 +538,7 @@ final class BluetoothDeviceCR4Manager {
             
             // Debug
             if let commandKey = BleCommandKey.from(mainCmd: commandByte, subCmd: subByte) {
-                print("Command: \(commandKey), Data Len: \(dataLength), Payload: \(payloadData as NSData)")
+                PrintLog("Command: \(commandKey), Data Len: \(dataLength), Payload: \(payloadData as NSData)")
             }
             
             return payloadData
@@ -648,7 +649,7 @@ final class BluetoothDeviceCR4Manager {
                             if rawIndex >= 0 && rawIndex < timezoneOffsets.count {
                                 let deviceOffset = timezoneOffsets[rawIndex]
                                 self.currentDeviceTimeZone = deviceOffset
-                                print("Device đang ở múi giờ: UTC \(deviceOffset)")
+                                PrintLog("Device đang ở múi giờ: UTC \(deviceOffset)")
                             }
                         }
                         
@@ -658,10 +659,8 @@ final class BluetoothDeviceCR4Manager {
             }
         }
         
-        
-        
         runSequential(steps)
-            .do(onError: { print("Lỗi xuất hiện từ runSequential: \($0)") })
+            .do(onError: { PrintLog("Lỗi xuất hiện từ runSequential: \($0)") })
             .flatMap { [weak self] _ -> Observable<DeviceReadResult> in
                 guard let self else {
                     return .error("" as! Error)
@@ -674,13 +673,13 @@ final class BluetoothDeviceCR4Manager {
                     let cleanData = trimmedData.filter { $0 >= 32 && $0 <= 126 }
                     
                     self.SerialNo = cleanData.asciiString ?? ""
-                    print("SerialNo = \(self.SerialNo)")
+                    PrintLog("SerialNo = \(self.SerialNo)")
                 }
                 
                 if let list = responses[.kFirmwareRev], let first = list.first {
                     let trimmedData = first.data
                     self.firmwareRev = trimmedData.asciiString ?? ""
-                    print("firmwareRev = \(self.firmwareRev)")
+                    PrintLog("firmwareRev = \(self.firmwareRev)")
                 }
                 
                 switch syncType {
@@ -930,7 +929,7 @@ final class BluetoothDeviceCR4Manager {
             PrintLog("freeDivingDeepestDepth: \(freeDivingDeepestDepth)")
         }
         
-        print(dcSettings)
+        PrintLog(dcSettings)
         DatabaseManager.shared.saveDeviceSettings(modelId: self.ModelID, serialNo: self.SerialNo, dcSettings: dcSettings)
         
         return .just(.success)
@@ -963,7 +962,7 @@ final class BluetoothDeviceCR4Manager {
             
             guard let row = results.first else { return .just(.failure(error: nil)) }
             
-            print("\(results)")
+            PrintLog("\(results)")
             
             let writeUnits = row.stringValue(key: "Units").toInt()
             
@@ -1057,10 +1056,9 @@ final class BluetoothDeviceCR4Manager {
     }
     
     private func U_ConvertDives(_ log: DiveRecord) throws -> Void {
-        let headerSize = 548
         let data = log.logData
         
-        guard data.count >= headerSize else {
+        guard data.count >= HEADER_BYTES_LENGTH else {
             throw NSError(domain: "DiveHeader", code: -1)
         }
         
@@ -1071,14 +1069,14 @@ final class BluetoothDeviceCR4Manager {
             divedata["DeviceName"] = dcInfo[1]
         }
         
-        let header = data.prefix(headerSize)
+        let header = data.prefix(HEADER_BYTES_LENGTH)
         
         // 2. Firmware Version (Offset 0x022 - Byte 34, Size 6)
-        let firmwareVersion = String(data: header[34..<40], encoding: .ascii)?.trimmingCharacters(in: .controlCharacters) ?? ""
-        print("FIRMWARE VERSION: \(firmwareVersion)")
+        let firmwareVersion = String(data: header[48...53], encoding: .ascii)?.trimmingCharacters(in: .controlCharacters) ?? ""
+        PrintLog("FIRMWARE VERSION: \(firmwareVersion)")
         
         // 3. Log Index (Offset 0x02A - Byte 42, Size 2)
-        let logIndex = header.u16LE(42)
+        let logIndex = header.u32LE(0)
         divedata["DiveNo"] = logIndex
         divedata["ModelID"] = self.ModelID
         divedata["SerialNo"] = self.SerialNo
@@ -1087,39 +1085,64 @@ final class BluetoothDeviceCR4Manager {
         
         // 4. Dive Mode (Offset 0x02C - Byte 44, Size 1)
         // 0: scuba, 1: gauge, 2: freedive, 3: TEC
-        let diveType = header.u8(44)
+        let diveType = header.u32LE(4)
         divedata["DiveMode"] = diveType
         
-        divedata["Water"] = header.u8(45)
-        
-        // Timezone: Offset 0x04E (78)
-        let startUTC = header.u32LE(56)       // Offset 0x038
-        let duration = header.u16LE(50) // 1030 giây (Offset 0x032)
-        let tzIndex = Int(header.u8(78))      // Offset 0x04E [cite: 4]
+        // 1. Đọc Ngày/Giờ bắt đầu (Bắt đầu từ Offset 12)
+        let year   = 2000 + Int(header.u8(12)) // [0]=year : X = 2000+X
+        let month  = Int(header.u8(13))        // [1]=month
+        let day    = Int(header.u8(14))        // [2]=day
 
+        let hour   = Int(header.u8(15))        // [0]=hour
+        let minute = Int(header.u8(16))        // [1]=minute
+        let second = Int(header.u8(17))        // [2]=second
+
+        // 2. Đọc Múi giờ (Offset 18)
+        let tzIndex = Int(header.u8(18))       // time zone of start time (0-24)
         let tzHours = (tzIndex >= 0 && tzIndex < timezoneOffsets.count) ? timezoneOffsets[tzIndex] : 0.0
 
-        let endUTC = startUTC + duration
+        // 3. Đọc tổng thời gian lặn (Duration) -> Thay thế cho u16LE(50) cũ
+        // Theo spec mới: Vị trí 20, kiểu u32 (u32LE)
+        let totalDivingTime = header.u32LE(20)
 
-        let startDate = Date(timeIntervalSince1970: TimeInterval(startUTC))
-        let endDate = Date(timeIntervalSince1970: TimeInterval(endUTC))
+        // 4. Tạo đối tượng Ngày bắt đầu (StartDate) dưới dạng gốc UTC để khớp với hàm format của bạn
+        
+        let calendar = Calendar.current
+        
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        components.hour = hour
+        components.minute = minute
+        components.second = second
+        components.timeZone = TimeZone(secondsFromGMT: 0) // Ép về mốc gốc UTC
 
+        guard let startDate = calendar.date(from: components) else {
+            PrintLog("Error parsing Start Date")
+            return
+        }
+
+        // 5. Tính toán Ngày kết thúc (EndDate) bằng cách cộng thêm totalDivingTime (giây)
+        let endDate = startDate.addingTimeInterval(TimeInterval(totalDivingTime))
+
+        // 6. Format xuất ra dữ liệu giống hệt logic cũ của bạn
         divedata["DiveStartLocalTime"] = formatDiveDate(startDate, timezoneOffset: tzHours)
         divedata["DiveEndLocalTime"] = formatDiveDate(endDate, timezoneOffset: tzHours)
         
-        divedata["TotalDiveTime"] = duration // Lưu giá trị 1030
+        divedata["TotalDiveTime"] = totalDivingTime // Lưu giá trị 1030
         
         // 6. Depth (Offset 0x050 & 0x052) - Đơn vị: 100 = 1m
-        let maxDepthRaw = header.u16LE(80)
+        let maxDepthRaw = header.u32LE(28)
         let maxDepth = Double(maxDepthRaw) / 100.0
         divedata["MaxDepthFT"] = convertMeter2Feet(maxDepth)
         
-        let avgDepthRaw = header.u16LE(82)
+        let avgDepthRaw = header.u32LE(36)
         let avgDepth = Double(avgDepthRaw) / 100.0
         divedata["AvgDepthFT"] = convertMeter2Feet(avgDepth)
         
         // 7. Temperature (Offset 0x058) - Đơn vị: 0.1 C
-        let tempMinRaw = header.u16LE(88)
+        let tempMinRaw = header.u32LE(32)
         let tempMin = convertC2F(Double(tempMinRaw) / 10.0)
         divedata["MinTemperatureF"] = tempMin
         // Spec mới không ghi rõ MaxTemp, thường dùng MinTemp làm mốc môi trường
@@ -1130,7 +1153,7 @@ final class BluetoothDeviceCR4Manager {
         //divedata["TotalDiveTime"] = UInt32(header.u16LE(50))
         
         // Surface Interval (Offset 0x034 - 52): seconds (u32)
-        let surfTimeValue = header.u32LE(52)
+        let surfTimeValue = header.u32LE(56)
         let limit24H: UInt32 = 86400 // 24 * 60 * 60
         if surfTimeValue > limit24H {
             divedata["SurfTime"] = 0
@@ -1138,90 +1161,33 @@ final class BluetoothDeviceCR4Manager {
             divedata["SurfTime"] = surfTimeValue
         }
         
-        
         // 9. Sampling Rate (Offset 0x04F - 79): seconds (u8)
-        let sampleRate = header.u8(79)
+        let sampleRate = header.u32LE(24)
         divedata["SamplingTime"] = Int(sampleRate)
         
-        let rawAscentRate = Double(header.u16LE(90)) / 100 //100 in 1 meter/sec (ref. salinity), 0 at surface
-        let ftPerMin = convertMeter2Feet(rawAscentRate) * 60
-        // Lưu vào Database (thường làm tròn 1 hoặc 2 chữ số thập phân tùy nhu cầu)
-        let ascentRatevalueToSave = (ftPerMin * 100).rounded() / 100 // Kết quả: 82.68
-        divedata["AscentSpeedAlarm"] = ascentRatevalueToSave
-        
-        let startNitroPressure = header.u16ArrayLE(144, count: 16)
-        print("startNitroPressure: \(startNitroPressure)")
-        
-        let endNitroPressure = header.u16ArrayLE(208, count: 16)
-        print("endNitroPressure: \(endNitroPressure)")
-        
-        let startHeliumPressure = header.u16ArrayLE(176, count: 16)
-        print("startHeliumPressure: \(startHeliumPressure)")
-        
-        let endHeliumPressure = header.u16ArrayLE(240, count: 16)
-        print("endHeliumPressure: \(endHeliumPressure)")
-        
-        // 10. Mark Counts (Dùng để debug/biết lượng profile data)
-        print("hrMarkCount: \(header.u16LE(382))")
-        print("depthMarkCount: \(header.u16LE(384))")
-        print("alarmMarkCount: \(header.u16LE(386))")
-        print("systemMarkCount: \(header.u16LE(396))")
-        
-        divedata["Mix1Fo2Percent"] = header.u8(125)
-        divedata["Mix2Fo2Percent"] = header.u8(126)
-        divedata["Mix3Fo2Percent"] = header.u8(127)
-        divedata["Mix4Fo2Percent"] = header.u8(128)
-        divedata["Mix5Fo2Percent"] = header.u8(129)
-        
-        divedata["Mix1FHePercent"] = header.u8(130)
-        divedata["Mix2FHePercent"] = header.u8(131)
-        divedata["Mix3FHePercent"] = header.u8(132)
-        divedata["Mix4FHePercent"] = header.u8(133)
-        divedata["Mix5FHePercent"] = header.u8(134)
-        
-        divedata["Mix1PpO2Barx100"] = header.u8(135)
-        divedata["Mix2PpO2Barx100"] = header.u8(136)
-        divedata["Mix3PpO2Barx100"] = header.u8(137)
-        divedata["Mix4PpO2Barx100"] = header.u8(138)
-        divedata["Mix5PpO2Barx100"] = header.u8(139)
-
-        divedata["MaxPpo2"] = Double(header.u8(135)) / 10
+        divedata["MaxPpo2"] = Double(header.u32LE(68)) / 10
         
         /*
          0 : Conserve   CF1 (35/75)
          1 : Normal       CF2 (40/85)
          2 : Aggressive CF3 (45/95)
          */
-        divedata["GfHighPercent"] = header.u8(142)
-        divedata["GfLowPercent"] = header.u8(143)
-        
-        let depthAlarmOffset = 280
-        let rawDepth = data.u16(depthAlarmOffset)
-
-        // Kiểm tra nếu báo động đang tắt (0xFFFF)
-        let depthInMeters: Double = (rawDepth == 0xFFFF) ? 0.0 : Double(rawDepth) / 100.0
-
-        if units == M {
-            // Gán giá trị đơn lẻ (không để trong ngoặc vuông nếu bạn muốn lưu kiểu Double)
-            divedata["DepthAlarmMT"] = depthInMeters
-        } else {
-            // Chuyển đổi sang Feet nếu đơn vị không phải là Mét
-            divedata["DepthAlarmFT"] = convertMeter2Feet(depthInMeters)
+        let safetyFactor = header.u32LE(64)
+        var high = 75
+        var low = 35
+        if safetyFactor == 1 {
+            high = 85
+            low = 40
+        } else if safetyFactor == 2 {
+            high = 95
+            low = 45
         }
-        
-        let timeStartOffset = 290
-        let rawTime = data.u16(timeStartOffset)
-
-        // Kiểm tra nếu báo động tắt (0xFF hoặc 0xFFFF tùy theo thực tế thiết bị)
-        // Đơn vị ở đây đã là giây (seconds) nên không cần chia 100
-        let timeInSeconds: Int = (rawTime == 0xFFFF || rawTime == 0xFF) ? 0 : rawTime
-
-        // Gán vào divedata
-        divedata["DiveTimeAlarm"] = timeInSeconds
+        divedata["GfHighPercent"] = high
+        divedata["GfLowPercent"] = low
         
         // 11. Profile Length / Data Length (Offset 0x18E - 398)
-        let dataLength = header.u16LE(398)
-        print("DATA LENGTH: \(dataLength)")
+        let dataLength = header.u32LE(8)
+        PrintLog("DATA LENGTH: \(dataLength)")
         
         divedata["Units"] = units
         PrintLog(divedata)
@@ -1230,85 +1196,91 @@ final class BluetoothDeviceCR4Manager {
         if rs.existed == true { return }
         
         // DIVE PROFILE
-        // 12. DIVE PROFILE (Bắt đầu từ byte 548)
-        let profileData = data.subdata(in: headerSize..<data.count)
+        
+        // Tính toán vị trí kết thúc mong muốn dựa trên dataLength
+        let desiredEndIndex = HEADER_BYTES_LENGTH + dataLength
+
+        // Đảm bảo mong muốn không vượt quá tổng số bytes thực tế đang có trong đối tượng `data`
+        let safeEndIndex = min(desiredEndIndex, data.count)
+
+        // Cắt subdata một cách an toàn
+        let profileData = data.subdata(in: HEADER_BYTES_LENGTH..<safeEndIndex)
+        
+        PrintLog("📊 Actual profileData bytes cut: \(profileData.count) / Expected: \(dataLength)")
+        
         var offset = 0
         var diveTime = 0
         let samplingTime = divedata["SamplingTime"] as? Int ?? 0
 
         // Các biến tạm để giữ dữ liệu sự kiện cho đến khi gặp gói MT_DEPTH
-        //var currentHeartRate: Int = 0
-        var currentSpO2: Int = 0
         var currentAlarmID: Int = 0
         var decoStopDepth: Double = 0
         var decoTime: Int = 0
         var maxTemp = tempMinRaw
+        var temperature: Double = Double(tempMinRaw)
         
         while offset < profileData.count {
             let type = profileData.u8(offset)
             
             switch type {
-            case 0x51: // MT_DEPTH (Size: 6 bytes)
-                if offset + 6 <= profileData.count {
-                    let depthRaw = profileData.u16LE(offset + 2) // depth in mBar
-                    let tempRaw = profileData.u16LE(offset + 4)  // 0.1°C
-                    
-                    let depth = (Double(depthRaw) / 100.0) * 10.0
-                    let temperature = Double(tempRaw)
-                    
-                    // Khởi tạo row với các thông số từ thiết bị cũ
-                    var row: [String: Any] = [:]
-                    row["DiveID"] = rs.diveID
-                    row["DiveTime"] = diveTime
-                    row["DepthFT"] = depth
-                    row["TemperatureF"] = temperature
-                    
-                    if tempRaw > maxTemp { maxTemp = tempRaw }
-                    
-                    // Gán các giá trị tích lũy từ các gói khác (nếu có)
-                    row["OxToxPercent"] = currentSpO2 // Ánh xạ SpO2 vào cột cũ nếu cần
-                    row["AlarmID"] = currentAlarmID
-                    row["DecoStopDepthFT"] = decoStopDepth
-                    row["DecoTime"] = decoTime
-                    
-                    // LƯU VÀO DATABASE (Đúng lúc gặp gói Depth)
-                    DatabaseManager.shared.saveDiveProfile(profile: row)
-                    
-                    // Tăng diveTime theo chu kỳ lấy mẫu
-                    diveTime += samplingTime
-                    offset += 6
-                    
-                    // Reset các biến chỉ xuất hiện theo sự kiện (tùy nhu cầu)
-                    currentAlarmID = 0
-                } else { offset = profileData.count }
-                
-            case 0x5B: // MT_HR (Size: 4 bytes)
-                if offset + 4 <= profileData.count {
-                    //currentHeartRate = Int(profileData.u8(offset + 2))
-                    currentSpO2 = Int(profileData.u8(offset + 3))
-                    offset += 4
-                } else { offset = profileData.count }
-                
-            case 0x52: // MT_ALARM (Size: 8 bytes)
+            case 0x01: // ALARM_DIVISOR (Size: 8 bytes)
                 if offset + 8 <= profileData.count {
                     currentAlarmID = Int(profileData.u8(offset + 1))
                     offset += 8
                 } else { offset = profileData.count }
                 
-            case 0x54: // MT_DECO (Size: 8 bytes)
+            case 0x02: // TEMP_DIVISOR (Size: 6 bytes)
+                if offset + 6 <= profileData.count {
+                    // 1. Đọc dữ liệu Độ sâu (mBar) từ byte thứ 2 và 3 (offset + 2)
+                    let depthRaw = profileData.u16LE(offset + 2)
+                    let depth = (Double(depthRaw) / 100.0) * 10.0
+                    
+                    // 2. Đọc dữ liệu Nhiệt độ (0.1°C) từ byte thứ 4 và 5 (offset + 4)
+                    let tempRaw = profileData.u16LE(offset + 4)
+                    temperature = Double(tempRaw)
+                    
+                    if tempRaw > maxTemp { maxTemp = tempRaw }
+                    
+                    // 3. Khởi tạo row và gom toàn bộ dữ liệu (bao gồm cả các gói sự kiện 0x01, 0x04 trước đó nếu có)
+                    var row: [String: Any] = [:]
+                    row["DiveID"] = rs.diveID
+                    row["DiveTime"] = diveTime
+                    row["DepthFT"] = depth
+                    row["TemperatureF"] = temperature
+                    row["AlarmID"] = currentAlarmID
+                    
+                    row["DecoStopDepthFT"] = decoStopDepth
+                    row["DecoTime"] = decoTime
+                    
+                    // 4. LƯU VÀO DATABASE (Chạy theo chu kỳ của gói 0x02)
+                    DatabaseManager.shared.saveDiveProfile(profile: row)
+                    
+                    // 5. Cập nhật các biến chạy cho chu kỳ kế tiếp
+                    diveTime += samplingTime
+                    offset += 6
+                    
+                    // 6. RESET các biến sự kiện để tránh lặp lại ở chu kỳ sau nếu không có sự kiện mới
+                    currentAlarmID = 0
+                    decoTime = 0       // Bật reset nếu bạn muốn thông tin Deco
+                    decoStopDepth = 0  // chỉ xuất hiện đúng 1 lần khi có gói 0x04
+                } else { offset = profileData.count }
+                
+            case 0x03: // DECO_DIVISOR (Size: 6 bytes)
+                if offset + 6 <= profileData.count {
+                    offset += 6
+                } else { offset = profileData.count }
+                
+            case 0x04: // CEILING_DIVISOR (Size: 8 bytes)
                 if offset + 8 <= profileData.count {
-                    let decoType = profileData.u8(offset + 1) // 0=deco state, 1=stop depth [cite: 4]
-                    if decoType == 1 {
-                        decoStopDepth = Double(profileData.u16LE(offset + 4)) // value1 [cite: 4, 5]
-                        decoTime = Int(profileData.u16LE(offset + 6)) // value2 [cite: 5]
+                    let decoState = profileData.u16LE(offset + 4)
+                    if decoState == 1 {
+                        decoStopDepth = Double(profileData.u16LE(offset + 2))
+                        decoTime = Int(profileData.u8(offset + 1))
                     }
                     offset += 8
                 } else { offset = profileData.count }
                 
-            case 0x58: // MT_TISSUE_N2 (Size: 36 bytes)
-                offset += 36
-                
-            case 0x5F: // MT_SYSTEM (Size: 6 bytes)
+            case 0x05: // CNS_DIVISOR (Size: 36 bytes)
                 offset += 6
                 
             default:
@@ -1529,43 +1501,43 @@ final class BluetoothDeviceCR4Manager {
                     return .just(.noDiveData)
                     
                 case .success:
+                    PrintLog("🚀 Start downloading \(self.numOfLogs) logs")
                     
-//                    PrintLog("🚀 Start downloading \(self.numOfLogs) logs")
-//                    
-//                    let totalLogs = Int(self.numOfLogs)
-//                        
-//                        let observables = (0..<totalLogs).map { logId in
-//                            return self.sendGetLog(logIndex: logId, onProgress: { percent in
-//                                // ✅ Hiển thị: Downloading dive 1/10 (45%)
-//                                let statusMessage = String(format: "%@ %d/%d (%d%%)",
-//                                                           "Downloading dive".localized,
-//                                                           logId + 1,
-//                                                           totalLogs,
-//                                                           percent)
-//                                
-//                                // Cập nhật lên UI thread
-//                                DispatchQueue.main.async {
-//                                    ProgressHUD.animate(statusMessage)
-//                                }
-//                            })
-//                        }
-//                    
-//                    return Observable.concat(observables)
-//                        .toArray()
-//                        .map { records in
-//                            // Lọc bỏ nil để chỉ còn lại những log thực sự được tải về
-//                            let newDownloadedRecords = records.compactMap { $0 }
-//                                                        
-//                            newDownloadedRecords.forEach { record in
-//                                do { try self.U_ConvertDives(record) } catch { }
-//                            }
-//                            
-//                            return newDownloadedRecords.isEmpty ? .noDiveData : .success
-//                        }
-//                        .asObservable()
+                    let totalLogs = Int(self.numOfLogs)
                     
-                    return .just(.success)
+                    let observables = (1...totalLogs).map { logId in
+                        return Observable<DiveRecord?>.deferred { [weak self] in
+                            guard let self = self else {
+                                return .just(nil)
+                            }
+                            
+                            return self.sendGetLog(logIndex: logId, onProgress: { percent in
+                                let statusMessage = String(format: "%@ %d/%d (%d%%)",
+                                                           "Downloading dive".localized,
+                                                           logId + 1,
+                                                           totalLogs,
+                                                           percent)
+                                
+                                DispatchQueue.main.async {
+                                    ProgressHUD.animate(statusMessage)
+                                }
+                            })
+                        }
+                    }
                     
+                    return Observable.concat(observables)
+                        .toArray()
+                        .map { records in
+                            // Lọc bỏ nil để chỉ còn lại những log thực sự được tải về
+                            let newDownloadedRecords = records.compactMap { $0 }
+                                                        
+                            newDownloadedRecords.forEach { record in
+                                do { try self.U_ConvertDives(record) } catch { }
+                            }
+                            
+                            return newDownloadedRecords.isEmpty ? .noDiveData : .success
+                        }
+                        .asObservable()
                 }
             }
     }
@@ -1591,14 +1563,143 @@ final class BluetoothDeviceCR4Manager {
             }
             
             let value = response.data.u16LE(0)
-            numOfLogs = Int(value)
+            self.numOfLogs = Int(value)
             
-            PrintLog("📒 NumOfLog = \(numOfLogs)")
+            PrintLog("📒 NumOfLog = \(self.numOfLogs)")
             
-            return .just(numOfLogs == 0 ? .noDiveData : .success)
+            return .just(self.numOfLogs == 0 ? .noDiveData : .success)
         }
         .catch { error in
                 .just(.failure(error: error.localizedDescription))
+        }
+    }
+    
+    private func sendGetLog(logIndex: Int, onProgress: ((Int) -> Void)? = nil) -> Observable<DiveRecord?> {
+            
+        if DatabaseManager.shared.isExistDiveLog(diveNo: logIndex, modelId: self.ModelID, serialNo: self.SerialNo) {
+            return .just(nil)
+        }
+        
+        // Bước 1: Gọi lệnh lấy LOG FULL HEADER (Subcommand 0x02)
+        let cmd = BleCommandKey.kGetFullLogHeader
+        return sendSimpleCommandWithResponse(
+            command: cmd.bleCommand.mainCmd.rawValue,
+            subcommand: cmd.bleCommand.subCmd,
+            rw: BleType.read.rawValue,
+            isReserved: false,
+            payload: [UInt8(logIndex & 0xFF), UInt8((logIndex >> 8) & 0xFF)]
+        )
+        .flatMap { [weak self] response -> Observable<DiveRecord?> in
+            guard let self = self else { return .error(NSError(domain: "BLE", code: -1)) }
+            if let error = response.error { return .error(error) }
+            
+            let headerData = response.data
+            guard headerData.count >= HEADER_BYTES_LENGTH else { return .error(NSError(domain: "BLE", code: -2)) }
+            
+            let profileDataLength = headerData.u32LE(8)
+            
+            /*
+            var profileDataLength = 0
+            if logIndex == 0 {
+                profileDataLength = 1106
+            } else if logIndex == 1 {
+                profileDataLength = 786
+            } else if logIndex == 2 {
+                profileDataLength = 942
+            } else if logIndex == 3 {
+                profileDataLength = 290
+            } else if logIndex == 4 {
+                profileDataLength = 248
+            }
+            */
+            
+            var segments = Int(profileDataLength / MAX_BYTES_IN_BLOCK)
+            if (profileDataLength % MAX_BYTES_IN_BLOCK) > 0 {
+                segments += 1
+            }
+            
+            PrintLog("SEGMENTS: \(segments) - PROFILE_DATA_LENGTH: \(profileDataLength)")
+            
+            var fullData = headerData
+            
+            // Nếu bản ghi không có dữ liệu profile, trả trực tiếp DiveRecord chứa độc nhất Header
+            if segments == 0 {
+                return .just(DiveRecord(diveNo: logIndex, logData: fullData, profiles: []))
+            }
+            
+            // 1. Tạo danh sách các khối lệnh HOÃN THI THỰC HIỆN (Deferred)
+            let stepss: [() -> Observable<Void>] = (0..<segments).map { segment in
+                return { [weak self] () -> Observable<Void> in
+                    guard let self = self else {
+                        return .error(NSError(domain: "BLE", code: -1, userInfo: [NSLocalizedDescriptionKey: "Manager released"]))
+                    }
+                    
+                    // Tính toán dataOffset tại thời điểm segment này THỰC SỰ ĐƯỢC CHẠY
+                    let dataOffset = segment * self.MAX_BYTES_IN_BLOCK
+                    
+                    let payload: [UInt8] = [
+                        UInt8(logIndex & 0xFF),
+                        UInt8((logIndex >> 8) & 0xFF),
+                        UInt8(dataOffset & 0xFF),
+                        UInt8((dataOffset >> 8) & 0xFF),
+                        UInt8((dataOffset >> 16) & 0xFF),
+                        UInt8((dataOffset >> 24) & 0xFF)
+                    ]
+                    
+                    let cmd = BleCommandKey.kGetLogIndexData
+                    
+                    // ✅ Bây giờ lệnh mới thực sự được gọi khi đến lượt nó
+                    return self.sendSimpleCommandWithResponse(
+                        command: cmd.bleCommand.mainCmd.rawValue,
+                        subcommand: cmd.bleCommand.subCmd,
+                        rw: BleType.read.rawValue,
+                        isReserved: false,
+                        payload: payload
+                    )
+                    .map { response -> Void in
+                        if let error = response.error { throw error }
+                        
+                        // Nối tiếp dữ liệu Profile vào sau Header
+                        fullData.append(response.data)
+                        
+                        // Tính toán tiến độ % chính xác
+                        let currentSegment = segment + 1
+                        let percent = (currentSegment * 100) / segments
+                        onProgress?(percent)
+                        
+                        return ()
+                    }
+                }
+            }
+
+            // 2. Chuyển cho runSequential thực thi tuần tự từng khối closure một
+            return self.runSequential(stepss)
+                .map { _ in
+                    return DiveRecord(diveNo: logIndex, logData: fullData, profiles: [])
+                    
+                    /*
+                    let fileName = "\(logIndex+1)"
+                    if let filePath = Bundle.main.path(forResource: fileName, ofType: "txt"),
+                       let fileContent = try? String(contentsOfFile: filePath, encoding: .utf8) {
+                        
+                        // Parse chuỗi hex sang đối tượng Data thực tế
+                        let hardcodedData = Data.fromRawLogText(fileContent)
+                        
+                        PrintLog("📝 Hardcoded successfully! Loaded \(hardcodedData.count) bytes from txt file.")
+                        
+                        // Trả về DiveRecord với dữ liệu mock từ file txt
+                        return DiveRecord(diveNo: logIndex, logData: hardcodedData, profiles: [])
+                    } else {
+                        PrintLog("⚠️ Error: Không tìm thấy hoặc không đọc được file txt trong Bundle!")
+                        // Fallback về fullData phòng trường hợp lỗi đọc file
+                        return DiveRecord(diveNo: logIndex, logData: fullData, profiles: [])
+                    }
+                    */
+                }
+        }
+        .catch { error in
+            PrintLog("❌ Lỗi trong quá trình lấy Log Index \(logIndex): \(error.localizedDescription)")
+            return .just(nil) // Hoặc .error(error) tùy thuộc vào cách tầng gọi phía ngoài xử lý lỗi
         }
     }
 }

@@ -94,3 +94,42 @@ extension Data {
         return value
     }
 }
+
+extension Data {
+    static func fromRawLogText(_ text: String) -> Data {
+        var hexString = ""
+        
+        // Chia file thành từng dòng
+        let lines = text.components(separatedBy: .newlines)
+        for line in lines {
+            // Tìm vị trí dấu đóng ngoặc vuông ']' để bỏ qua phần ""
+            if let closingBracketIndex = line.firstIndex(of: "]") {
+                let indexAfterBracket = line.index(after: closingBracketIndex)
+                let pureHexPart = line[indexAfterBracket...]
+                hexString += pureHexPart + " "
+            } else {
+                hexString += line + " "
+            }
+        }
+        
+        // Làm sạch: loại bỏ khoảng trắng, xuống dòng, tab...
+        let cleanedHex = hexString
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "\n", with: "")
+            .replacingOccurrences(of: "\r", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Chuyển chuỗi Hex thành bytes Data
+        var data = Data()
+        var index = cleanedHex.startIndex
+        while index < cleanedHex.endIndex {
+            let nextIndex = cleanedHex.index(index, offsetBy: 2, limitedBy: cleanedHex.endIndex) ?? cleanedHex.endIndex
+            let byteString = cleanedHex[index..<nextIndex]
+            if let byte = UInt8(byteString, radix: 16) {
+                data.append(byte)
+            }
+            index = nextIndex
+        }
+        return data
+    }
+}
