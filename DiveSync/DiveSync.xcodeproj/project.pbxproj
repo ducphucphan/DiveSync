@@ -79,6 +79,8 @@
 		486882232E3098BA00C98C8E /* SortOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882222E3098BA00C98C8E /* SortOptions.swift */; };
 		486882252E3098DB00C98C8E /* SortPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882242E3098DB00C98C8E /* SortPreferences.swift */; };
 		486BC7B52F0BAD1000406BC3 /* RecycleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486BC7B42F0BAD1000406BC3 /* RecycleViewController.swift */; };
+		486D427F2FCA8C2200D116AC /* StatsItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486D427E2FCA8C2200D116AC /* StatsItemView.swift */; };
+		486D42812FCA8C3900D116AC /* StatsItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 486D42802FCA8C3900D116AC /* StatsItemView.xib */; };
 		486F23D72EA0E4BF00A655D9 /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23D62EA0E4BF00A655D9 /* APIError.swift */; };
 		486F23D92EA0E4F100A655D9 /* HTTPMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23D82EA0E4F100A655D9 /* HTTPMethod.swift */; };
 		486F23DB2EA0E50500A655D9 /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486F23DA2EA0E50500A655D9 /* APIRequest.swift */; };
@@ -161,6 +163,11 @@
 		48BF1EA22DF6C8C6005286A0 /* SetTimeAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */; };
 		48C2FEAD2E7C2AA2003BC694 /* FirmwareURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */; };
 		48C9653D2F10E462007A794D /* OwnerInfoCardViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */; };
+		48CDF7B62FCD785B00ABDE9E /* 2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B22FCD785B00ABDE9E /* 2.txt */; };
+		48CDF7B72FCD785B00ABDE9E /* 4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B42FCD785B00ABDE9E /* 4.txt */; };
+		48CDF7B82FCD785B00ABDE9E /* 1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B12FCD785B00ABDE9E /* 1.txt */; };
+		48CDF7B92FCD785B00ABDE9E /* 3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B32FCD785B00ABDE9E /* 3.txt */; };
+		48CDF7BA2FCD785B00ABDE9E /* 5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B52FCD785B00ABDE9E /* 5.txt */; };
 		48CE8DC52DACB9C000A2DF33 /* BottomSheetPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DC42DACB9C000A2DF33 /* BottomSheetPickerViewController.swift */; };
 		48CE8DC82DACFDB100A2DF33 /* DSNormalCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CE8DC62DACFDB100A2DF33 /* DSNormalCell.swift */; };
 		48CE8DC92DACFDB100A2DF33 /* DSNormalCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48CE8DC72DACFDB100A2DF33 /* DSNormalCell.xib */; };
@@ -343,6 +350,8 @@
 		486882222E3098BA00C98C8E /* SortOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortOptions.swift; sourceTree = "<group>"; };
 		486882242E3098DB00C98C8E /* SortPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortPreferences.swift; sourceTree = "<group>"; };
 		486BC7B42F0BAD1000406BC3 /* RecycleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecycleViewController.swift; sourceTree = "<group>"; };
+		486D427E2FCA8C2200D116AC /* StatsItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsItemView.swift; sourceTree = "<group>"; };
+		486D42802FCA8C3900D116AC /* StatsItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StatsItemView.xib; sourceTree = "<group>"; };
 		486F23D62EA0E4BF00A655D9 /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
 		486F23D82EA0E4F100A655D9 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		486F23DA2EA0E50500A655D9 /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
@@ -429,6 +438,11 @@
 		48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetTimeAlert.swift; sourceTree = "<group>"; };
 		48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareURLBuilder.swift; sourceTree = "<group>"; };
 		48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnerInfoCardViewBuilder.swift; sourceTree = "<group>"; };
+		48CDF7B12FCD785B00ABDE9E /* 1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = 1.txt; sourceTree = "<group>"; };
+		48CDF7B22FCD785B00ABDE9E /* 2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = 2.txt; sourceTree = "<group>"; };
+		48CDF7B32FCD785B00ABDE9E /* 3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = 3.txt; sourceTree = "<group>"; };
+		48CDF7B42FCD785B00ABDE9E /* 4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = 4.txt; sourceTree = "<group>"; };
+		48CDF7B52FCD785B00ABDE9E /* 5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = 5.txt; sourceTree = "<group>"; };
 		48CE8DC42DACB9C000A2DF33 /* BottomSheetPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetPickerViewController.swift; sourceTree = "<group>"; };
 		48CE8DC62DACFDB100A2DF33 /* DSNormalCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DSNormalCell.swift; sourceTree = "<group>"; };
 		48CE8DC72DACFDB100A2DF33 /* DSNormalCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSNormalCell.xib; sourceTree = "<group>"; };
@@ -580,6 +594,8 @@
 				48CE8DD72DAD198000A2DF33 /* DSToggleCell.swift */,
 				48CE8DD82DAD198000A2DF33 /* DSToggleCell.xib */,
 				48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */,
+				486D427E2FCA8C2200D116AC /* StatsItemView.swift */,
+				486D42802FCA8C3900D116AC /* StatsItemView.xib */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -706,6 +722,11 @@
 				48E499522F4DBF1B00331C89 /* Logic_device.json */,
 				4876E3FA2FAC94CE00A9AE48 /* CR4_device.json */,
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
+				48CDF7B12FCD785B00ABDE9E /* 1.txt */,
+				48CDF7B22FCD785B00ABDE9E /* 2.txt */,
+				48CDF7B32FCD785B00ABDE9E /* 3.txt */,
+				48CDF7B42FCD785B00ABDE9E /* 4.txt */,
+				48CDF7B52FCD785B00ABDE9E /* 5.txt */,
 			);
 			path = DiveSync;
 			sourceTree = "<group>";
@@ -1259,6 +1280,11 @@
 				48AD3A4B2EF92FF0005BDB6A /* Localizable.strings in Resources */,
 				48AAC52A2F874E8900100535 /* wisdom5_device.json in Resources */,
 				48D21E132D0D3EBC004E8018 /* HelveticaNeueLTProUltLtCnO.otf in Resources */,
+				48CDF7B62FCD785B00ABDE9E /* 2.txt in Resources */,
+				48CDF7B72FCD785B00ABDE9E /* 4.txt in Resources */,
+				48CDF7B82FCD785B00ABDE9E /* 1.txt in Resources */,
+				48CDF7B92FCD785B00ABDE9E /* 3.txt in Resources */,
+				48CDF7BA2FCD785B00ABDE9E /* 5.txt in Resources */,
 				48E499532F4DBF1B00331C89 /* Logic_device.json in Resources */,
 				48A1F6E92CF76ED7009A9C52 /* DeviceSettings.storyboard in Resources */,
 				48D21E322D0D3EBC004E8018 /* HelveticaNeueLTProRoman.otf in Resources */,
@@ -1326,6 +1352,7 @@
 				48D21E272D0D3EBC004E8018 /* HelveticaNeueLTProUltLtIt.otf in Resources */,
 				48D21E362D0D3EBC004E8018 /* HelveticaNeueLTProBdCnO.otf in Resources */,
 				48D21E2C2D0D3EBC004E8018 /* HelveticaNeueLTProIt.otf in Resources */,
+				486D42812FCA8C3900D116AC /* StatsItemView.xib in Resources */,
 				48D21E1A2D0D3EBC004E8018 /* HelveticaNeueLTProLt.otf in Resources */,
 				48EE98212DA552D900B3CFFB /* FocusView.xib in Resources */,
 				482675AF2DCA49A30037E40C /* LogGalleryCell.xib in Resources */,
@@ -1453,6 +1480,7 @@
 				48F6A7FB2DE85FA700CDFD05 /* SubSettingsViewController.swift in Sources */,
 				4874FD402CE1B8C60027C5F3 /* GradientView.swift in Sources */,
 				48E36CEB2DCF14E500F77367 /* TwoRowPickerAlert.swift in Sources */,
+				486D427F2FCA8C2200D116AC /* StatsItemView.swift in Sources */,
 				48A591322CE3742400CDA352 /* Users.swift in Sources */,
 				487DDF552E16A27900ABE9CA /* AlertHelper.swift in Sources */,
 				4808428C2E68F63B007F5A11 /* BottomPopupViewController.swift in Sources */,
@@ -1664,11 +1692,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DiveSync;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The application needs to access Bluetooth to search for and connect to peripheral devices.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The application uses Bluetooth to connect to peripheral devices.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
@@ -1679,7 +1708,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
@@ -1687,7 +1716,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.8;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1707,11 +1736,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DiveSync;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The application needs to access Bluetooth to search for and connect to peripheral devices.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The application uses Bluetooth to connect to peripheral devices.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
@@ -1722,7 +1752,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
@@ -1730,7 +1760,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.8;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

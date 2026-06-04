@@ -75,6 +75,8 @@ class DatabaseManager {
         // ✅ Thêm bước migration tại đây
         try performMigrations(on: dbQueue)
         
+        cleanOrphanedDiveData(on: dbQueue)
+        
         return dbQueue
     }
     
@@ -828,7 +830,7 @@ extension DatabaseManager {
                         SUM(CAST(TotalDiveTime AS INTEGER)) AS TotalDiveTime,
                         ROUND(AVG(CAST(TotalDiveTime AS INTEGER))) AS AverageDiveTime,
                         MAX(CAST(MaxDepthFT AS REAL)) AS MaxDepthFT,
-                        ROUND(AVG(CAST(AvgDepthFT AS REAL))) AS AvgDepthFT,
+                        SUM(CAST(AvgDepthFT AS REAL) * CAST(TotalDiveTime AS INTEGER)) / SUM(CAST(TotalDiveTime AS INTEGER)) AS AvgDepthFT,
                         MIN(CAST(MinTemperatureF AS REAL)) AS MinTempF,
                         MAX(CAST(MaxTemperatureF AS REAL)) AS MaxTempF,
                         ROUND(AVG((CAST(MinTemperatureF AS REAL) + CAST(MaxTemperatureF AS REAL)) / 2)) AS AvgTempF
@@ -1047,7 +1049,7 @@ extension DatabaseManager {
                     COUNT(*) as TotalDives,
                     SUM(CAST(TotalDiveTime AS INTEGER)) as TotalSeconds,
                     MAX(CAST(MaxDepthFT AS REAL)) as MaxDepth,
-                    AVG(CAST(AvgDepthFT AS REAL)) as AvgDepth,
+                    AVG(CAST(MaxDepthFT AS REAL)) as AvgDepth,
                     MIN(CAST(MinTemperatureF AS REAL)) as MinTemp
                 FROM DiveLog
                 WHERE ModelID = ? AND SerialNo = ?
@@ -1116,6 +1118,36 @@ extension DatabaseManager {
             PrintLog("✅ Updated DateFormat & TimeFormat")
         } catch {
             PrintLog("❌ Failed to update DateFormat & TimeFormat: \(error)")
+        }
+    }
+}
+
+extension DatabaseManager {
+    /// Truyền trực tiếp dbQueue vào để dọn dẹp an toàn trong lúc setup
+    func cleanOrphanedDiveData(on dbQueue: DatabaseQueue) {
+        let targetTables = ["DiveProfile", "TankData", "DivePhotos"]
+        
+        do {
+            try dbQueue.write { db in
+                var totalDeletedRows = 0
+                for table in targetTables {
+                    let deleteSql = """
+                        DELETE FROM \(table)
+                        WHERE DiveID NOT IN (SELECT DiveID FROM DiveLog) OR DiveID IS NULL
+                    """
+                    try db.execute(sql: deleteSql)
+                    let changes = db.changesCount
+                    totalDeletedRows += changes
+                    if changes > 0 {
+                        PrintLog("🧹 Đã xóa \(changes) bản ghi mồ côi từ bảng [\(table)]")
+                    }
+                }
+                if totalDeletedRows > 0 {
+                    PrintLog("✅ Hoàn thành dọn dẹp. Tổng số bản ghi mồ côi đã xóa: \(totalDeletedRows)")
+                }
+            }
+        } catch {
+            PrintLog("❌ Lỗi khi chạy cleanOrphanedDiveData: \(error)")
         }
     }
 }

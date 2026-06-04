@@ -149,7 +149,7 @@ extension Set2ValueSettingAlert2: UIPickerViewDelegate, UIPickerViewDataSource {
         
         var selectedRow = selectedLeft
         if pickerView == pickerViewLeft {
-            label.text = leftOptions[row]
+            label.text = leftOptions[row].localized
         } else {
             label.text = rightOptions[row]
             selectedRow = selectedRight

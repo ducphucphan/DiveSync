@@ -22,7 +22,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="245" height="161"/>
                         <color key="backgroundColor" name="B3Color"/>
                     </view>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gh2-kt-VNB">
+                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gh2-kt-VNB">
                         <rect key="frame" x="0.0" y="161" width="245" height="30"/>
                         <color key="backgroundColor" name="B3Color"/>
                         <constraints>
@@ -32,13 +32,20 @@
                         <color key="textColor" name="BottomBarColor"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="alarm_icon" translatesAutoresizingMaskIntoConstraints="NO" id="xto-wL-Tsw">
+                    <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="alarm_icon" translatesAutoresizingMaskIntoConstraints="NO" id="xto-wL-Tsw">
                         <rect key="frame" x="8" y="166" width="20" height="20"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="20" id="ISn-1U-FUV"/>
                             <constraint firstAttribute="width" constant="20" id="tu5-3F-JTv"/>
                         </constraints>
                     </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="* Rotate your phone to view the full dive graph" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dqh-HH-CoM">
+                        <rect key="frame" x="0.0" y="161" width="245" height="30"/>
+                        <color key="backgroundColor" name="B3Color"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                        <color key="textColor" red="1" green="0.60784313729999995" blue="0.019607843140000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XKS-qO-d73">
                         <rect key="frame" x="0.0" y="191" width="245" height="70"/>
                         <subviews>
@@ -192,13 +199,17 @@
             <constraints>
                 <constraint firstItem="xto-wL-Tsw" firstAttribute="centerY" secondItem="gh2-kt-VNB" secondAttribute="centerY" id="219-AP-szV"/>
                 <constraint firstAttribute="trailing" secondItem="XKS-qO-d73" secondAttribute="trailing" id="8OI-vB-fOk"/>
+                <constraint firstItem="XKS-qO-d73" firstAttribute="top" secondItem="dqh-HH-CoM" secondAttribute="bottom" id="CQg-Y4-9XA"/>
                 <constraint firstItem="xto-wL-Tsw" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="8" id="Cog-kK-y3K"/>
                 <constraint firstItem="gh2-kt-VNB" firstAttribute="top" secondItem="tNd-wy-LHK" secondAttribute="bottom" id="J0U-dk-0hc"/>
                 <constraint firstItem="XKS-qO-d73" firstAttribute="top" secondItem="tNd-wy-LHK" secondAttribute="bottom" id="d35-Ka-aQV"/>
                 <constraint firstAttribute="trailing" secondItem="tNd-wy-LHK" secondAttribute="trailing" id="d6l-yY-OLP"/>
                 <constraint firstItem="XKS-qO-d73" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="el3-oL-Sqo"/>
                 <constraint firstAttribute="bottom" secondItem="XKS-qO-d73" secondAttribute="bottom" id="fc9-Vg-a4l"/>
+                <constraint firstAttribute="trailing" secondItem="dqh-HH-CoM" secondAttribute="trailing" id="jFR-cN-iHJ"/>
+                <constraint firstItem="dqh-HH-CoM" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="k5v-nB-FXW"/>
                 <constraint firstItem="tNd-wy-LHK" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="kRt-I0-kQV"/>
+                <constraint firstItem="dqh-HH-CoM" firstAttribute="height" secondItem="gh2-kt-VNB" secondAttribute="height" id="krT-Pc-FMO"/>
                 <constraint firstItem="tNd-wy-LHK" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="mda-qg-bSN"/>
                 <constraint firstAttribute="trailing" secondItem="gh2-kt-VNB" secondAttribute="trailing" id="qWe-6W-ecS"/>
                 <constraint firstItem="XKS-qO-d73" firstAttribute="top" secondItem="gh2-kt-VNB" secondAttribute="bottom" id="u1R-2N-uK5"/>
@@ -215,6 +226,7 @@
                 <outlet property="depthLb" destination="ESO-dD-uNJ" id="145-a6-S9v"/>
                 <outlet property="lineChartView" destination="tNd-wy-LHK" id="TR8-IY-gyC"/>
                 <outlet property="msgLb" destination="gh2-kt-VNB" id="HSO-a1-JG0"/>
+                <outlet property="rotateLb" destination="dqh-HH-CoM" id="tnd-6S-Eb7"/>
                 <outlet property="startTankLb" destination="OIM-AK-cke" id="Xtb-LJ-jDC"/>
                 <outlet property="tempLb" destination="Bw8-LZ-Lmf" id="m0r-di-CYz"/>
                 <outlet property="timeLb" destination="sMA-rX-lhw" id="OFd-yG-mCh"/>

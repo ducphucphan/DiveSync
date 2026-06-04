@@ -940,7 +940,8 @@ final class BluetoothDeviceCR5Manager {
                     "SerialNo": m.SerialNo,
                     "Identity": m.scannedPeripheral.advertisementData.localName ?? "",
                     "LastSync": Utilities.getLastSyncText(date: Date()),
-                    "Firmware": m.firmwareRev
+                    "Firmware": m.firmwareRev,
+                    "Units": m.units
                 ]
                 
                 if let (bleName, _) = self.scannedPeripheral.splitDeviceName(),
@@ -981,11 +982,15 @@ final class BluetoothDeviceCR5Manager {
                 
                 BluetoothDeviceCoordinator.shared.disconnect()
                 BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg.localized)
-            },
-                       onError: { error in
+            }, onError: { error in
                 ProgressHUD.dismiss()
                 BluetoothDeviceCoordinator.shared.disconnect()
-                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(error.localizedDescription.localized)")
+                
+                if let rxError = error as? RxError, case .timeout = rxError {
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "Time out".localized)
+                } else {
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(error.localizedDescription.localized)")
+                }
             }).disposed(by: disposeBag)
     }
     
@@ -1291,6 +1296,8 @@ final class BluetoothDeviceCR5Manager {
             print("\(results)")
             
             let writeUnits = row.stringValue(key: "Units").toInt()
+            
+            units = writeUnits
             
             // 3. Chuẩn bị danh sách lệnh ghi
             var commandsToWrite: [BleCommandKey] = [

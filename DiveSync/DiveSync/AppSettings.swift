@@ -7,6 +7,11 @@
 
 import Foundation
 
+enum ListDisplayMode: String {
+    case normal = "normal"
+    case group = "group"
+}
+
 final class AppSettings {
     static let shared = AppSettings()
     private let userDefaults = UserDefaults.standard
@@ -41,5 +46,22 @@ extension AppSettings {
         static let dateFormatIdentify = "dateFormatIdentify"
         
         static let timeFormatIdentify = "timeFormatIdentify"
+        
+        static let logsDisplayModeIdentify = "logsDisplayModeIdentify"
+    }
+    
+    var logsDisplayMode: ListDisplayMode {
+        get {
+            // Lấy chuỗi String từ UserDefaults ra
+            guard let modeStr: String = get(forKey: Keys.logsDisplayModeIdentify) else {
+                return .normal // Mặc định nếu chưa từng lưu
+            }
+            // Chuyển đổi từ String sang Enum ListDisplayMode
+            return ListDisplayMode(rawValue: modeStr) ?? .normal
+        }
+        set {
+            // Lưu giá trị rawValue (String) của Enum vào UserDefaults
+            set(newValue.rawValue, forKey: Keys.logsDisplayModeIdentify)
+        }
     }
 }

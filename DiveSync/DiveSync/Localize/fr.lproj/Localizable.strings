@@ -156,6 +156,7 @@
 "Set Alarms" = "Régler les alarmes";
 "OXTOX" = "OXTOX";
 "Salt" = "Eau salée";
+"Fresh" = "Eau douce";
 "Sample Rate" = "Fréquence d’échantillonnage";
 "Gas 1" = "Gaz 1";
 "Gas 1 MAX PPO2" = "PPO₂ max gaz 1";
@@ -349,7 +350,7 @@ our products.";
 "°F" = "°F";
 "°C" = "°C";
 "New dives have been downloaded." = "De nouvelles plongées ont été téléchargées.";
-"Rotate your phone to view the full dive graph" = "Tournez votre téléphone pour afficher le graphique de plongée complet.";
+"Rotate your phone to view the full dive graph" = "* Tournez votre téléphone pour afficher le graphique de plongée complet.";
 "From 0 m (0 ft) to 999.9 m (3300 ft)" = "De 0 m (0 ft) à 999,9 m (3300 ft)";
 "From 0°C (32°F) to 99°C (210°F)" = "De 0 °C (32 °F) à 99 °C (210 °F)";
 "From 0% to 200%" = "De 0 % à 200 %";
@@ -394,3 +395,60 @@ our products.";
 "START" = "DÉBUT";
 "END" = "FIN";
 "Owner's Name" = "Nom du propriétaire";
+"Set Language" = "Régler la langue";
+"Set Buzzer" = "Régler le buzzer";
+"Set Vibration" = "Régler la vibration";
+"Set Power" = "Régler la puissance";
+"Backlight" = "Rétroéclairage";
+"Set Dive Mode" = "Régler le mode de plongée";
+"Scuba Dive Settings" = "Paramètres de plongée sous-marine";
+"Free Dive Settings" = "Paramètres de plongée libre";
+"Depth Alarm Enable" = "Activer l'alarme de profondeur";
+"Time Alarm Enable" = "Activer l'alarme de temps";
+"Time Alarm" = "Alarme de temps";
+"Log Stop Time" = "Temps d'arrêt du journal";
+"Depth Alarm-1" = "Alarme de profondeur-1";
+"Depth Alarm-2" = "Alarme de profondeur-2";
+"Depth Alarm-3" = "Alarme de profondeur-3";
+"Time Alarm-1" = "Alarme de temps-1";
+"Time Alarm-2" = "Alarme de temps-2";
+"Time Alarm-3" = "Alarme de temps-3";
+"SI Alarm Enable" = "Activer l'alarme IS";
+"SI Alarm-1" = "Alarme IS-1";
+"SI Alarm-2" = "Alarme IS-2";
+"SI Alarm-3" = "Alarme IS-3";
+"Log Start Depth" = "Profondeur de début du journal";
+"Dive Mode" = "Mode de plongée";
+"Set GNSS" = "Régler le GNSS";
+"Set Salinity" = "Régler la salinité";
+"Twist to Next Switch" = "Tourner pour l'interrupteur suivant";
+"Set 1 (Modes/Basics)" = "Régler 1 (Modes/Bases)";
+"Set 2 (Alarms)" = "Régler 2 (Alarmes)";
+"Set 3 (Utilities)" = "Régler 3 (Utilitaires)";
+"Set 4 (Date/Time)" = "Régler 4 (Date/Heure)";
+"All Alarm" = "Toutes les alarmes";
+"ASNT" = "ASNT";
+"Turn Pressure" = "Pression de demi-tour";
+"Reserve Time" = "Temps de réserve";
+"DECO" = "DECO";
+"Set Backlight" = "Régler le rétroéclairage";
+"H2O SENSOR" = "Capteur H2O";
+"Max Descent Rate" = "Vitesse de descente max";
+"Level 1" = "Niveau 1";
+"Level 2" = "Niveau 2";
+"Level 3" = "Niveau 3";
+"Level 4" = "Niveau 4";
+"Level 5" = "Niveau 5";
+"Auto Mode" = "Mode Auto";
+"Dive Time Alarm Enable" = "Activer l'Alarme de Temps de Plongée";
+"CF1: Conserve" = "CF1: Conserve";
+"CF2: Normal" = "CF2: Normal";
+"CF3: Aggressive" = "CF3: Progressif";
+"Duration" = "Durée";
+"Scuba" = "Plongée";
+
+
+
+
+
+

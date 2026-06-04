@@ -20,6 +20,8 @@ let OFF                     = "OFF"
 let M                       = 0
 let FT                      = 1
 
+let isNewLook               = false
+
 let CONST_PSI_TO_BAR: Double = 0.06895         // 1 PSI = 0.0689475729 BAR
 let CONST_PSI_TO_mBAR: Double = 68.95          // 1 PSI = 68.9475729 mBAR
 let CONST_BAR_TO_PSI: Double = 14.50377        // 1 BAR = 14.503773 PSI
@@ -92,11 +94,22 @@ func convertLBS2KG(_ lbs: Double) -> Double {
 }
 
 func formatNumber(_ value: Double, decimalIfNeeded: Int = 1) -> String {
-    let rounded = Double(round(pow(10.0, Double(decimalIfNeeded)) * value) / pow(10.0, Double(decimalIfNeeded)))
-    if rounded.truncatingRemainder(dividingBy: 1) == 0 {
-        return String(format: "%.0f", rounded)
+    
+    if decimalIfNeeded == 0 {
+        // Dùng hàm round() để 1.5 -> 2 và 1.49 -> 1
+        return String(format: "%.0f", round(value))
+    }
+    
+    // Nhân lên để đẩy phần thập phân cần giữ lại lên trước dấu phẩy
+    let multiplier = pow(100.0, Double(decimalIfNeeded))
+    
+    // Dùng floor() để luôn làm tròn xuống (Cắt đuôi)
+    let truncated = floor(value * multiplier) / multiplier
+    
+    if truncated.truncatingRemainder(dividingBy: 1) == 0 {
+        return String(format: "%.0f", truncated)
     } else {
-        return String(format: "%.\(decimalIfNeeded)f", rounded)
+        return String(format: "%.\(decimalIfNeeded)f", truncated)
     }
 }
 

@@ -130,7 +130,7 @@ extension ItemSelectionAlert: UIPickerViewDelegate, UIPickerViewDataSource {
     
     func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let label = UILabel()
-        label.text = options[row]
+        label.text = options[row].localized
         label.textAlignment = .center
         label.textColor = (row == selectedIndex) ? .white : .lightGray
         label.font = (row == selectedIndex) ? .boldSystemFont(ofSize: 20) : .systemFont(ofSize: 18)

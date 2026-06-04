@@ -105,7 +105,7 @@ final class BluetoothDeviceCR4Manager {
         var bleCommand: BleCommand {
             switch self {
             case .kFirmwareRev:
-                return .init(mainCmd: .A0, subCmd: 0x01, indexed: false, payloadLen: 6)
+                return .init(mainCmd: .A0, subCmd: 0x02, indexed: false, payloadLen: 6)
             case .kSerialNumber:
                 return .init(mainCmd: .A0, subCmd: 0x03, indexed: false, payloadLen: 12)
                 
@@ -711,7 +711,8 @@ final class BluetoothDeviceCR4Manager {
                     "SerialNo": m.SerialNo,
                     "Identity": m.scannedPeripheral.advertisementData.localName ?? "",
                     "LastSync": Utilities.getLastSyncText(date: Date()),
-                    "Firmware": m.firmwareRev
+                    "Firmware": m.firmwareRev,
+                    "Units": m.units
                 ]
                 
                 if let (bleName, _) = self.scannedPeripheral.splitDeviceName(),
@@ -755,7 +756,12 @@ final class BluetoothDeviceCR4Manager {
             }, onError: { error in
                 ProgressHUD.dismiss()
                 BluetoothDeviceCoordinator.shared.disconnect()
-                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(error.localizedDescription.localized)")
+                
+                if let rxError = error as? RxError, case .timeout = rxError {
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "Time out".localized)
+                } else {
+                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "❗️\(error.localizedDescription.localized)")
+                }
             }).disposed(by: disposeBag)
     }
     
@@ -966,6 +972,8 @@ final class BluetoothDeviceCR4Manager {
             
             let writeUnits = row.stringValue(key: "Units").toInt()
             
+            units = writeUnits
+            
             // 3. Chuẩn bị danh sách lệnh ghi
             let commandsToWrite: [BleCommandKey] = [
                 .kUnit,
@@ -1127,18 +1135,17 @@ final class BluetoothDeviceCR4Manager {
         let endDate = startDate.addingTimeInterval(TimeInterval(totalDivingTime))
 
         // 6. Format xuất ra dữ liệu giống hệt logic cũ của bạn
-        divedata["DiveStartLocalTime"] = formatDiveDate(startDate, timezoneOffset: tzHours)
-        divedata["DiveEndLocalTime"] = formatDiveDate(endDate, timezoneOffset: tzHours)
+        divedata["DiveStartLocalTime"] = formatDiveDate(startDate, timezoneOffset: 0)
+        divedata["DiveEndLocalTime"] = formatDiveDate(endDate, timezoneOffset: 0)
         
         divedata["TotalDiveTime"] = totalDivingTime // Lưu giá trị 1030
         
         // 6. Depth (Offset 0x050 & 0x052) - Đơn vị: 100 = 1m
         let maxDepthRaw = header.u32LE(28)
-        let maxDepth = Double(maxDepthRaw) / 100.0
+        let maxDepth = Double(maxDepthRaw-1000) / 100.0 //1000 at surface
         divedata["MaxDepthFT"] = convertMeter2Feet(maxDepth)
         
-        let avgDepthRaw = header.u32LE(36)
-        let avgDepth = Double(avgDepthRaw) / 100.0
+        let avgDepth = Double(header.u32LE(36)) / 100.0
         divedata["AvgDepthFT"] = convertMeter2Feet(avgDepth)
         
         // 7. Temperature (Offset 0x058) - Đơn vị: 0.1 C
@@ -1216,7 +1223,9 @@ final class BluetoothDeviceCR4Manager {
         var currentAlarmID: Int = 0
         var decoStopDepth: Double = 0
         var decoTime: Int = 0
+        var count: Int = 0
         var maxTemp = tempMinRaw
+        var avgDepthRaw: Double = 0
         var temperature: Double = Double(tempMinRaw)
         
         while offset < profileData.count {
@@ -1233,7 +1242,9 @@ final class BluetoothDeviceCR4Manager {
                 if offset + 6 <= profileData.count {
                     // 1. Đọc dữ liệu Độ sâu (mBar) từ byte thứ 2 và 3 (offset + 2)
                     let depthRaw = profileData.u16LE(offset + 2)
-                    let depth = (Double(depthRaw) / 100.0) * 10.0
+                    let depth = (Double(depthRaw-1000) / 100.0) * 10.0
+                    
+                    avgDepthRaw += (Double(depthRaw-1000) / 100.0)
                     
                     // 2. Đọc dữ liệu Nhiệt độ (0.1°C) từ byte thứ 4 và 5 (offset + 4)
                     let tempRaw = profileData.u16LE(offset + 4)
@@ -1258,6 +1269,7 @@ final class BluetoothDeviceCR4Manager {
                     // 5. Cập nhật các biến chạy cho chu kỳ kế tiếp
                     diveTime += samplingTime
                     offset += 6
+                    count += 1
                     
                     // 6. RESET các biến sự kiện để tránh lặp lại ở chu kỳ sau nếu không có sự kiện mới
                     currentAlarmID = 0
@@ -1288,8 +1300,13 @@ final class BluetoothDeviceCR4Manager {
             }
         }
         
+        PrintLog("avgDepthRaw: \(avgDepthRaw), count: \(count)")
+        
         DatabaseManager.shared.updateTable(tableName: "DiveLog",
-                                           params: ["MaxTemperatureF": convertC2F(Double(maxTemp) / 10.0)],
+                                           params: [
+                                            "MaxTemperatureF": convertC2F(Double(maxTemp) / 10.0),
+                                            "AvgDepthFT": convertMeter2Feet(avgDepthRaw/Double(count)),
+                                           ],
                                            conditions: "where DiveID=\(Int64(rs.diveID!))")
         
     }
@@ -1514,7 +1531,7 @@ final class BluetoothDeviceCR4Manager {
                             return self.sendGetLog(logIndex: logId, onProgress: { percent in
                                 let statusMessage = String(format: "%@ %d/%d (%d%%)",
                                                            "Downloading dive".localized,
-                                                           logId + 1,
+                                                           logId,
                                                            totalLogs,
                                                            percent)
                                 
@@ -1564,6 +1581,7 @@ final class BluetoothDeviceCR4Manager {
             
             let value = response.data.u16LE(0)
             self.numOfLogs = Int(value)
+            //self.numOfLogs = 5
             
             PrintLog("📒 NumOfLog = \(self.numOfLogs)")
             
@@ -1600,15 +1618,15 @@ final class BluetoothDeviceCR4Manager {
             
             /*
             var profileDataLength = 0
-            if logIndex == 0 {
+            if logIndex == 1 {
                 profileDataLength = 1106
-            } else if logIndex == 1 {
-                profileDataLength = 786
             } else if logIndex == 2 {
-                profileDataLength = 942
+                profileDataLength = 786
             } else if logIndex == 3 {
-                profileDataLength = 290
+                profileDataLength = 942
             } else if logIndex == 4 {
+                profileDataLength = 290
+            } else if logIndex == 5 {
                 profileDataLength = 248
             }
             */
@@ -1678,7 +1696,7 @@ final class BluetoothDeviceCR4Manager {
                     return DiveRecord(diveNo: logIndex, logData: fullData, profiles: [])
                     
                     /*
-                    let fileName = "\(logIndex+1)"
+                    let fileName = "\(logIndex)"
                     if let filePath = Bundle.main.path(forResource: fileName, ofType: "txt"),
                        let fileContent = try? String(contentsOfFile: filePath, encoding: .utf8) {
                         

@@ -147,7 +147,7 @@
           {
             "id": "water",
             "type": "modeSelector",
-            "title": "H20 SENSOR",
+            "title": "H2O SENSOR",
             "value": "ON",
             "options": ["OFF", "ON"]
           },
@@ -173,21 +173,6 @@
         "title": "Set 4 (Date/Time)",
         "icon": "set_date_time",
         "subRows": [
-            {
-              "id": "dates",
-              "type": "modeSelector",
-              "title": "Set Date Format",
-              "hidden": 1,
-              "value": "D.M",
-              "options": ["D.M", "M.D"]
-            },
-          {
-            "id": "hour",
-            "type": "modeSelector",
-            "title": "Set Time Format",
-            "value": "24 H",
-            "options": ["24 H", "12 H"]
-          },
           {
             "id": "set_date",
             "type": "date",
@@ -200,6 +185,21 @@
             "title": "Set Time",
             "value": "10:48"
           },
+          {
+            "id": "dates",
+            "type": "modeSelector",
+            "title": "Set Date Format",
+            "hidden": 1,
+            "value": "D.M",
+            "options": ["D.M", "M.D"]
+          },
+        {
+          "id": "hour",
+          "type": "modeSelector",
+          "title": "Set Time Format",
+          "value": "24 H",
+          "options": ["24 H", "12 H"]
+        },
           {
             "type": "toggle",
             "title": "Use the system Date and Time",

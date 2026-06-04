@@ -16,6 +16,10 @@ class DeviceSettingViewController: BaseViewController {
     @IBOutlet weak var downloadSettingsLb: UILabel!
     @IBOutlet weak var uploadSettingsLb: UILabel!
     
+    @IBOutlet weak var deviceImageView: UIImageView!
+    @IBOutlet weak var deviceName: UILabel!
+    @IBOutlet weak var deviceSerial: UILabel!
+    
     var device: Devices!
     
     private struct Item {
@@ -88,18 +92,35 @@ class DeviceSettingViewController: BaseViewController {
         }
     }
     
+    private func loadCommonDeviceInfo() {
+        let modelId = Int(device.modelId ?? 0)
+        deviceImageView.image = UIImage(named: "\(modelId)") ?? UIImage(named: "8682")
+        deviceName.text = device.ModelName
+        
+        switch modelId {
+        case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+            deviceSerial.text = "Serial".localized + ": \(device.SerialNo ?? "")"
+        default:
+            deviceSerial.text = String(format: "Serial".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
+        }
+    }
+    
     func applyValues() {
         if let sections = loadSettingsSections(from: "SE_device"), sections.count > 0 {
             //settings = sections[0].rows
             
             var excludedIDsForModel: [String] = []
-            switch Int(device.modelId ?? 0) {
+            
+            let modelId = Int(device.modelId ?? 0)
+            switch modelId {
             case C_SKI, C_SPI:
                 excludedIDsForModel = ["set_brightness", "set_autoDim"]
             default: // DAV
                 excludedIDsForModel = ["set_backlight_duration"]
                 break
             }
+            
+            loadCommonDeviceInfo()
             
             let rows = sections[0].rows
             let filtered = rows.filter { row in
@@ -388,6 +409,8 @@ class DeviceSettingViewController: BaseViewController {
                 break
             }
             
+            loadCommonDeviceInfo()
+            
             let rows = sections[0].rows
             let filtered = rows.filter { row in
                 !excludedIDsForModel.contains(row.id ?? "")
@@ -629,6 +652,8 @@ class DeviceSettingViewController: BaseViewController {
         if let sections = loadSettingsSections(from: "Logic_device"), sections.count > 0 {
             //settings = sections[0].rows
             
+            loadCommonDeviceInfo()
+            
             var excludedIDsForModel: [String] = []
             let rows = sections[0].rows
             let filtered = rows.filter { row in
@@ -708,19 +733,6 @@ class DeviceSettingViewController: BaseViewController {
                             let diveTime = dbSettings["DiveTimeAlarmMin"]?.toInt() ?? 0
                             row.value = (diveTime == 0) ? OFF : String(format: "%d:%02d", diveTime / 60, diveTime % 60)
                         //
-                       
-                        case "deep_stop":
-                            if let deepStop = dbSettings["DeepStopOn"]?.toInt() {
-                                row.value = options?[deepStop]
-                            }
-                        case "water":
-                            if let water = dbSettings["WaterDensity"]?.toInt() {
-                                if water == 103 { // SEA
-                                    row.value = options?[0]
-                                } else { // FRESH
-                                    row.value = options?[1]
-                                }
-                            }
                         case "conservatism":
                             if let conservatism = dbSettings["Conservatism"]?.toInt() {
                                 row.value = options?[conservatism]
@@ -778,6 +790,19 @@ class DeviceSettingViewController: BaseViewController {
                             row.value = options?[unit]
                             DeviceSettings.shared.unit = unit
                         }
+                        
+                    case "deep_stop":
+                        if let deepStop = dbSettings["DeepStopOn"]?.toInt() {
+                            row.value = options?[deepStop]
+                        }
+                    case "water":
+                        if let water = dbSettings["WaterDensity"]?.toInt() {
+                            if water == 103 { // SEA
+                                row.value = options?[0]
+                            } else { // FRESH
+                                row.value = options?[1]
+                            }
+                        }
                     default:
                         break
                     }
@@ -790,6 +815,8 @@ class DeviceSettingViewController: BaseViewController {
     func applyCR5DeviceValues() {
         if let sections = loadSettingsSections(from: "CR5_device"), sections.count > 0 {
             //settings = sections[0].rows
+            
+            loadCommonDeviceInfo()
             
             let excludedIDsForModel: [String] = []
             let rows = sections[0].rows
@@ -1039,6 +1066,8 @@ class DeviceSettingViewController: BaseViewController {
     func applyCR4DeviceValues() {
         if let sections = loadSettingsSections(from: "CR4_device"), sections.count > 0 {
             //settings = sections[0].rows
+            
+            loadCommonDeviceInfo()
             
             let excludedIDsForModel: [String] = []
             let rows = sections[0].rows
@@ -1728,14 +1757,11 @@ class DeviceSettingViewController: BaseViewController {
                     case "time_alarm":
                         dcSettings["DiveTimeAlarmMin"] = Utilities.parseTimeToMins(from: value)
                         
-                    case "water":
-                        dcSettings["WaterDensity"] = (index == 0) ? 103:100
-                        
                     case "dive_mode":
                         dcSettings["DiveMode"] = index+1
                         
                     case "fo2":
-                        dcSettings["FO2"] = value
+                        dcSettings["FO2"] = value.toInt()
                     case "po2":
                         dcSettings["PO2"] = value.toCleanInt(multiplier: 100)
                         
@@ -1760,9 +1786,6 @@ class DeviceSettingViewController: BaseViewController {
                         
                     case "sample_rate":
                         dcSettings["DiveLogSamplingTime"] = value.toInt()
-                        
-                    case "deep_stop":
-                        dcSettings["DeepStopOn"] = index
                     default:
                         break
                     }
@@ -1780,6 +1803,12 @@ class DeviceSettingViewController: BaseViewController {
                 switch row.id {
                 case "units":
                     dcSettings["Units"] = index
+                    
+                case "water":
+                    dcSettings["WaterDensity"] = (index == 0) ? 103:100
+                    
+                case "deep_stop":
+                    dcSettings["DeepStopOn"] = index
                 default:
                     break
                 }
@@ -1820,7 +1849,7 @@ class DeviceSettingViewController: BaseViewController {
                         dcSettings["DST"] = index
                         
                     case "fo2":
-                        dcSettings["FO2"] = value
+                        dcSettings["FO2"] = value.toInt()
                         
                     case "po2":
                         dcSettings["PO2"] = Int(value.toDouble() * 10)
@@ -2031,7 +2060,7 @@ class DeviceSettingViewController: BaseViewController {
 //                        dcSettings["DateFormat"] = index
 //                        
                     case "fo2":
-                        dcSettings["FO2"] = value
+                        dcSettings["FO2"] = value.toInt()
                         
                     case "po2":
                         dcSettings["PO2"] = index

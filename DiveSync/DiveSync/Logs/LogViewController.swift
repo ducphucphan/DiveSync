@@ -85,7 +85,7 @@ class LogViewController: BaseViewController {
         case diveDate = 1, altitude = 2, mode = 3, conservatism = 4, surfaceInterval = 5
         case startDive = 6, diveTime = 7, maxDepth = 8, tlbg = 9, maxAscRate = 10
         case minTemp = 11, maxTemp = 12, oxtox = 13, maxPo2 = 14, startGas = 15, endGas = 16
-        case diveStatus = 17, maxDescRate = 18
+        case diveStatus = 17, maxDescRate = 18, avgDepth = 19
     }
 
     struct MetricModel {
@@ -244,6 +244,109 @@ class LogViewController: BaseViewController {
     private func getActiveMetrics() -> [MetricModel] {
         var list: [MetricModel] = []
         
+        let _date = MetricModel(type: .diveDate, title: "Date".localized, value: getFormattedDate(), iconName: "date")
+        let _alt = MetricModel(type: .altitude, title: "Altitude Level".localized, value: getAltitudeLevel(), iconName: "altitude")
+        let _mode = MetricModel(type: .mode, title: "Mode".localized, value: self.getMode(), iconName: "mode")
+        let _diveStatus = MetricModel(type: .diveStatus, title: "Dive Status".localized, value: self.getDiveStatus(), iconName: "dive_status")
+        let _surfaceInterval = MetricModel(type: .surfaceInterval, title: "Surface Interval".localized, value: getSurfaceInterval(), iconName: "serface_interval")
+        let _startDive = MetricModel(type: .startDive, title: "Start Dive".localized, value: getFormattedStartDiveTime(), iconName: "start_dive")
+        let _diveTime = MetricModel(type: .diveTime, title: "Dive Time".localized, value: getDiveTime(), iconName: "dive_time")
+        let _maxDepth = MetricModel(type: .maxDepth, title: "Max Depth".localized, value: getMaxDepth(), iconName: "max_depth")
+        let _avgDepth = MetricModel(type: .avgDepth, title: "Avg Depth".localized, value: getAvgDepth(), iconName: "max_depth")
+        let _tlbg = MetricModel(type: .tlbg, title: "Max TLBG".localized, value: getMaxTLBG(), iconName: "tlbg")
+        let _maxAsc = MetricModel(type: .maxAscRate, title: "Max Ascent Rate".localized, value: getMaxAscRate(), iconName: "max_accent_rate")
+        let _maxAscBar = MetricModel(type: .maxAscRate, title: "Max Ascent Bar".localized, value: getMaxAscBar(), iconName: "max_accent_rate")
+        let _maxDesc = MetricModel(type: .oxtox, title: "Max Descent Rate".localized, value: getMaxDescRate(), iconName: "max_accent_rate")
+        let _minTemp = MetricModel(type: .minTemp, title: "Min Temperature".localized, value: getMinTemp(), iconName: "min_temp")
+        let _maxTemp = MetricModel(type: .maxTemp, title: "Max Temperature".localized, value: getMaxTemp(), iconName: "max_temp")
+        let _oxtox = MetricModel(type: .oxtox, title: "OXTOX end dive".localized, value: getOXTOX(), iconName: "o2")
+        let _maxPPO2 = MetricModel(type: .maxPo2, title: "Max PPO2".localized, value: getMaxPPO2(), iconName: "max_po2")
+        let _startGas = MetricModel(type: .startGas, title: "Start Gas".localized, value: getStartGas(), iconName: "start_gas")
+        let _endGas = MetricModel(type: .endGas, title: "End Gas".localized, value: getEndGas(), iconName: "end_gas")
+        let _conservatism = MetricModel(type: .conservatism, title: "Conservatism".localized, value: getConservatism(), iconName: "conservatism")
+        
+        switch modelId {
+            
+        case C_LOG, C_LOGPLUS:
+            
+            list.append(contentsOf: [
+                _date,
+                _mode,
+                _diveStatus,
+                _conservatism,
+                _surfaceInterval,
+                _startDive,
+                _diveTime,
+                _maxDepth,
+                _avgDepth,
+                _maxAsc,
+                _maxDesc,
+                _minTemp,
+                _maxTemp
+            ])
+            
+        case C_GRA:
+            
+            list.append(contentsOf: [
+                _date,
+                _mode,
+                _diveStatus,
+                _conservatism,
+                _surfaceInterval,
+                _startDive,
+                _diveTime,
+                _maxDepth,
+                _avgDepth,
+                _maxAsc,
+                _maxDesc,
+                _minTemp
+            ])
+            
+        case C_CEN:
+            
+            list.append(contentsOf: [
+                _date,
+                _mode,
+                _diveStatus,
+                _conservatism,
+                _surfaceInterval,
+                _startDive,
+                _diveTime,
+                _maxDepth,
+                _avgDepth,
+                _minTemp
+            ])
+            
+        default:
+            
+            list.append(contentsOf: [
+                _date,
+                _alt,
+                _mode,
+                _diveStatus,
+                _surfaceInterval,
+                _startDive,
+                _diveTime,
+                _maxDepth,
+                _avgDepth,
+                _tlbg,
+                _maxAscBar,
+                _minTemp,
+                _maxTemp,
+                _oxtox,
+                _maxPPO2,
+                _startGas,
+                _endGas,
+                _conservatism
+            ])
+        }
+        
+        if manualDive {
+            list = list.filter { $0.type != .avgDepth }
+        }
+        
+        return list
+        /*
         // Luôn hiển thị Date (Tag 1)
         list.append(MetricModel(type: .diveDate, title: "Date".localized, value: getFormattedDate(), iconName: "date"))
         
@@ -301,6 +404,7 @@ class LogViewController: BaseViewController {
         list.append(MetricModel(type: .conservatism, title: "Conservatism".localized, value: getConservatism(), iconName: "conservatism"))
         
         return list
+        */
     }
     
     private func getFormattedDate() -> String {
@@ -332,13 +436,35 @@ class LogViewController: BaseViewController {
         if surfTime == 0 {
             return "-:--"
         } else {
-            return String(format: "%02d:%02d", surfTime/3600, (surfTime % 3600) / 60)
+            let hours = surfTime / 3600
+            let minutes = (surfTime % 3600) / 60
+            let seconds = surfTime % 60
+            
+            // Trả về định dạng Giờ:Phút:Giây (luôn hiển thị 2 chữ số)
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
     }
     
     private func getDiveTime() -> String {
         let totalDiveTime = diveLog.stringValue(key: "TotalDiveTime").toInt()
-        return String(format: "%02d:%02d", totalDiveTime/3600, (totalDiveTime % 3600) / 60)
+        
+        // Tính toán giờ, phút, giây từ tổng số giây
+        let hours = totalDiveTime / 3600
+        let minutes = (totalDiveTime % 3600) / 60
+        let seconds = totalDiveTime % 60
+        
+        // Kiểm tra điều kiện thời gian lặn
+        /*
+        if hours >= 1 {
+            // Lớn hơn hoặc bằng 1 giờ -> hiển thị Giờ:Phút:Giây
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            // Nhỏ hơn 1 giờ -> hiển thị Phút:Giây
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
+        */
+        
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     private func getMaxDepth() -> String {
@@ -354,6 +480,36 @@ class LogViewController: BaseViewController {
             mdepth = formatNumber(mdepth.toDouble(), decimalIfNeeded: 0)
         }
         return String(format: "%@ %@", mdepth, unitString)
+    }
+    
+    private func getAvgDepth() -> String {
+        let unitOfDive = diveLog.stringValue(key: "Units").toInt()
+        
+        let unitString = unitOfDive == M ? "M":"FT"
+        
+        // Nếu profile trống, trả về giá trị mặc định là 0
+        guard !diveProfile.isEmpty else {
+            return String(format: "0 %@", unitString)
+        }
+        
+        // 1. Tính tổng tất cả DepthFT từ diveProfile
+        let totalDepthFT = diveProfile.reduce(0.0) { sum, row in
+            let depthFT = row.stringValue(key: "DepthFT").toDouble() / 10.0
+            return sum + depthFT
+        }
+        
+        // 2. Tính độ sâu trung bình bằng Feet (FT)
+        let avgDepthFT = totalDepthFT / Double(diveProfile.count)
+        
+        // 3. Chuyển đổi đơn vị và định dạng hiển thị theo thiết lập Units
+        var avgDepthString = ""
+        if unitOfDive == FT {
+            avgDepthString = formatNumber(convertMeter2Feet(avgDepthFT), decimalIfNeeded: 0)
+        } else {
+            avgDepthString = formatNumber(avgDepthFT)
+        }
+        
+        return String(format: "%@ %@", avgDepthString, unitString)
     }
     
     private func getMaxTLBG() -> String {

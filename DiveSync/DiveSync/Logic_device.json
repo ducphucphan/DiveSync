@@ -6,15 +6,8 @@
                 "id": "set_date_time",
                 "type": "subSection",
                 "title": "Set Date - Time",
-                "icon": "set_date_time",
+                "icon": "",
                 "subRows": [
-                    {
-                        "id": "hour",
-                        "type": "modeSelector",
-                        "title": "Set Time Format",
-                        "value": "12 H",
-                        "options": ["12 H", "24 H"]
-                    },
                     {
                         "id": "set_date",
                         "type": "date",
@@ -28,6 +21,13 @@
                         "value": "10:48"
                     },
                     {
+                        "id": "hour",
+                        "type": "modeSelector",
+                        "title": "Set Time Format",
+                        "value": "12 H",
+                        "options": ["12 H", "24 H"]
+                    },
+                    {
                         "type": "toggle",
                         "title": "Use the system Date and Time"
                     }
@@ -37,15 +37,58 @@
                 "id": "units",
                 "type": "modeSelector",
                 "title": "Set Units",
-                "icon": "set_units",
+                "icon": "",
                 "value": "M - °C",
                 "options": ["M - °C", "FT - °F"]
             },
             {
+                "id": "water",
+                "type": "modeSelector",
+                "title": "Water",
+                "value": "Salt",
+                "options": ["Salt", "Fresh"]
+            },
+            {
+                "id": "deep_stop",
+                "type": "modeSelector",
+                "title": "Deep Stop",
+                "value": "OFF",
+                "options": ["OFF", "ON"]
+            },
+            {
                 "type": "subSection",
-                "title": "Set Alarms",
-                "icon": "set_alarms",
+                "title": "Dive Settings",
+                "icon": "",
                 "subRows": [
+                    {
+                        "id": "fo2",
+                        "type": "modeSelector",
+                        "title": "O2",
+                        "value": "21%",
+                        "options": ["21%", "22%", "23%", "24%", "25%", "26%", "27%", "28%", "29%", "30%",
+                            "31%", "32%", "33%", "34%", "35%", "36%", "37%", "38%", "39%", "40%",
+                            "41%", "42%", "43%", "44%", "45%", "46%", "47%", "48%", "49%", "50%",
+                            "51%", "52%", "53%", "54%", "55%", "56%", "57%", "58%", "59%", "60%",
+                            "61%", "62%", "63%", "64%", "65%", "66%", "67%", "68%", "69%", "70%",
+                            "71%", "72%", "73%", "74%", "75%", "76%", "77%", "78%", "79%", "80%",
+                            "81%", "82%", "83%", "84%", "85%", "86%", "87%", "88%", "89%", "90%",
+                            "91%", "92%", "93%", "94%", "95%", "96%", "97%", "98%", "99%"
+                        ]
+                    },
+                    {
+                        "id": "po2",
+                        "type": "modeSelector",
+                        "title": "PO2",
+                        "value": "1.00",
+                        "options": ["1.00", "1.10", "1.20", "1.30", "1.40", "1.50", "1.60", "1.70", "1.80"]
+                    },
+                    {
+                        "id": "conservatism",
+                        "type": "modeSelector",
+                        "title": "Conservatism",
+                        "value": "CF1: Conserve",
+                        "options": ["CF1: Conserve", "CF2: Normal", "CF3: Aggressive"]
+                    },
                     {
                         "id": "mdepth",
                         "type": "modeSelector",
@@ -61,61 +104,12 @@
                     {
                         "id": "time_alarm",
                         "type": "modeSelector",
-                        "title": "Time Alarm",
+                        "title": "Dive Time Alarm",
                         "value": "OFF",
                         "options": ["OFF", "0:10","0:15","0:20","0:25","0:30","0:35","0:40","0:45","0:50","0:55",
                             "1:00","1:05","1:10","1:15","1:20","1:25","1:30","1:35","1:40","1:45","1:50","1:55",
                             "2:00","2:05","2:10","2:15","2:20","2:25","2:30","2:35","2:40","2:45","2:50","2:55",
                         "3:00"]
-                    }
-                ]
-            },
-            {
-                "type": "subSection",
-                "title": "Dive Settings",
-                "icon": "dive_settings",
-                "subRows": [
-                    {
-                        "id": "water",
-                        "type": "modeSelector",
-                        "title": "Water",
-                        "value": "Salt",
-                        "options": ["Salt", "Fresh"]
-                    },
-                    {
-                        "id": "dive_mode",
-                        "type": "modeSelector",
-                        "title": "Dive Mode",
-                        "value": "AIR",
-                        "options": ["AIR", "NITROX", "GAUGE"]
-                    },
-                    {
-                        "id": "fo2",
-                        "type": "modeSelector",
-                        "title": "O2",
-                        "value": "21",
-                        "options": ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-                            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-                            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-                            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-                            "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
-                            "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
-                            "81", "82", "83", "84", "85", "86", "87", "88", "89", "90",
-                            "91", "92", "93", "94", "95", "96", "97", "98", "99"]
-                    },
-                    {
-                        "id": "po2",
-                        "type": "modeSelector",
-                        "title": "PO2",
-                        "value": "1.00",
-                        "options": ["1.00", "1.10", "1.20", "1.30", "1.40", "1.50", "1.60", "1.70", "1.80"]
-                    },
-                    {
-                        "id": "conservatism",
-                        "type": "modeSelector",
-                        "title": "Conservatism",
-                        "value": "CF1",
-                        "options": ["CF1", "CF2", "CF3"]
                     },
                     {
                         "id": "log_start_depth",
@@ -139,13 +133,6 @@
                         "title": "Sample Rate",
                         "value": "15 SEC",
                         "options": ["15 SEC", "30 SEC", "60 SEC"]
-                    },
-                    {
-                        "id": "deep_stop",
-                        "type": "modeSelector",
-                        "title": "Deep Stop",
-                        "value": "OFF",
-                        "options": ["OFF", "ON"]
                     }
                 ]
             }

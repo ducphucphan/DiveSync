@@ -118,7 +118,7 @@ class LogCell: UITableViewCell {
         } else {
             diveInfo.append("AIR")
         }
-        
+        /*
         var mdepth = row.stringValue(key: "MaxDepthFT")
         if unitOfDive == M {
             mdepth = String(format: "%.1f", converFeet2Meter(mdepth.toDouble()))
@@ -126,17 +126,23 @@ class LogCell: UITableViewCell {
             mdepth = String(format: "%.0f", mdepth.toDouble())
         }
         diveInfo.append(String(format: "%@ %@", mdepth, unitString))
+        */
+        diveInfo.append(getMaxDepth(row: row))
         
         let dTime = row.stringValue(key: "TotalDiveTime").toInt()
         diveInfo.append(String(format: "%02d min", dTime / 60))
         
-        var temp = row.stringValue(key: "MaxTemperatureF")
-        if unitOfDive == M {
-            temp = String(format: "%.1f", convertF2C(temp.toDouble()))
+        if modelID == C_LOGPLUS || modelID == C_LOG || modelID == C_GRA || modelID == C_CEN {
+            diveInfo.append(getMinTemp(row: row))
         } else {
-            temp = String(format: "%.0f", temp.toDouble())
+            var temp = row.stringValue(key: "MaxTemperatureF")
+            if unitOfDive == M {
+                temp = String(format: "%.1f", convertF2C(temp.toDouble()))
+            } else {
+                temp = String(format: "%.0f", temp.toDouble())
+            }
+            diveInfo.append(String(format: "%@ %@", temp, tempUnitString))
         }
-        diveInfo.append(String(format: "%@ %@", temp, tempUnitString))
         
         diveInfoLb.text = diveInfo.joined(separator: ", ")
         
@@ -151,5 +157,34 @@ class LogCell: UITableViewCell {
         favoriteBtn.setImage(UIImage(named: isFavorite ? "favorite" : "un_favorite"), for: .normal)
         
         self.onFavoriteTapped?(isFavorite)
+    }
+    
+    private func getMaxDepth(row: Row) -> String {
+        let unitOfDive = row.stringValue(key: "Units").toInt()
+        
+        let unitString = unitOfDive == M ? "M":"FT"
+        
+        var mdepth = row.stringValue(key: "MaxDepthFT")
+        
+        if unitOfDive == M {
+            mdepth = formatNumber(converFeet2Meter(mdepth.toDouble()))
+        } else {
+            mdepth = formatNumber(mdepth.toDouble(), decimalIfNeeded: 0)
+        }
+        return String(format: "%@ %@", mdepth, unitString)
+    }
+    
+    private func getMinTemp(row: Row) -> String {
+        let unitOfDive = row.stringValue(key: "Units").toInt()
+        
+        let tempUnitString = unitOfDive == M ? "°C":"°F"
+        
+        var minTemp = row.stringValue(key: "MinTemperatureF")
+        if unitOfDive == M {
+            minTemp = formatNumber(convertF2C(minTemp.toDouble()))
+        } else {
+            minTemp = formatNumber(minTemp.toDouble(), decimalIfNeeded: 0)
+        }
+        return String(format: "%@ %@", minTemp, tempUnitString)
     }
 }

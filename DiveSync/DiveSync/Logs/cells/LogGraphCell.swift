@@ -35,6 +35,7 @@ class LogGraphCell: UICollectionViewCell {
     @IBOutlet weak var airTimeRemainingLb: UILabel!
     @IBOutlet weak var msgLb: UILabel!
     @IBOutlet weak var warningImv: UIImageView!
+    @IBOutlet weak var rotateLb: UILabel!
     
     var diveChartPoints: [DiveChartPoint] = []
     var chartEntries: [ChartDataEntry] = []
@@ -59,9 +60,7 @@ class LogGraphCell: UICollectionViewCell {
             }
         }
     }
-    
-    let newLook = false
-    
+        
     var diveProfile: [Row] = [] {
         didSet {
             updateChartFromDiveProfile()
@@ -73,12 +72,22 @@ class LogGraphCell: UICollectionViewCell {
         // Initialization code
         
         warningImv.isHidden = true
+        rotateLb.text = "Rotate your phone to view the full dive graph".localized
         
         updateChartFromDiveProfile()
         
     }
 
     func showAlarms(_ alarms: [String]) {
+        rotateLb.isHidden = false
+        
+        if [C_LOG, C_LOGPLUS, C_CEN, C_GRA].contains(modelId) {
+            msgLb.isHidden = true
+            warningImv.isHidden = true
+            
+            return
+        }
+        
         alarmTimer?.invalidate()
         alarmTimer = nil
         alarmIndex = 0
@@ -88,8 +97,15 @@ class LogGraphCell: UICollectionViewCell {
         
         guard !alarms.isEmpty else {
             msgLb.text = ""
+            msgLb.isHidden = true
+            warningImv.isHidden = true
             return
         }
+        
+        rotateLb.isHidden = true
+        msgLb.isHidden = false
+        warningImv.isHidden = false
+
 
         // Chỉ 1 alarm → hiển thị luôn
         if alarms.count == 1 {
@@ -193,7 +209,7 @@ class LogGraphCell: UICollectionViewCell {
         fillSet.fillAlpha = 1
         fillSet.drawFilledEnabled = true
         
-        if newLook {
+        if isNewLook {
             // --- ĐOẠN THAY ĐỔI Ở ĐÂY ---
             // 1. Định nghĩa mảng màu từ nhạt (alpha thấp) đến đậm (B_3 gốc)
             let gradientColors = [
@@ -231,7 +247,7 @@ class LogGraphCell: UICollectionViewCell {
             
             switch finalState {
             case .normal:
-                if newLook {
+                if isNewLook {
                     return .white.withAlphaComponent(0.5)          // giống fill
                 } else {
                     return UIColor.B_3
@@ -304,13 +320,11 @@ class LogGraphCell: UICollectionViewCell {
         lineChartView.data = LineChartData(dataSets: dataSets)
         //lineChartView.data = LineChartData(dataSet: fillSet)
         
-        if newLook {
-            lineChartView.renderer = ShadowLineChartRenderer(
-                dataProvider: lineChartView,
-                animator: lineChartView.chartAnimator,
-                viewPortHandler: lineChartView.viewPortHandler
-            )
-        }
+        lineChartView.renderer = ShadowLineChartRenderer(
+            dataProvider: lineChartView,
+            animator: lineChartView.chartAnimator,
+            viewPortHandler: lineChartView.viewPortHandler
+        )
         
         // Add optional styling
         lineChartView.legend.enabled = false
@@ -335,31 +349,32 @@ class LogGraphCell: UICollectionViewCell {
         
         lineChartView.rightAxis.enabled = true
         lineChartView.rightAxis.axisMinimum = 0
-        
-        //lineChartView.rightAxis.axisMaximum = ceil(maxDepth) // Adjust as per max depth
-        
+                
         lineChartView.rightAxis.inverted = true
         lineChartView.rightAxis.labelTextColor = .white
         
         lineChartView.xAxis.labelPosition = .bottom
-        lineChartView.xAxis.axisMinimum = 0
-        lineChartView.xAxis.axisMaximum = maxTime
-        lineChartView.xAxis.granularityEnabled = true
         lineChartView.xAxis.labelTextColor = .white
-        lineChartView.xAxis.setLabelCount(6, force: true)
-        lineChartView.xAxis.valueFormatter = DefaultAxisValueFormatter { [maxTime] (value, _) -> String in
-            let time = Int(value.rounded())
+        
+        let xConfig = calculateXAxisLabelConfig()
+        
+        let padding = maxTime * 0.03
+        lineChartView.xAxis.axisMinimum = -padding
+        lineChartView.xAxis.axisMaximum = maxTime + padding
+        
+        lineChartView.xAxis.setLabelCount(xConfig.labelCount, force: false)
+        
+        lineChartView.xAxis.granularity = xConfig.distanceXInSeconds
+        lineChartView.xAxis.granularityEnabled = true
+        lineChartView.xAxis.valueFormatter = DefaultAxisValueFormatter { [maxTime, xConfig] (value, _) -> String in
+            let seconds = Int(value)
             
-            // Ẩn nhãn tại x = 0 và x = maxTime (cuối)
-            if time <= 0 || time >= Int(maxTime) {
-                return ""
-            }
+//            if seconds <= 0 { return "" }
+            if seconds > Int(maxTime) { return "" }
             
-            if maxTime <= 3600 {
-                return String(format: "%02d:%02d", time / 60, time % 60)
-            } else {
-                return String(format: "%02d:%02d", time / 3600, (time % 3600) / 60)
-            }
+            return String(format: "%02d:%02d",
+                          seconds / 60,
+                          seconds % 60)
         }
         
         // Zoom
@@ -394,17 +409,24 @@ class LogGraphCell: UICollectionViewCell {
         let xAxis = lineChartView.xAxis
         xAxis.drawGridLinesEnabled = true
         xAxis.gridColor = .white
-        xAxis.gridLineWidth = 1
+        xAxis.gridLineWidth = 0.2
         xAxis.gridLineDashLengths = [4, 2] // 4pt nét, 2pt khoảng trắng
         
         // Đứt nét trục Y trái
-        /*
-        let yAxis = lineChartView.leftAxis
-        yAxis.drawGridLinesEnabled = true
-        yAxis.gridColor = .white
-        yAxis.gridLineWidth = 1
-        yAxis.gridLineDashLengths = [4, 2]
-        */
+        
+        // --- CẤU HÌNH TRỤC Y PHẢI (THÊM ĐOẠN NÀY VÀO) ---
+        let rightAxis = lineChartView.rightAxis
+        rightAxis.drawGridLinesEnabled = true
+        rightAxis.gridColor = .white
+        rightAxis.gridLineWidth = 0.2
+        rightAxis.gridLineDashLengths = [4, 2] // 🔴 THÊM DÒNG NÀY: Biến đường ngang RightAxis thành nét đứt
+
+        // --- CẤU HÌNH TRỤC Y TRÁI (THÊM ĐOẠN NÀY VÀO NẾU CÓ DÙNG) ---
+        let leftAxis = lineChartView.leftAxis
+        leftAxis.drawGridLinesEnabled = true
+        leftAxis.gridColor = .white
+        leftAxis.gridLineWidth = 1
+        leftAxis.gridLineDashLengths = [4, 2] // 🔴 THÊM DÒNG NÀY: Biến đường ngang LeftAxis thành nét đứt
         
         // Set Maximum/Minimum zoom
         lineChartView.viewPortHandler.setMinimumScaleX(1.0) // Minimum zoom level for X-axis
@@ -424,7 +446,7 @@ class LogGraphCell: UICollectionViewCell {
         lineChartView.marker = marker
         */
         
-        if newLook {
+        if isNewLook {
             // ---- THÊM ĐOẠN CODE DƯỚI ĐÂY ----
             // Tự động highlight điểm chính giữa đồ thị sau khi vẽ xong
             if !chartEntries.isEmpty {
@@ -457,7 +479,8 @@ extension LogGraphCell: ChartViewDelegate {
     func chartScaled(_ chartView: ChartViewBase, scaleX: CGFloat, scaleY: CGFloat) {
         PrintLog("Final zoom levels - X: \(chartView.viewPortHandler.scaleX), Y: \(chartView.viewPortHandler.scaleY)")
         
-        lineChartView.xAxis.granularity = 60 * chartView.viewPortHandler.scaleX
+        let xConfig = calculateXAxisLabelConfig()
+        lineChartView.xAxis.granularity = xConfig.distanceXInSeconds / chartView.viewPortHandler.scaleX
         
     }
     
@@ -544,7 +567,7 @@ extension LogGraphCell {
         soft.drawCirclesEnabled = false
         soft.drawValuesEnabled = false
         soft.drawFilledEnabled = false
-        if newLook {
+        if isNewLook {
             soft.lineWidth = 2.0
         } else {
             soft.lineWidth = 3.0
@@ -562,6 +585,64 @@ extension LogGraphCell {
         sharp.setColor(baseColor)
 
         return [soft, sharp]
+    }
+    
+    private func calculateXAxisLabelConfig() -> (labelCount: Int, distanceXInSeconds: Double) {
+
+        let targetLabels = 6.0
+
+        let niceSteps: [Double] = [
+            1,
+            2,
+            5,
+            10,
+            15,
+            20,
+            30,
+            60,
+            120,
+            180,
+            300,
+            600,
+            900,
+            1200,
+            1800,
+            3600
+        ]
+
+        var bestStep = niceSteps[0]
+        var bestDiff = Double.greatestFiniteMagnitude
+        var bestLabelCount = 0
+
+        for step in niceSteps {
+
+            let labelCount = Int(ceil(maxTime / step)) + 1
+
+            // Ignore quá ít hoặc quá nhiều labels
+            if labelCount < 4 || labelCount > 8 {
+                continue
+            }
+
+            let diff = abs(Double(labelCount) - targetLabels)
+
+            // Ưu tiên gần target nhất
+            if diff < bestDiff {
+                bestDiff = diff
+                bestStep = step
+                bestLabelCount = labelCount
+            }
+        }
+
+        // fallback nếu không tìm thấy
+        if bestLabelCount == 0 {
+            bestStep = maxTime / targetLabels
+            bestLabelCount = Int(ceil(maxTime / bestStep)) + 1
+        }
+
+        return (
+            labelCount: bestLabelCount,
+            distanceXInSeconds: bestStep
+        )
     }
 }
 
@@ -583,15 +664,21 @@ class CustomXAxisRenderer: XAxisRenderer {
         for (i, position) in positions.enumerated() {
             let entry = axis.entries[i]
 
+            let label = axis.valueFormatter?.stringForValue(entry, axis: axis) ?? ""
+
+            if label.isEmpty {
+                continue
+            }
+
+            // Bỏ luôn line tại mốc 0
+//            if entry == 0 {
+//                continue
+//            }
+
             let yStart = viewPortHandler.contentTop
             let yEnd = viewPortHandler.contentBottom
 
-            // ✅ Nếu là trục X tại 0 → vẽ đường liền
-            if entry == 0 {
-                context.setLineDash(phase: 0, lengths: []) // đường liền
-            } else {
-                context.setLineDash(phase: 0, lengths: axis.gridLineDashLengths ?? [])
-            }
+            context.setLineDash(phase: 0, lengths: axis.gridLineDashLengths ?? [])
 
             context.beginPath()
             context.move(to: CGPoint(x: position.x, y: yStart))
@@ -601,6 +688,24 @@ class CustomXAxisRenderer: XAxisRenderer {
 
         context.restoreGState()
     }
+    
+    override func computeAxisValues(min: Double, max: Double) {
+
+        let step = axis.granularity
+
+        var entries: [Double] = []
+
+        var value = ceil(min / step) * step
+
+        while value <= max {
+            entries.append(value)
+            value += step
+        }
+
+        axis.entries = entries
+        axis.centeredEntries = []
+        axis.decimals = 0
+    }
 }
 
 class ShadowLineChartRenderer: LineChartRenderer {
@@ -609,24 +714,62 @@ class ShadowLineChartRenderer: LineChartRenderer {
         context.saveGState()
         
         // Cấu hình đổ bóng vệt dài hơn
-        context.setShadow(
-            // Tăng height từ 2.0 lên 8.0 (hoặc hơn) để kéo vệt bóng dài xuống dưới
-            // Nếu muốn bóng đổ hơi chéo sang phải, bạn có thể chỉnh width: 2.0
-            offset: CGSize(width: 0.0, height: 4.0),
-            
-            // Tăng blur lên một chút để bóng trông tự nhiên khi kéo dài
-            blur: 8.0,
-            
-            // Giữ nguyên hoặc giảm nhẹ alpha (0.25) vì khi bóng dài ra,
-            // màu nhạt đi một chút trông sẽ sang và mượt hơn
-            color: UIColor.black.withAlphaComponent(0.5).cgColor
-        )
-        
+        if isNewLook {
+            context.setShadow(
+                // Tăng height từ 2.0 lên 8.0 (hoặc hơn) để kéo vệt bóng dài xuống dưới
+                // Nếu muốn bóng đổ hơi chéo sang phải, bạn có thể chỉnh width: 2.0
+                offset: CGSize(width: 0.0, height: 4.0),
+                
+                // Tăng blur lên một chút để bóng trông tự nhiên khi kéo dài
+                blur: 8.0,
+                
+                // Giữ nguyên hoặc giảm nhẹ alpha (0.25) vì khi bóng dài ra,
+                // màu nhạt đi một chút trông sẽ sang và mượt hơn
+                color: UIColor.black.withAlphaComponent(0.5).cgColor
+            )
+        }
         // Gọi hàm drawData của siêu lớp để tiến hành vẽ đường line
         super.drawData(context: context)
         
         context.restoreGState()
     }
+    
+    // Khởi tạo trực tiếp renderer để vẽ đè Grid dọc và ngang lên trên cùng
+        override func drawExtras(context: CGContext) {
+            super.drawExtras(context: context)
+            
+            guard let chart = dataProvider as? LineChartView else { return }
+            
+            // 1. Vẽ lại đường lưới dọc (X-Axis)
+            if chart.xAxis.isEnabled && chart.xAxis.drawGridLinesEnabled {
+                let xAxisRenderer = XAxisRenderer(
+                    viewPortHandler: chart.viewPortHandler,
+                    axis: chart.xAxis,
+                    transformer: chart.getTransformer(forAxis: .left)
+                )
+                xAxisRenderer.renderGridLines(context: context)
+            }
+            
+            // 2. Vẽ lại đường lưới ngang của Right Axis
+            if chart.rightAxis.isEnabled && chart.rightAxis.drawGridLinesEnabled {
+                let rightAxisRenderer = YAxisRenderer(
+                    viewPortHandler: chart.viewPortHandler,
+                    axis: chart.rightAxis,
+                    transformer: chart.getTransformer(forAxis: .right)
+                )
+                rightAxisRenderer.renderGridLines(context: context)
+            }
+            
+            // 3. Vẽ lại đường lưới ngang của Left Axis (nếu bạn có bật hiển thị)
+            if chart.leftAxis.isEnabled && chart.leftAxis.drawGridLinesEnabled {
+                let leftAxisRenderer = YAxisRenderer(
+                    viewPortHandler: chart.viewPortHandler,
+                    axis: chart.leftAxis,
+                    transformer: chart.getTransformer(forAxis: .left)
+                )
+                leftAxisRenderer.renderGridLines(context: context)
+            }
+        }
 }
 
 // MARK: - Custom Tooltip Marker

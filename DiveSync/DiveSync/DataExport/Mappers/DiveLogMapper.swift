@@ -19,6 +19,8 @@ func modelIDExport(modelId: Int) -> Int {
         return 837573
     case C_SPI:
         return 838073
+    case C_WIS5:
+        return 877383
     case C_LOG:
         return 678249
     case C_GRA:
@@ -38,6 +40,14 @@ func modelIDImport(modelId: Int) -> Int {
         return C_SKI
     case 838073:
         return C_SPI
+    case 877383:
+        return C_WIS5
+    case 678252:
+        return C_CEN
+    case 678249:
+        return C_LOG
+    case 678253:
+        return C_GRA
     default:
         return modelId
     }
@@ -50,10 +60,12 @@ struct DiveLogMapper: RowMapper {
         
         func safeValue(_ value: String) -> String { value.isEmpty ? "0" : value }
         
+        let modelID = row.stringValue(key: "ModelID").toInt()
+        
         // MARK: - DiveLog mapping
         dict["UserID"] = row.stringValue(key: "UserID")
         dict["DiveSiteID"] = row.stringValue(key: "DiveSiteID")
-        dict["ModelID"] = "\(modelIDExport(modelId: row.stringValue(key: "ModelID").toInt()))"
+        dict["ModelID"] = "\(modelIDExport(modelId: modelID))"
         dict["SerialNo"] = row.stringValue(key: "SerialNo")
         dict["DeviceName"] = row.stringValue(key: "DeviceName")
         dict["AddressID"] = row.stringValue(key: "AddressID")
@@ -96,7 +108,13 @@ struct DiveLogMapper: RowMapper {
         dict["GPSEndDive"] = row.stringValue(key: "GPSEndDive")
         dict["GfHighPercent"] = row.stringValue(key: "GfHighPercent")
         dict["GfLowPercent"] = row.stringValue(key: "GfLowPercent")
-        dict["OxToxAlarmPercent"] = row.stringValue(key: "OxToxAlarmPercent")
+        
+        // Do bên Android đang dùng key OxToxAlarmPercent cho DescentSpeedAlarm với các device dưới.
+        if modelID == C_LOG || modelID == C_LOGPLUS || modelID == C_GRA {
+            dict["OxToxAlarmPercent"] = row.stringValue(key: "DescentSpeedAlarm")
+        } else {
+            dict["OxToxAlarmPercent"] = row.stringValue(key: "OxToxAlarmPercent")
+        }
         dict["TlbgAlarm"] = row.stringValue(key: "TlbgAlarm")
         dict["AscentSpeedAlarm"] = row.stringValue(key: "AscentSpeedAlarm")
         dict["DiveTimeAlarm"] = row.stringValue(key: "DiveTimeAlarm")
@@ -111,7 +129,10 @@ struct DiveLogMapper: RowMapper {
         dict["DeepStopTime"] = row.stringValue(key: "DeepStopTime")
         
         // Mix fields
-        dict["Mix1Fo2Percent"] = row.stringValue(key: "Mix1Fo2Percent")
+        
+        let value = row.stringValue(key: "Mix1Fo2Percent")
+        dict["Mix1Fo2Percent"] = value.isEmpty ? "21" : value
+        
         dict["Mix2Fo2Percent"] = row.stringValue(key: "Mix2Fo2Percent")
         dict["Mix3Fo2Percent"] = row.stringValue(key: "Mix3Fo2Percent")
         dict["Mix4Fo2Percent"] = row.stringValue(key: "Mix4Fo2Percent")
@@ -236,7 +257,13 @@ struct DiveLogMapper: RowMapper {
         dbDict["GPSEndDive"] = convertToDatabaseValue(json["GPSEndDive"])
         dbDict["GfHighPercent"] = convertToDatabaseValue(json["GfHighPercent"])
         dbDict["GfLowPercent"] = convertToDatabaseValue(json["GfLowPercent"])
-        dbDict["OxToxAlarmPercent"] = convertToDatabaseValue(json["OxToxAlarmPercent"])
+        
+        // Do bên Android đang dùng key OxToxAlarmPercent cho DescentSpeedAlarm với các device dưới.
+        if modelID == C_LOG || modelID == C_LOGPLUS || modelID == C_GRA {
+            dbDict["DescentSpeedAlarm"] = convertToDatabaseValue(json["OxToxAlarmPercent"])
+        } else {
+            dbDict["OxToxAlarmPercent"] = convertToDatabaseValue(json["OxToxAlarmPercent"])
+        }
         dbDict["TlbgAlarm"] = convertToDatabaseValue(json["TlbgAlarm"])
         dbDict["AscentSpeedAlarm"] = convertToDatabaseValue(json["AscentSpeedAlarm"])
         dbDict["DiveTimeAlarm"] = convertToDatabaseValue(json["DiveTimeAlarm"])
@@ -249,6 +276,9 @@ struct DiveLogMapper: RowMapper {
         dbDict["SafetyStopDepthMT"] = convertToDatabaseValue(json["SafetyStopDepthMT"])
         dbDict["DeepStopMode"] = convertToDatabaseValue(json["DeepStopMode"])
         dbDict["DeepStopTime"] = convertToDatabaseValue(json["DeepStopTime"])
+        
+        let xx1Fo2Percent = json["Mix1Fo2Percent"] as? String
+        dbDict["Mix1Fo2Percent"] = convertToDatabaseValue(xx1Fo2Percent == nil || xx1Fo2Percent!.isEmpty ? "21" : xx1Fo2Percent)
         
         dbDict["Mix1Fo2Percent"] = convertToDatabaseValue(json["Mix1Fo2Percent"])
         dbDict["Mix2Fo2Percent"] = convertToDatabaseValue(json["Mix2Fo2Percent"])

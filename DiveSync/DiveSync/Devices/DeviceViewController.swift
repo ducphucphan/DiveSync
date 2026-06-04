@@ -29,7 +29,7 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
         // Không có Content-Length → Content-Length: <file_size_in_bytes> thì sẽ không thể hiển thị % progress (phải sửa trên server)
         
         print("didWriteData called! bytesWritten=\(bytesWritten), totalBytesWritten=\(totalBytesWritten), totalExpected=\(totalBytesExpectedToWrite)")
-
+        
         guard totalBytesExpectedToWrite > 0 else { return }
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         
@@ -72,7 +72,7 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
 }
 
 class DeviceViewController: BaseViewController {
-
+    
     @IBOutlet weak var deviceCollectionView: UICollectionView!
     @IBOutlet weak var scrollContentView: UIScrollView!
     @IBOutlet weak var bottomView: UIView!
@@ -94,6 +94,13 @@ class DeviceViewController: BaseViewController {
     @IBOutlet weak var statsMinTempValueLb: UILabel!
     @IBOutlet weak var statsAltLevelValueLb: UILabel!
     
+    @IBOutlet weak var statsTotalDivesView: UIView!
+    @IBOutlet weak var statsTotalDiveTimeView: UIView!
+    @IBOutlet weak var statsMdepthView: UIView!
+    @IBOutlet weak var statsAvgDepthView: UIView!
+    @IBOutlet weak var statsMinTempView: UIView!
+    @IBOutlet weak var statsAltLevelView: UIView!
+    
     @IBOutlet weak var autoSyncLb: UILabel!
     @IBOutlet weak var logStatisticLb: UILabel!
     @IBOutlet weak var totalDivesLb: UILabel!
@@ -112,8 +119,10 @@ class DeviceViewController: BaseViewController {
     
     @IBOutlet weak var autoSyncView: UIView!
     
+    @IBOutlet weak var statsStackView: UIStackView!
+    
     private var disposeBag = DisposeBag()
-
+    
     private var currentIndex = 0
     
     var deviceCount = 0
@@ -123,6 +132,18 @@ class DeviceViewController: BaseViewController {
     // ✳️ Thêm properties để giữ delegate + session sống lâu
     private var firmwareDownloadDelegate: DownloadDelegate?
     private var firmwareDownloadSession: URLSession?
+    
+    enum StatsType: Int {
+        case totalDives = 1, totalDiveTime = 2, maxDepth = 3, avgDepth = 4, minTemp = 5
+        case altLevel = 6
+    }
+    
+    struct StatsModel {
+        let type: StatsType
+        let title: String
+        let value: String
+        let iconName: String
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -136,12 +157,12 @@ class DeviceViewController: BaseViewController {
         config.imagePlacement = .trailing
         config.imagePadding = 4
         config.baseForegroundColor = .white
-
+        
         let button = UIButton(configuration: config)
         button.addAction(UIAction { _ in
             self.addBarButtonTapped()
         }, for: .touchUpInside)
-
+        
         let addDeviceButton = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = addDeviceButton
         
@@ -166,18 +187,220 @@ class DeviceViewController: BaseViewController {
         
         autoSyncLb.text = "Auto Sync".localized
         logStatisticLb.text = "Log Statistics".localized
-        totalDivesLb.text = "Total Dives".localized
-        diveTimeLb.text = "Dive Time".localized
-        maxDepthLb.text = "Max Depth".localized
-        avgDepthLb.text = "Avg Depth".localized
-        minTempLb.text = "Min Temp".localized
-        altLb.text = "Altitude Level".localized
         
         logsLb.text = "Logs".localized
         settingsLb.text = "Settings".localized
         updateDcLb.text = "Update DC".localized
         deleteLb.text = "Delete".localized
         tapOnLb.text = "Tap on + to add new device".localized
+    }
+    
+    private func createStatisticItemView(data: StatsModel) -> StatsItemView {
+        let view = StatsItemView.loadFromNib()
+        view.titleLabel.text = data.title
+        view.valueLabel.text = data.value
+        
+        // Sử dụng icon từ Assets hoặc SF Symbols tùy dự án của bạn
+        view.iconImageView.image = UIImage(named: data.iconName) ?? UIImage(systemName: data.iconName)
+        
+        // QUAN TRỌNG: Phải để clear để thấy được màu của hàng (rowStack)
+        view.backgroundColor = .clear
+        
+        return view
+    }
+    
+    private func setupStatistics() {
+        // 1. Reset StackView chính
+        statsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        statsStackView.axis = .vertical
+        
+        // Đổi sang .fill và spacing = 0 để các line tự định kích thước, không bị Auto Layout kéo giãn
+        statsStackView.distribution = .fill
+        statsStackView.spacing = 0
+        
+        let statisticItems = getStatisticItems()
+        
+        // 2. Chia cặp dữ liệu (mỗi hàng tối đa 2 cột)
+        let chunks = stride(from: 0, to: statisticItems.count, by: 2).map {
+            Array(statisticItems[$0..<min($0 + 2, statisticItems.count)])
+        }
+        
+        let onePixel = 1.0 / UIScreen.main.scale
+        
+        for (index, pair) in chunks.enumerated() {
+            let rowStack = UIStackView()
+            rowStack.axis = .horizontal
+            rowStack.distribution = .fill
+            rowStack.alignment = .fill
+            rowStack.spacing = 0
+            
+            // Cột bên trái
+            let leftItem = createStatisticItemView(data: pair[0])
+            rowStack.addArrangedSubview(leftItem)
+            
+            if pair.count > 1 {
+                // 3. Tạo đường line dọc ở giữa 2 cột (màu xám mảnh)
+                let verticalLine = UIView()
+                verticalLine.backgroundColor = UIColor.lightGray.withAlphaComponent(1)
+                verticalLine.translatesAutoresizingMaskIntoConstraints = false
+                rowStack.addArrangedSubview(verticalLine)
+                
+                // Cột bên phải
+                let rightItem = createStatisticItemView(data: pair[1])
+                rowStack.addArrangedSubview(rightItem)
+                
+                NSLayoutConstraint.activate([
+                    verticalLine.widthAnchor.constraint(equalToConstant: onePixel), // 1 pixel dọc
+                    leftItem.widthAnchor.constraint(equalTo: rightItem.widthAnchor)
+                ])
+            } else {
+                // Trường hợp hàng cuối bị lẻ (chỉ có 1 phần tử)
+                let spacer = UIView()
+                spacer.backgroundColor = .clear
+                spacer.translatesAutoresizingMaskIntoConstraints = false
+                rowStack.addArrangedSubview(spacer)
+                
+                leftItem.widthAnchor.constraint(equalTo: spacer.widthAnchor).isActive = true
+            }
+            
+            // Cố định chiều cao row là 70pt theo thiết kế
+            rowStack.translatesAutoresizingMaskIntoConstraints = false
+            rowStack.heightAnchor.constraint(equalToConstant: 70).isActive = true
+            
+            // Thêm hàng hiện tại vào StackView chính
+            statsStackView.addArrangedSubview(rowStack)
+            
+            // 4. THÊM LINE NGANG MÀU ĐỎ: Nếu không phải hàng cuối cùng, chèn thêm line đỏ ngay phía dưới
+            if index < chunks.count - 1 {
+                let redHorizontalLine = UIView()
+                // Sửa lại mã màu đỏ theo đúng Brand Identity ứng dụng của bạn (ví dụ dùng hệ màu RGB)
+                redHorizontalLine.backgroundColor = UIColor.lightGray.withAlphaComponent(1)
+                redHorizontalLine.translatesAutoresizingMaskIntoConstraints = false
+                
+                // Giữ chặt độ cao line cố định, không cho phép StackView tự ý co giãn
+                redHorizontalLine.setContentHuggingPriority(.required, for: .vertical)
+                redHorizontalLine.setContentCompressionResistancePriority(.required, for: .vertical)
+                
+                statsStackView.addArrangedSubview(redHorizontalLine)
+                
+                // Độ cao thanh line là 2.0pt để nổi bật giống như nét vẽ trong ảnh của bạn
+                NSLayoutConstraint.activate([
+                    redHorizontalLine.heightAnchor.constraint(equalToConstant: onePixel) // Ép về 1 pixel ngang ở đây
+                ])
+            }
+        }
+    }
+    
+    private func getStatisticItems() -> [StatsModel] {
+        var list: [StatsModel] = []
+        
+        guard let device = deviceList?[safe: currentIndex] else { return []}
+        let modelId = Int(device.modelId ?? 0)
+        
+        let totalDivesStr = device.StatsLogTotalDives ?? "0"
+        let totalSecondsStr = device.StatsTotalDiveSecond ?? "0"
+        let maxDepthStr = device.StatsMaxDepthFT ?? "0"
+        let avgDepthStr = device.StatsAvgDepthFT ?? "0"
+        let minTempStr = device.StatsMinTemperatureF ?? "0"
+        let altLevelStr = device.StatsMaxAltitudeLevel ?? "0"
+        
+        let totalDivesInt = totalDivesStr.toInt()
+        
+        var totDiveValue = "---"
+        var totTimeValue = "---"
+        var mDepthValue = "---"
+        var avgDepthValue = "---"
+        var minTempValue = "---"
+        var altValue = "---"
+        
+        // Kiểm tra nếu chưa có dive nào thì hiển thị "---"
+        if totalDivesInt > 0 {
+            // Xử lý hiển thị bình thường
+            totDiveValue = "\(totalDivesInt)"
+            totTimeValue = Utilities.formatSecondsToHMS(totalSecondsStr.toInt())
+            
+            let unitOfDive = device.Units?.toInt()
+            let isMetric = (unitOfDive == M)
+            let unitString = isMetric ? "M" : "FT"
+            let tempUnitString = isMetric ? "°C" : "°F"
+            
+            var mdepth: String
+            var avgDepth: String
+            var minTemp: String
+            
+            if isMetric {
+                mdepth = formatNumber(converFeet2Meter(maxDepthStr.toDouble()))
+                avgDepth = formatNumber(converFeet2Meter(avgDepthStr.toDouble()))
+                minTemp = formatNumber(convertF2C(minTempStr.toDouble()))
+            } else {
+                mdepth = formatNumber(maxDepthStr.toDouble(), decimalIfNeeded: 0)
+                avgDepth = formatNumber(avgDepthStr.toDouble(), decimalIfNeeded: 0)
+                minTemp = formatNumber(minTempStr.toDouble(), decimalIfNeeded: 0)
+            }
+            
+            mDepthValue = "\(mdepth) \(unitString)"
+            avgDepthValue = "\(avgDepth) \(unitString)"
+            minTempValue = "\(minTemp) \(tempUnitString)"
+            
+            switch modelId {
+            case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+                altValue = "SEA".localized
+            default:
+                let level = altLevelStr.toInt()
+                altValue = (level == 0) ? "SEA" : "LEV\(level)"
+            }
+        }
+        
+        
+        let _totDives = StatsModel(type: .totalDives, title: "Total Dives".localized, value: totDiveValue, iconName: "dive_status")
+        let _totTime = StatsModel(type: .totalDiveTime, title: "Dive Time".localized, value: totTimeValue, iconName: "dive_time")
+        let _mdepth = StatsModel(type: .maxDepth, title: "Max Depth".localized, value: mDepthValue, iconName: "max_depth")
+        let _avgDepth = StatsModel(type: .avgDepth, title: "Avg Depth".localized, value: avgDepthValue, iconName: "avg_depth")
+        let _minTemp = StatsModel(type: .minTemp, title: "Min Temp".localized, value: minTempValue, iconName: "min_temp")
+        let _altLevel = StatsModel(type: .altLevel, title: "Altitude Level".localized, value: altValue, iconName: "altitude")
+        
+        switch modelId {
+            
+        case C_LOG, C_LOGPLUS:
+            
+            list.append(contentsOf: [
+                _totDives,
+                _totTime,
+                _mdepth,
+                _minTemp,
+            ])
+            
+        case C_GRA:
+            
+            list.append(contentsOf: [
+                _totDives,
+                _totTime,
+                _mdepth,
+                _minTemp,
+            ])
+            
+        case C_CEN:
+            
+            list.append(contentsOf: [
+                _totDives,
+                _totTime,
+                _mdepth,
+                _minTemp,
+            ])
+            
+        default:
+            
+            list.append(contentsOf: [
+                _totDives,
+                _totTime,
+                _mdepth,
+                _avgDepth,
+                _minTemp,
+                _altLevel,
+            ])
+        }
+        
+        return list
     }
     
     private func loadDevices() {
@@ -237,10 +460,14 @@ class DeviceViewController: BaseViewController {
         
         switch modelid {
         case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
+            //statsAltLevelView.isHidden = true
+            
             autoSyncView.alpha = 1
             updateDCView.isHidden = true
             serialNoLb.text = "Serial Number".localized + ": \(device.SerialNo ?? "")"
         default:
+            //statsAltLevelView.isHidden = false
+            
             autoSyncView.alpha = 0
             updateDCView.isHidden = false
             serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
@@ -255,29 +482,29 @@ class DeviceViewController: BaseViewController {
         //syncedLb.text = "Synced".localized + ": " + (device.LastSync ?? "")
         
         let rawLastSync = device.LastSync ?? "" // Giá trị: "04/22/26 09:54AM"
-
+        
         if !rawLastSync.isEmpty {
             // 1. Lấy cài đặt định dạng Ngày từ User
             let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
             let datePattern = (dateFormatId == 0) ? "dd.MM.yy" : "MM.dd.yy"
-
+            
             // 2. Lấy cài đặt định dạng Giờ từ User (0: 24h, 1: 12h)
             let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
             let timePattern = (timeFormatId == 0) ? "hh:mma" : "HH:mm"
-
+            
             // Kết hợp lại thành định dạng hiển thị cuối cùng
             let finalDisplayPattern = "\(datePattern) \(timePattern)"
-
+            
             // 3. Định nghĩa chính xác format đang lưu trong DB để máy có thể parse được
             let oldDbFormat = "MM/dd/yy hh:mma"
-
+            
             // 4. Thực hiện chuyển đổi
             let formattedSync = Utilities.convertDateFormat(
                 from: rawLastSync,
                 fromFormat: oldDbFormat,
                 toFormat: finalDisplayPattern
             )
-
+            
             syncedLb.text = "Synced".localized + ": " + formattedSync
         } else {
             syncedLb.text = "Synced".localized + ": ---"
@@ -290,62 +517,7 @@ class DeviceViewController: BaseViewController {
         
         // Stats
         
-        // Lấy giá trị ra, nếu nil thì mặc định là "0" hoặc chuỗi rỗng
-        let totalDivesStr = device.StatsLogTotalDives ?? "0"
-        let totalSecondsStr = device.StatsTotalDiveSecond ?? "0"
-        let maxDepthStr = device.StatsMaxDepthFT ?? "0"
-        let avgDepthStr = device.StatsAvgDepthFT ?? "0"
-        let minTempStr = device.StatsMinTemperatureF ?? "0"
-        let altLevelStr = device.StatsMaxAltitudeLevel ?? "0"
-
-        let totalDivesInt = totalDivesStr.toInt()
-
-        statsTotalDivesValueLb.text = "---"
-        statsTotalDiveTimeValueLb.text = "---"
-        statsMdepthValueLb.text = "---"
-        statsAvgDepthValueLb.text = "---"
-        statsMinTempValueLb.text = "---"
-        statsAltLevelValueLb.text = "---"
-        
-        // Kiểm tra nếu chưa có dive nào thì hiển thị "---"
-        if totalDivesInt > 0 {
-            // Xử lý hiển thị bình thường
-            statsTotalDivesValueLb.text = "\(totalDivesInt)"
-            statsTotalDiveTimeValueLb.text = Utilities.formatSecondsToHMS(totalSecondsStr.toInt())
-            
-            let unitOfDive = device.Units?.toInt()
-            let isMetric = (unitOfDive == M)
-            let unitString = isMetric ? "M" : "FT"
-            let tempUnitString = isMetric ? "°C" : "°F"
-            
-            var mdepth: String
-            var avgDepth: String
-            var minTemp: String
-            
-            if isMetric {
-                mdepth = formatNumber(converFeet2Meter(maxDepthStr.toDouble()))
-                avgDepth = formatNumber(converFeet2Meter(avgDepthStr.toDouble()))
-                minTemp = formatNumber(convertF2C(minTempStr.toDouble()))
-            } else {
-                mdepth = formatNumber(maxDepthStr.toDouble(), decimalIfNeeded: 0)
-                avgDepth = formatNumber(avgDepthStr.toDouble(), decimalIfNeeded: 0)
-                minTemp = formatNumber(minTempStr.toDouble(), decimalIfNeeded: 0)
-            }
-            
-            statsMdepthValueLb.text = "\(mdepth) \(unitString)"
-            statsAvgDepthValueLb.text = "\(avgDepth) \(unitString)"
-            statsMinTempValueLb.text = "\(minTemp) \(tempUnitString)"
-            
-            switch modelid {
-            case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
-                statsAltLevelValueLb.text = "SEA".localized
-                statsAltLevelValueLb.alpha = 0
-            default:
-                statsAltLevelValueLb.alpha = 1
-                let level = altLevelStr.toInt()
-                statsAltLevelValueLb.text = (level == 0) ? "SEA" : "LEV\(level)"
-            }
-        }
+        setupStatistics()
         
         updateButtonVisibility()
     }
@@ -370,24 +542,24 @@ class DeviceViewController: BaseViewController {
     // 2️⃣ Cập nhật trạng thái Connected/Disconnected
     private func updateDeviceStateUI() {
         /*
-        if let activeManager = BluetoothDeviceCoordinator.shared.activeDataManager,
-           activeManager.SerialNo == currentDevice.SerialNo?.toInt(),
-           activeManager.ModelID == currentDevice.modelId ?? 0,
-           activeManager.peripheral.peripheral.state == .connected {
-            
-            deviceView.layer.borderColor = UIColor.systemGreen.cgColor
-            connectImv.image = UIImage(named: "disconnected_icon")
-            connectLb.text = "Disconnect"
-            
-            PrintLog("CONNECTED")
-        } else {
-            deviceView.layer.borderColor = UIColor.lightGray.cgColor
-            connectImv.image = UIImage(named: "connected_icon")
-            connectLb.text = "Connect"
-            
-            PrintLog("DISCONNECTED")
-        }
-        */
+         if let activeManager = BluetoothDeviceCoordinator.shared.activeDataManager,
+         activeManager.SerialNo == currentDevice.SerialNo?.toInt(),
+         activeManager.ModelID == currentDevice.modelId ?? 0,
+         activeManager.peripheral.peripheral.state == .connected {
+         
+         deviceView.layer.borderColor = UIColor.systemGreen.cgColor
+         connectImv.image = UIImage(named: "disconnected_icon")
+         connectLb.text = "Disconnect"
+         
+         PrintLog("CONNECTED")
+         } else {
+         deviceView.layer.borderColor = UIColor.lightGray.cgColor
+         connectImv.image = UIImage(named: "connected_icon")
+         connectLb.text = "Connect"
+         
+         PrintLog("DISCONNECTED")
+         }
+         */
     }
     
     @IBAction func nextTapped(_ sender: Any) {
@@ -395,13 +567,13 @@ class DeviceViewController: BaseViewController {
         currentIndex += 1
         scrollToIndex(currentIndex)
     }
-
+    
     @IBAction func prevTapped(_ sender: Any) {
         guard currentIndex > 0 else { return }
         currentIndex -= 1
         scrollToIndex(currentIndex)
     }
-
+    
     private func scrollToIndex(_ index: Int) {
         let indexPath = IndexPath(item: index, section: 0)
         deviceCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
@@ -456,7 +628,8 @@ class DeviceViewController: BaseViewController {
         // Connect
         BluetoothDeviceCoordinator.shared
             .connect(to: matchedDevice, discover: true)
-            .timeout(.seconds(25), scheduler: MainScheduler.instance)
+        //.timeout(.seconds(25), scheduler: MainScheduler.instance)
+            .take(1)
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] session in
                 guard self != nil else { return }
@@ -621,7 +794,11 @@ class DeviceViewController: BaseViewController {
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
                         PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        if let rxError = error as? RxError, case .timeout = rxError {
+                            BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "Time out".localized)
+                        } else {
+                            BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        }
                     }
                 }).disposed(by: disposeBag)
         }
@@ -758,20 +935,20 @@ class DeviceViewController: BaseViewController {
             AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
         }
         /*
-        if isOn {
-            // Alert
-            PrivacyAlert.showMessage(message: "Enabling this option allows the app to automatically connect and retrieve all dive logs each time it is launched.".localized, allowTitle: "ENABLED".localized, denyTitle: "CLOSE".localized) { action in
-                if  action == .deny {
-                    self.autosyncSwitch.isOn = false
-                } else {
-                    print("ENABLED")
-                    AppSettings.shared.set(device.Identity, forKey: AppSettings.Keys.autosyncDeviceIdentify)
-                }
-            }
-        } else {
-            AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
-        }
-        */
+         if isOn {
+         // Alert
+         PrivacyAlert.showMessage(message: "Enabling this option allows the app to automatically connect and retrieve all dive logs each time it is launched.".localized, allowTitle: "ENABLED".localized, denyTitle: "CLOSE".localized) { action in
+         if  action == .deny {
+         self.autosyncSwitch.isOn = false
+         } else {
+         print("ENABLED")
+         AppSettings.shared.set(device.Identity, forKey: AppSettings.Keys.autosyncDeviceIdentify)
+         }
+         }
+         } else {
+         AppSettings.shared.remove(forKey: AppSettings.Keys.autosyncDeviceIdentify)
+         }
+         */
     }
 }
 
@@ -787,14 +964,14 @@ extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
                 if  syncType == .kRedownloadSetting {
                     showAlert(on: self, message: msg, okHandler: {
                         /*
-                        guard let deviceIdentity = device.Identity else {return}
-                        
-                        guard let dv = DatabaseManager.shared.fetchDevices(nameKeys: [deviceIdentity])?.first else {return}
-                        
-                        self.currentDevice = dv
-                        
-                        self.setupUI()
-                        */
+                         guard let deviceIdentity = device.Identity else {return}
+                         
+                         guard let dv = DatabaseManager.shared.fetchDevices(nameKeys: [deviceIdentity])?.first else {return}
+                         
+                         self.currentDevice = dv
+                         
+                         self.setupUI()
+                         */
                         
                         self.loadDevices()
                         
@@ -804,7 +981,7 @@ extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
                     
                     guard let device = deviceList?[safe: currentIndex] else { return }
                     let modelId = Int(device.modelId ?? 0)
-
+                    
                     if syncType == .kDownloadDiveData {
                         switch modelId {
                         case C_LOG, C_LOGPLUS, C_GRA, C_CEN:
@@ -971,7 +1148,7 @@ extension DeviceViewController: UICollectionViewDataSource, UICollectionViewDele
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return deviceCount
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoItemCell", for: indexPath) as! PhotoItemCell
         let dv = deviceList?[indexPath.row]

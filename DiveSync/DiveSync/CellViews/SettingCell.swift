@@ -27,7 +27,27 @@ class SettingCell: UITableViewCell {
     
     func bindRow(row: SettingsRow, modelId: Int64) {
         titleLb.text = row.title.localized
-        valueLb.text = row.value
+        
+        if let rawValue = row.value as? String {
+            // Tách chuỗi theo cụm " - "
+            let components = rawValue.components(separatedBy: " - ")
+            
+            if components.count >= 2, let firstComponent = components.first {
+                // 1. Localize vế đầu (X)
+                let localizedFirst = firstComponent.localized // Hoặc NSLocalizedString(firstComponent, comment: "")
+                
+                // 2. Lấy phần còn lại (Y) - giữ nguyên không dịch
+                let remainder = components.dropFirst().joined(separator: " - ")
+                
+                // 3. Ghép lại thành chuỗi hoàn chỉnh
+                valueLb.text = "\(localizedFirst) - \(remainder)"
+            } else {
+                // Nếu không có dạng "X - Y", localize toàn bộ chuỗi
+                valueLb.text = rawValue.localized
+            }
+        } else {
+            valueLb.text = ""
+        }
         
         if let value = row.value, row.id == "conservatism", modelId != C_LOG, modelId != C_LOGPLUS, modelId != C_GRA, modelId != C_CEN {
             if value.toInt() == 0 {

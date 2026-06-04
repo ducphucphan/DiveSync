@@ -8,6 +8,18 @@
                 "title": "Set Date - Time",
                 "subRows": [
                     {
+                      "id": "set_date",
+                      "type": "date",
+                      "title": "Set Date",
+                      "value": "01.06.2025"
+                    },
+                    {
+                      "id": "set_time",
+                      "type": "time",
+                      "title": "Set Time",
+                      "value": "10:48"
+                    },
+                    {
                       "id": "dates",
                       "type": "modeSelector",
                       "title": "Set Date Format",
@@ -20,18 +32,6 @@
                       "title": "Set Time Format",
                       "value": "12 H",
                       "options": ["12 H", "24 H"]
-                    },
-                    {
-                      "id": "set_date",
-                      "type": "date",
-                      "title": "Set Date",
-                      "value": "01.06.2025"
-                    },
-                    {
-                      "id": "set_time",
-                      "type": "time",
-                      "title": "Set Time",
-                      "value": "10:48"
                     },
                     {
                       "type": "toggle",
@@ -101,7 +101,7 @@
                         "options": ["21%", "22%", "23%", "24%", "25%", "26%", "27%", "28%", "29%", "30%",
                             "31%", "32%", "33%", "34%", "35%", "36%", "37%", "38%", "39%", "40%",
                             "41%", "42%", "43%", "44%", "45%", "46%", "47%", "48%", "49%", "50%",
-                            "51%", "52%", "53%", "54%", "55%", "56%"],
+                            "51%", "52%", "53%", "54%", "55%", "56%"]
                     },
                     {
                         "id": "po2",
@@ -135,14 +135,14 @@
                     {
                         "id": "time_alarm_enable",
                         "type": "modeSelector",
-                        "title": "Time Alarm Enable",
+                        "title": "Dive Time Alarm Enable",
                         "value": "ON",
                         "options": ["ON", "OFF"],
                     },
                     {
                         "id": "time_alarm",
                         "type": "modeSelector",
-                        "title": "Time Alarm",
+                        "title": "Dive Time Alarm",
                         "value": "00",
                         "options": []
                     },
@@ -200,7 +200,7 @@
                     {
                         "id": "free_time_alarm_enable",
                         "type": "modeSelector",
-                        "title": "Time Alarm Enable",
+                        "title": "Dive Time Alarm Enable",
                         "value": "ON",
                         "options": ["ON", "OFF"],
                     },

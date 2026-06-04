@@ -19,7 +19,7 @@ class SettingsViewController: BaseViewController {
         
         // 2. Lấy định dạng ngày: Khai báo rõ kiểu ": Int" để giúp Xcode xác định T
         let dateFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify) ?? 0
-        let dateStr = (dateFormatId == 0) ? "dd/mm" : "mm/dd"
+        let dateStr = (dateFormatId == 0) ? "DD.MM.YY" : "MM.DD.YY"
         
         // 3. Lấy định dạng giờ: Tương tự khai báo rõ kiểu ": Int"
         let timeFormatId: Int = AppSettings.shared.get(forKey: AppSettings.Keys.timeFormatIdentify) ?? 0
@@ -87,15 +87,15 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
             self.navigationController?.pushViewController(vc, animated: true)
             
         case 1:
-            var currentValue = "dd/mm"
+            var currentValue = "DD.MM.YY"
             if let dateFormatIdentify:Int = AppSettings.shared.get(forKey: AppSettings.Keys.dateFormatIdentify),
                dateFormatIdentify == 1 {
-                currentValue = "mm/dd"
+                currentValue = "MM.DD.YY"
             }
             
             ItemSelectionAlert.showMessage(
                 message: "Date Format".localized,
-                options: ["dd/mm".localized, "mm/dd".localized],
+                options: ["MM.DD.YY", "DD.MM.YY"],
                 selectedValue: currentValue
             ) { [weak self] action, value, index in
                 guard let self = self else { return }
@@ -104,7 +104,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
                     PrintLog("Save to backend: \(value)")
                     
                     // Decline = false, Allow = true
-                    AppSettings.shared.set(index, forKey: AppSettings.Keys.dateFormatIdentify)
+                    AppSettings.shared.set((index == 0) ? 1 : 0, forKey: AppSettings.Keys.dateFormatIdentify)
                     
                     self.tableView.reloadData()
                 }

@@ -11,6 +11,11 @@ import RxSwift
 import ProgressHUD
 import RxBluetoothKit
 
+struct GroupedDiveLogs {
+    let monthYearString: String
+    let dives: [Row]
+}
+
 class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var headerTableView: UIView!
@@ -37,6 +42,19 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
     @IBOutlet weak var longPressLb: UILabel!
     
     var diveList:[Row] = []
+    
+    var displayMode: ListDisplayMode {
+        get {
+            guard isNewLook else { return .normal }
+            return AppSettings.shared.logsDisplayMode
+        }
+        set {
+            if isNewLook {
+                AppSettings.shared.logsDisplayMode = newValue
+            }
+        }
+    }
+    var groupedDiveList: [GroupedDiveLogs] = []
     
     var selectMode = false
     var selectedIndexes = Set<Int>()
@@ -66,6 +84,10 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         // Register the default cell
         tableView.backgroundColor = .clear
         
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
+        
         NotificationCenter.default.addObserver(
                 self,
                 selector: #selector(handleDiveImport),
@@ -73,7 +95,37 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
                 object: nil
             )
         
+        updateRightBarButton()
+        
         loadData(sort: SortPreferences.load())
+    }
+    
+    private func updateRightBarButton() {
+        guard isNewLook else {
+            self.navigationItem.rightBarButtonItem = nil
+            return
+        }
+        
+        let iconName = (displayMode == .normal) ? "list.bullet" : "square.grid.2x2"
+        if let systemImage = UIImage(systemName: iconName)?.withRenderingMode(.alwaysOriginal).withTintColor(.white) {
+            let switchButton = UIBarButtonItem(
+                image: systemImage,
+                style: .plain,
+                target: self,
+                action: #selector(toggleDisplayMode)
+            )
+            
+            // Bạn cũng có thể gán trực tiếp tintColor riêng cho chính UIBarButtonItem này để đảm bảo an toàn
+            switchButton.tintColor = .white
+            
+            self.navigationItem.rightBarButtonItem = switchButton
+        }
+    }
+    
+    @objc private func toggleDisplayMode() {
+        displayMode = (displayMode == .normal) ? .group : .normal
+        updateRightBarButton()
+        tableView.reloadData()
     }
     
     @objc private func handleDiveImport() {
@@ -132,6 +184,9 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         let point = gestureRecognizer.location(in: tableView)
         guard let indexPath = tableView.indexPathForRow(at: point) else { return }
 
+        // --- THÊM DÒNG NÀY ĐỂ LẤY INDEX PHẲNG CHÍNH XÁC ---
+        let flatIndex = getFlatIndex(from: indexPath)
+        
         if !isDeleteMode {
             // 1️⃣ Bật delete mode
             isDeleteMode = true
@@ -143,7 +198,7 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
             tableView.reloadData()
 
             // 4️⃣ Chỉ check row đang long-press
-            selectedIndexes.insert(indexPath.row)
+            selectedIndexes.insert(flatIndex)
 
             // 5️⃣ Reload riêng row đó
             tableView.reloadRows(at: [indexPath], with: .fade)
@@ -152,10 +207,10 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
             updateSelectAllButton()
         } else {
             // Đã ở delete mode → toggle bình thường
-            if selectedIndexes.contains(indexPath.row) {
-                selectedIndexes.remove(indexPath.row)
+            if selectedIndexes.contains(flatIndex) {
+                selectedIndexes.remove(flatIndex)
             } else {
-                selectedIndexes.insert(indexPath.row)
+                selectedIndexes.insert(flatIndex)
             }
 
             tableView.reloadRows(at: [indexPath], with: .fade)
@@ -289,10 +344,66 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         }
     }
     
+    // --- THÊM HÀM NHÓM DỮ LIỆU THEO THÁNG NĂM ---
+    private func groupDives(_ list: [Row]) -> [GroupedDiveLogs] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
+        
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "MMM yyyy"
+        
+        let currentLangCode = LocalizationManager.shared.currentLanguage
+        displayFormatter.locale = Locale(identifier: currentLangCode)
+        
+        var dictGroups: [String: [Row]] = [:]
+        var orderedMonths: [String] = []
+        
+        for row in list {
+            let dateStr = row.stringValue(key: "DiveStartLocalTime")
+            let monthStr: String
+            
+            if let date = formatter.date(from: dateStr) {
+                monthStr = displayFormatter.string(from: date)
+            } else {
+                monthStr = "Unknown"
+            }
+            
+            if dictGroups[monthStr] == nil {
+                dictGroups[monthStr] = []
+                orderedMonths.append(monthStr)
+            }
+            dictGroups[monthStr]?.append(row)
+        }
+        
+        return orderedMonths.map { GroupedDiveLogs(monthYearString: $0, dives: dictGroups[$0] ?? []) }
+    }
+    
+    // --- THÊM HÀM CHUYỂN ĐỔI INDEX PHỤC VỤ LOGIC CHỌN XÓA ---
+    private func getFlatIndex(from indexPath: IndexPath) -> Int {
+        if displayMode == .normal {
+            return indexPath.row
+        }
+        var flatIndex = 0
+        for i in 0..<indexPath.section {
+            flatIndex += groupedDiveList[i].dives.count
+        }
+        flatIndex += indexPath.row
+        return flatIndex
+    }
+    
     private func loadData(sort: SortOptions? = nil) {
         do {
             let diveLog = try DatabaseManager.shared.fetchDiveLog(where: "Deleted=0", sort: sort)
             diveList = diveLog
+            
+            // --- THÊM DÒNG NÀY ĐỂ CẬP NHẬT MẢNG GROUP ---
+            if isNewLook {
+                groupedDiveList = groupDives(diveLog)
+            } else {
+                groupedDiveList = []
+            }
         } catch {
             PrintLog("Failed to load divelog data: \(error)")
         }
@@ -373,28 +484,77 @@ extension LogsViewController: UITableViewDataSource, UITableViewDelegate {
         return 90
     }
     
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return displayMode == .normal ? nil : groupedDiveList[section].monthYearString
+    }
+    
+    // --- THÊM HÀM NÀY ĐỂ TRIỆT TIÊU KHOẢNG TRỐNG FOOTER CỦA HỆ THỐNG ---
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 0.001
+        // Trong iOS, trả về 0.001 thay vì 0 hẳn để hệ thống hiểu và xóa bỏ hoàn toàn vùng đệm Footer
+    }
+    
+    // --- THÊM HÀM NÀY ĐỂ ĐẢM BẢO KHÔNG CÓ VIEW FOOTER NÀO XUẤT HIỆN ---
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let header = view as? UITableViewHeaderFooterView {
+            header.contentView.backgroundColor = UIColor.B_2
+            
+            if let textLabel = header.textLabel {
+                textLabel.textColor = .white
+                textLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        // --- THAY ĐỔI TẠI ĐÂY: Tăng chiều cao của header (cũ là 40.0) ---
+        if isNewLook && displayMode == .group {
+            return 45.0
+        }
+        return 0.0
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        if isNewLook && displayMode == .group {
+            return groupedDiveList.count
+        }
+        return 1
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return diveList.count
+        if displayMode == .normal {
+            return diveList.count
+        } else {
+            return groupedDiveList[section].dives.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "LogCell", for: indexPath) as! LogCell
         
+        // Lấy index và row dữ liệu tương ứng dựa theo mode đang bật
+        let flatIndex = getFlatIndex(from: indexPath)
+        let currentDive = displayMode == .normal ? diveList[indexPath.row] : groupedDiveList[indexPath.section].dives[indexPath.row]
+        
         // Hiện checkbox nếu đang ở chế độ xóa
         cell.checkboxImv.isHidden = !isDeleteMode
         
-        cell.bindData(row: diveList[indexPath.row])
+        cell.bindData(row: currentDive)
         cell.updateCheckbox(
-                isVisible: isDeleteMode,
-                isChecked: selectedIndexes.contains(indexPath.row)
-            )
+            isVisible: isDeleteMode,
+            isChecked: selectedIndexes.contains(flatIndex)
+        )
         
         cell.onFavoriteTapped = {[weak self] isFavorite in
             guard let self = self else { return }
             
             DatabaseManager.shared.updateTable(tableName: "DiveLog",
                                                params: ["IsFavorite": isFavorite ? 1:0],
-                                               conditions: "where DiveID=\(self.diveList[indexPath.row].intValue(key: "DiveID"))")
+                                               conditions: "where DiveID=\(currentDive.intValue(key: "DiveID"))")
             
             self.loadData(sort: SortPreferences.load())
         }
@@ -403,11 +563,14 @@ extension LogsViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let flatIndex = getFlatIndex(from: indexPath)
+        let currentDive = displayMode == .normal ? diveList[indexPath.row] : groupedDiveList[indexPath.section].dives[indexPath.row]
+        
         if isDeleteMode {
-            if selectedIndexes.contains(indexPath.row) {
-                selectedIndexes.remove(indexPath.row)
+            if selectedIndexes.contains(flatIndex) {
+                selectedIndexes.remove(flatIndex)
             } else {
-                selectedIndexes.insert(indexPath.row)
+                selectedIndexes.insert(flatIndex)
             }
             
             updateUIForDeleteMode(indexPaths: [indexPath])
@@ -415,7 +578,7 @@ extension LogsViewController: UITableViewDataSource, UITableViewDelegate {
             if selectMode == false {
                 let storyboard = UIStoryboard(name: "Logs", bundle: nil)
                 let vc = storyboard.instantiateViewController(withIdentifier: "LogViewController") as! LogViewController
-                vc.diveLog = diveList[indexPath.row]
+                vc.diveLog = currentDive
                 vc.onUpdated = {[weak self] updated in
                     guard let self = self else { return }
                     if updated {
@@ -424,11 +587,11 @@ extension LogsViewController: UITableViewDataSource, UITableViewDelegate {
                 }
                 self.navigationController?.pushViewController(vc, animated: true)
             } else {
-                if selectedIndexes.contains(indexPath.row) {
-                    selectedIndexes.remove(indexPath.row)
+                if selectedIndexes.contains(flatIndex) {
+                    selectedIndexes.remove(flatIndex)
                 } else {
                     selectedIndexes.removeAll()
-                    selectedIndexes.insert(indexPath.row)
+                    selectedIndexes.insert(flatIndex)
                 }
                 updateUIForDeleteMode()
             }

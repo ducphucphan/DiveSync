@@ -14,7 +14,11 @@ class StatisticsViewController: BaseViewController {
     
     @IBOutlet weak var mapview: MKMapView!
     
-    let titleData = ["Most Visited Dive Spot", "Total Number of Dives", "Total Dive Time", "Average Dive Time", "Max Depth", "Average Depth", "Min Temp", "Max Temp", "Average Temp"]
+    @IBOutlet weak var unitSwitch: UISwitch!
+    
+    @IBOutlet weak var unitsLb: UILabel!
+    
+    let titleData = ["Most Visited Dive Spot", "Total Number of Dives", "Total Dive Time", "Average Dive Time", "Max Depth", "Average Depth", "Min Temp", "Max Temp"]
     
     var stats: DiveStatistics?
     var divespots:[DiveSpot]?
@@ -33,9 +37,13 @@ class StatisticsViewController: BaseViewController {
         
         mapview.delegate = self
         
+        unitsLb.text = "Units".localized
+        
         loadStatistics()
         loadDiveSpots()
         loadAnnotations()
+        
+        unitSwitch.isOn = (lastUnit != M)
     }
     
     private func loadDiveSpots() {
@@ -109,6 +117,14 @@ class StatisticsViewController: BaseViewController {
             mapview.selectAnnotation(target, animated: true)
         }
     }
+    
+    @IBAction func unitSwitchChanged(_ sender: UISwitch) {
+        // Nếu switch ON (gạt sang phải) -> FT, ngược lại -> M
+        lastUnit = sender.isOn ? FT : M
+        
+        // Reload lại toàn bộ Table View để tính toán và hiển thị đơn vị mới
+        tableView.reloadData()
+    }
 }
 
 extension StatisticsViewController: UITableViewDataSource, UITableViewDelegate {
@@ -179,6 +195,7 @@ extension StatisticsViewController: UITableViewDataSource, UITableViewDelegate {
                 } else {
                     value = String(format: "%.0f °F", maxTempF)
                 }
+            /*
             case 8:
                 var averageTempF = statistic.averageTempF
                 if lastUnit == M {
@@ -190,6 +207,7 @@ extension StatisticsViewController: UITableViewDataSource, UITableViewDelegate {
                 } else {
                     value = String(format: "%.0f °F", averageTempF)
                 }
+            */
             default:
                 break
             }

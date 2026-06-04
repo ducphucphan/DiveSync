@@ -633,6 +633,22 @@ extension LineChartView {
             cloned.marker = marker
         }
         
+        // --- ĐOẠN SỬA ĐỔI CHÍNH Ở ĐÂY ---
+        // 1. Copy bộ Renderer đổ bóng & vẽ grid đè lên trên cùng
+        cloned.renderer = ShadowLineChartRenderer(
+            dataProvider: cloned,
+            animator: cloned.chartAnimator,
+            viewPortHandler: cloned.viewPortHandler
+        )
+        
+        // 2. Copy bộ vẽ trục X tùy chỉnh để xử lý đường đứt nét chuẩn xác
+        cloned.xAxisRenderer = CustomXAxisRenderer(
+            viewPortHandler: cloned.viewPortHandler,
+            axis: cloned.xAxis,
+            transformer: cloned.getTransformer(forAxis: .left)
+        )
+        // --------------------------------
+        
         return cloned
     }
 }
