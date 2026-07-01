@@ -7,6 +7,7 @@
 
 import GRDB
 import Foundation
+import libxlsxwriter
 
 struct DiveStatistics {
     let mostVisitedDiveSpot: String?
@@ -975,6 +976,158 @@ extension DatabaseManager {
             }
         } catch {
             PrintLog("❌ exportDiveDataDictionary failed: \(error)")
+            return nil
+        }
+    }
+    
+    func exportToRealXlsxUsingLib(diveID: Int) -> URL? {
+        // 1️⃣ Lấy dữ liệu sạch từ hàm Mapper sẵn có của bạn
+        guard let dataDict = exportDiveDataDictionary(diveID: diveID),
+              let diveLog = dataDict["DiveLog"] as? [String: Any],
+              let diveProfiles = dataDict["DiveProfile"] as? [[String: Any]],
+              let tankDatas = dataDict["TankData"] as? [[String: Any]] else {
+            print("❌ Lỗi: Không thể bóc tách cấu trúc Mapper dữ liệu.")
+            return nil
+        }
+        
+        let diveLogKeys = diveLog.keys.sorted()
+        let tankKeys = tankDatas.first.map {
+            $0.keys.sorted()
+        } ?? []
+        
+        let profileKeys = diveProfiles.first.map {
+            $0.keys.sorted()
+        } ?? []
+        
+        /*
+        let tankKeys = ["TankNo", "TankUnit", "CylinderSize", "WorkingPressure", "TankType", "StartPressure", "EndPressure", "BreathingMinutes", "BreathingSeconds", "MaxDepth", "MinDepth", "AvgDepth"]
+        let profileKeys = ["DiveTime", "DepthMeters", "TemperatureC", "TankPSI", "SpeedFpm", "GfLocalPercent", "Tlbg", "OxToxPercent", "NdlMin"]
+        */
+        
+        // 2️⃣ Cấu hình vị trí lưu file tạm .xlsx
+        // Kiểm tra ModelName (Nếu nil hoặc rỗng "" thì dùng "UnknownName")
+        let rawModelName = diveLog["DeviceName"] as? String
+        let formattedName = rawModelName?.replacingOccurrences(of: " ", with: "")
+        
+        let modelName = (formattedName == nil || formattedName!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? "UnknownName" : formattedName!
+        
+        // Kiểm tra SerialNumber (Nếu nil hoặc rỗng "" thì dùng "UnknownSN")
+        let rawSerialNumber = diveLog["SerialNo"] as? String
+        let serialNumber = (rawSerialNumber == nil || rawSerialNumber!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ? "UnknownSN" : rawSerialNumber!
+        
+        // Xử lý DiveStartLocalTime (Thay thế tất cả các ký tự /, :, khoảng trắng thành _)
+        let rawTime = "\(diveLog["DiveStartLocalTime"] ?? "")"
+        let cleanTime: String
+        if rawTime.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            cleanTime = "UnknownTime"
+        } else {
+            // Thay thế liên tiếp các ký tự đặc biệt thành dấu gạch dưới
+            cleanTime = rawTime
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: ":", with: "")
+                .replacingOccurrences(of: " ", with: "_")
+        }
+        
+        // Ghép tên file theo format chuẩn: ModelName_SerialNumber_DiveStartLocalTime.xlsx
+        let fileName = "\(modelName)_\(serialNumber)_\(cleanTime).xlsx"
+        
+        let fileManager = FileManager.default
+        let tempFileURL = fileManager.temporaryDirectory.appendingPathComponent(fileName)
+        
+        if fileManager.fileExists(atPath: tempFileURL.path) {
+            try? fileManager.removeItem(at: tempFileURL)
+        }
+        
+        // 🌟 BƯỚC CỐT LÕI: Chuyển đổi đường dẫn sang C-String chuẩn hệ thống tập tin
+        let cPath = (tempFileURL as NSURL).fileSystemRepresentation
+        
+        // 3️⃣ Khởi tạo Workbook từ thư viện C
+        guard let workbook = workbook_new(cPath) else {
+            print("❌ Không thể tạo đối tượng Workbook trong bộ nhớ.")
+            return nil
+        }
+        
+        // Tạo bảng màu định dạng Header cho đẹp mắt và chuyên nghiệp
+        let headerFormat = workbook_add_format(workbook)
+        format_set_bold(headerFormat)
+        
+        /*
+         format_set_font_color(headerFormat, 0xFFFFFF) // Chữ trắng
+         format_set_bg_color(headerFormat, 0x1F4E78)   // Nền xanh đậm
+         format_set_align(headerFormat, UInt8(LXW_ALIGN_CENTER.rawValue))
+         */
+        
+        // --- TAB 1: DIVE LOG ---
+        if let sheet1 = workbook_add_worksheet(workbook, "DiveLog") {
+            // Ghi tiêu đề cột (Dòng 0)
+            for (colIndex, key) in diveLogKeys.enumerated() {
+                worksheet_write_string(sheet1, 0, lxw_col_t(colIndex), key, headerFormat)
+            }
+            // Ghi giá trị (Dòng 1)
+            for (colIndex, key) in diveLogKeys.enumerated() {
+                let val = "\(diveLog[key] ?? "")"
+                worksheet_write_string(sheet1, 1, lxw_col_t(colIndex), val, nil)
+            }
+        }
+        
+        // --- TAB 2: TANK DATA ---
+        if let sheet2 = workbook_add_worksheet(workbook, "TankData") {
+            // Ghi tiêu đề cột
+            for (colIndex, key) in tankKeys.enumerated() {
+                worksheet_write_string(sheet2, 0, lxw_col_t(colIndex), key, headerFormat)
+            }
+            // Sắp xếp danh sách bình khí theo thứ tự TankNo tăng dần
+            let sortedTanks = tankDatas.sorted {
+                let no1 = Int("\($0["TankNo"] ?? "0")") ?? 0
+                let no2 = Int("\($1["TankNo"] ?? "0")") ?? 0
+                return no1 < no2
+            }
+            // Đổ mảng dữ liệu bình khí vào các dòng tiếp theo (Dòng 1 trở đi)
+            for (rowIndex, tank) in sortedTanks.enumerated() {
+                for (colIndex, key) in tankKeys.enumerated() {
+                    let val = "\(tank[key] ?? "")"
+                    worksheet_write_string(sheet2, lxw_row_t(rowIndex + 1), lxw_col_t(colIndex), val, nil)
+                }
+            }
+        }
+        
+        // --- TAB 3: DIVE PROFILE ---
+        if let sheet3 = workbook_add_worksheet(workbook, "DiveProfile") {
+            // Ghi tiêu đề cột
+            for (colIndex, key) in profileKeys.enumerated() {
+                worksheet_write_string(sheet3, 0, lxw_col_t(colIndex), key, headerFormat)
+            }
+            // Đổ dữ liệu ma trận đồ thị lặn chi tiết vào bảng tính
+            for (rowIndex, profile) in diveProfiles.enumerated() {
+                for (colIndex, key) in profileKeys.enumerated() {
+                    let val = "\(profile[key] ?? "")"
+                    worksheet_write_string(sheet3, lxw_row_t(rowIndex + 1), lxw_col_t(colIndex), val, nil)
+                }
+            }
+        }
+        
+        // --- TAB 4: HIDDEN SHEET ---
+        if let sheet4 = workbook_add_worksheet(workbook, "_DiveSync_Metadata") {
+            
+            worksheet_write_string(sheet4, 0, 0, "App", nil)
+            // B1: DiveSync
+            worksheet_write_string(sheet4, 0, 1, "DiveSync", nil)
+            
+            // A2: FileType
+            worksheet_write_string(sheet4, 1, 0, "FileType", nil)
+            // B2: DiveLogExport
+            worksheet_write_string(sheet4, 1, 1, "DiveLogExport", nil)
+            
+            worksheet_hide(sheet4)
+        }
+        
+        // 4️⃣ Đóng luồng ghi dữ liệu và xuất file nén nhị phân
+        let resultStatus = workbook_close(workbook)
+        
+        if resultStatus.rawValue == 0 { // Không có lỗi (LXW_NO_ERROR)
+            return tempFileURL
+        } else {
+            print("❌ Lỗi đóng gói nén file nhị phân của libxlsxwriter: \(resultStatus.rawValue)")
             return nil
         }
     }

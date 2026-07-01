@@ -446,9 +446,13 @@ our products.";
 "CF3: Aggressive" = "CF3: Progressif";
 "Duration" = "Durée";
 "Scuba" = "Plongée";
-
-
-
-
-
-
+"Import Logs" = "Importer le(s) journal(aux)";
+"No new dives imported" = "Aucune nouvelle plongée importée";
+"YES" = "Oui";
+"NO" = "Non";
+"Found %d new dive(s) to import. Do you want to proceed?" = "Trouvé %d nouvelle(s) plongée(s) à importer. Voulez-vous continuer ?";
+"Exporting logs..." = "Exportation des journaux...";
+"Dive logs exported successfully" = "Journaux de plongée exportés avec succès";
+"No valid files found" = "Aucun fichier valide trouvé";
+"Failed to export any dive logs." = "Échec de l'exportation des journaux de plongée.";
+"Invalid DiveSync data file." = "Fichier de données DiveSync invalide.";

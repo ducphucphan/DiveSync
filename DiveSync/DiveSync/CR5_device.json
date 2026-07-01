@@ -155,7 +155,7 @@
                     {
                         "id": "time_alarm",
                         "type": "modeSelector",
-                        "title": "Time Alarm",
+                        "title": "Dive Time Alarm",
                         "value": "OFF",
                         "options": []
                     },

@@ -528,4 +528,17 @@ class Utilities {
             }
         }
     }
+    
+    static func deleteFile(at url: URL) {
+        let fileManager = FileManager.default
+        // Kiểm tra xem file có tồn tại hay không trước khi xóa
+        if fileManager.fileExists(atPath: url.path) {
+            do {
+                try fileManager.removeItem(at: url)
+                print("🗑️ Đã xóa file tạm thành công.")
+            } catch {
+                print("❌ Lỗi khi xóa file tạm: \(error.localizedDescription)")
+            }
+        }
+    }
 }

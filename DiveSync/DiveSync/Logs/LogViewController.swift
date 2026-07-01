@@ -75,7 +75,7 @@ class LogViewController: BaseViewController {
     @IBOutlet weak var photosLb: UILabel!
     @IBOutlet weak var memoLb: UILabel!
     @IBOutlet weak var shareLb: UILabel!
-    @IBOutlet weak var deleteLb: UILabel!
+    @IBOutlet weak var exportLb: UILabel!
     
     @IBOutlet weak var mainMetricsStackView: UIStackView!
     
@@ -237,7 +237,7 @@ class LogViewController: BaseViewController {
         photosLb.text = "Photos".localized
         memoLb.text = "Memo".localized
         shareLb.text = "Share".localized
-        deleteLb.text = "Delete".localized
+        exportLb.text = "Export".localized
     }
     
     

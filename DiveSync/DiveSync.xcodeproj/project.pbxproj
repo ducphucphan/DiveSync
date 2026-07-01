@@ -119,6 +119,7 @@
 		4887C3112DC51E0900742DF3 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4887C3102DC51E0900742DF3 /* Colors.xcassets */; };
 		4887C3142DC522B300742DF3 /* DiveSpots.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4887C3132DC522B300742DF3 /* DiveSpots.storyboard */; };
 		4887C3162DC522C600742DF3 /* DiveSpotsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4887C3152DC522C600742DF3 /* DiveSpotsViewController.swift */; };
+		488C8B982FE14C1E002A167A /* ExcelImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488C8B972FE14C19002A167A /* ExcelImportService.swift */; };
 		488DD8282DDF1F0000FF517A /* divesync.db in Resources */ = {isa = PBXBuildFile; fileRef = 488DD8272DDF0F2300FF517A /* divesync.db */; };
 		488F75AC2E5C9373005BE406 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488F75AB2E5C9373005BE406 /* Logger.swift */; };
 		489311752DCBA8D700FF3219 /* MemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489311742DCBA8D700FF3219 /* MemoViewController.swift */; };
@@ -163,6 +164,7 @@
 		48BF1EA22DF6C8C6005286A0 /* SetTimeAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */; };
 		48C2FEAD2E7C2AA2003BC694 /* FirmwareURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */; };
 		48C9653D2F10E462007A794D /* OwnerInfoCardViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */; };
+		48CA33562FDFEBF8007C3985 /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = 48CA33552FDFEBF8007C3985 /* CoreXLSX */; };
 		48CDF7B62FCD785B00ABDE9E /* 2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B22FCD785B00ABDE9E /* 2.txt */; };
 		48CDF7B72FCD785B00ABDE9E /* 4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B42FCD785B00ABDE9E /* 4.txt */; };
 		48CDF7B82FCD785B00ABDE9E /* 1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 48CDF7B12FCD785B00ABDE9E /* 1.txt */; };
@@ -255,6 +257,7 @@
 		48E66E482D0C19C6005ACECE /* DropDownCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E66E412D0C19C6005ACECE /* DropDownCell.swift */; };
 		48E66E492D0C19C6005ACECE /* DropDown+Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E66E422D0C19C6005ACECE /* DropDown+Appearance.swift */; };
 		48EB9AF82CEC9FE600E4C81E /* IntValueFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9AF72CEC9FE600E4C81E /* IntValueFormatter.swift */; };
+		48EC661C2FE009F600345005 /* libxlsxwriter in Frameworks */ = {isa = PBXBuildFile; productRef = 48EC661B2FE009F600345005 /* libxlsxwriter */; };
 		48ECA6B32DF965C200AB2C47 /* DeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48ECA6B22DF965C200AB2C47 /* DeviceSettings.swift */; };
 		48EE981A2DA5236300B3CFFB /* PagingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 48EE98192DA5236300B3CFFB /* PagingKit */; };
 		48EE981C2DA54EFD00B3CFFB /* PagingMenuCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48EE981B2DA54EFD00B3CFFB /* PagingMenuCell.xib */; };
@@ -384,6 +387,7 @@
 		4887C3102DC51E0900742DF3 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		4887C3132DC522B300742DF3 /* DiveSpots.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DiveSpots.storyboard; sourceTree = "<group>"; };
 		4887C3152DC522C600742DF3 /* DiveSpotsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiveSpotsViewController.swift; sourceTree = "<group>"; };
+		488C8B972FE14C19002A167A /* ExcelImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcelImportService.swift; sourceTree = "<group>"; };
 		488DD8272DDF0F2300FF517A /* divesync.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = divesync.db; sourceTree = "<group>"; };
 		488F75AB2E5C9373005BE406 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		489311742DCBA8D700FF3219 /* MemoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoViewController.swift; sourceTree = "<group>"; };
@@ -553,9 +557,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48EC661C2FE009F600345005 /* libxlsxwriter in Frameworks */,
 				4874FD652CE1B97F0027C5F3 /* SwiftHEXColors in Frameworks */,
 				48F4D2752E829A240003073D /* Lightbox in Frameworks */,
 				4874FD292CE1B4B40027C5F3 /* SwiftEntryKit in Frameworks */,
+				48CA33562FDFEBF8007C3985 /* CoreXLSX in Frameworks */,
 				4835FFF22D707A0000DEB4C3 /* ProgressHUD in Frameworks */,
 				48EE981A2DA5236300B3CFFB /* PagingKit in Frameworks */,
 				48D1955C2D64465300B21E25 /* RxCocoa in Frameworks */,
@@ -957,6 +963,7 @@
 		489641AD2EA6319400467157 /* DataExport */ = {
 			isa = PBXGroup;
 			children = (
+				488C8B972FE14C19002A167A /* ExcelImportService.swift */,
 				489641AE2EA631B600467157 /* Mappers */,
 			);
 			path = DataExport;
@@ -1203,6 +1210,8 @@
 				48EE98192DA5236300B3CFFB /* PagingKit */,
 				48F49F792E5C9C47009703F4 /* ZIPFoundation */,
 				48F4D2742E829A240003073D /* Lightbox */,
+				48CA33552FDFEBF8007C3985 /* CoreXLSX */,
+				48EC661B2FE009F600345005 /* libxlsxwriter */,
 			);
 			productName = Aqualung;
 			productReference = 484C44D22CE1B2EF0082039E /* DiveSync.app */;
@@ -1257,6 +1266,8 @@
 				484BD5002D9FE3F900DA598A /* XCRemoteSwiftPackageReference "PagingKit" */,
 				488F75AD2E5C97D7005BE406 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				48AD0F902E828E580046EDF9 /* XCRemoteSwiftPackageReference "Lightbox" */,
+				48F110542FDBC288000802EC /* XCRemoteSwiftPackageReference "CoreXLSX" */,
+				485D40A92FDFF6F200D0E914 /* XCRemoteSwiftPackageReference "libxlsxwriter" */,
 			);
 			productRefGroup = 484C44D32CE1B2EF0082039E /* Products */;
 			projectDirPath = "";
@@ -1431,6 +1442,7 @@
 				482675AE2DCA49A30037E40C /* LogGalleryCell.swift in Sources */,
 				48ACD0BE2E72E12300752535 /* FirmwarePageViewController.swift in Sources */,
 				485EE4672E7951EA00EF25AC /* Data+NumberConversion.swift in Sources */,
+				488C8B982FE14C1E002A167A /* ExcelImportService.swift in Sources */,
 				482CB9922D1020D400CA78F4 /* CustomCalloutView.swift in Sources */,
 				485718F52E6E818700ADAA25 /* AppSettings.swift in Sources */,
 				4874FD432CE1B8C60027C5F3 /* ShadowView.swift in Sources */,
@@ -1691,6 +1703,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
@@ -1708,15 +1721,14 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1735,6 +1747,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = L335NH44M2;
@@ -1752,15 +1765,14 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1827,6 +1839,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 14.1.3;
+			};
+		};
+		485D40A92FDFF6F200D0E914 /* XCRemoteSwiftPackageReference "libxlsxwriter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jmcnamara/libxlsxwriter.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		4874FD1E2CE1B4780027C5F3 /* XCRemoteSwiftPackageReference "Charts" */ = {
@@ -1909,6 +1929,14 @@
 				minimumVersion = 6.9.0;
 			};
 		};
+		48F110542FDBC288000802EC /* XCRemoteSwiftPackageReference "CoreXLSX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CoreOffice/CoreXLSX.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.14.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1957,6 +1985,11 @@
 			package = 4874FD2B2CE1B5790027C5F3 /* XCRemoteSwiftPackageReference "SwiftHEXColors" */;
 			productName = SwiftHEXColors;
 		};
+		48CA33552FDFEBF8007C3985 /* CoreXLSX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 48F110542FDBC288000802EC /* XCRemoteSwiftPackageReference "CoreXLSX" */;
+			productName = CoreXLSX;
+		};
 		48D195592D64463A00B21E25 /* RxBluetoothKit2 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 48D195512D643AE700B21E25 /* XCRemoteSwiftPackageReference "RxBluetoothKit2" */;
@@ -1966,6 +1999,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 48D195522D643D2000B21E25 /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxCocoa;
+		};
+		48EC661B2FE009F600345005 /* libxlsxwriter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 485D40A92FDFF6F200D0E914 /* XCRemoteSwiftPackageReference "libxlsxwriter" */;
+			productName = libxlsxwriter;
 		};
 		48EE98192DA5236300B3CFFB /* PagingKit */ = {
 			isa = XCSwiftPackageProductDependency;

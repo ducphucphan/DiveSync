@@ -467,6 +467,36 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CiH-aF-LoQ" userLabel="ExportView">
+                                <rect key="frame" x="313" y="634" width="60" height="60"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="doc.badge.arrow.up.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="4bP-M0-knt">
+                                        <rect key="frame" x="12.666666666666666" y="16.333333333333332" width="31.333333333333336" height="30.333333333333339"/>
+                                        <color key="tintColor" name="B3Color"/>
+                                    </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hHZ-95-WPk">
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain"/>
+                                        <connections>
+                                            <action selector="exportAction:" destination="mgl-Ir-s2G" eventType="touchUpInside" id="YSo-QV-6yO"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="4bP-M0-knt" secondAttribute="bottom" constant="16" id="1xf-cG-9nl"/>
+                                    <constraint firstItem="4bP-M0-knt" firstAttribute="top" secondItem="CiH-aF-LoQ" secondAttribute="top" constant="16" id="RdA-Tx-Q1M"/>
+                                    <constraint firstAttribute="width" constant="60" id="SJA-oX-auY"/>
+                                    <constraint firstAttribute="trailing" secondItem="4bP-M0-knt" secondAttribute="trailing" constant="16" id="WgK-rs-3BN"/>
+                                    <constraint firstAttribute="height" constant="60" id="YYU-zD-b2Z"/>
+                                    <constraint firstItem="4bP-M0-knt" firstAttribute="leading" secondItem="CiH-aF-LoQ" secondAttribute="leading" constant="16" id="gau-DY-m2G"/>
+                                    <constraint firstItem="hHZ-95-WPk" firstAttribute="leading" secondItem="CiH-aF-LoQ" secondAttribute="leading" id="iuq-6p-gne"/>
+                                    <constraint firstItem="hHZ-95-WPk" firstAttribute="top" secondItem="CiH-aF-LoQ" secondAttribute="top" id="lQ5-VZ-vwW"/>
+                                    <constraint firstAttribute="bottom" secondItem="hHZ-95-WPk" secondAttribute="bottom" id="uiI-B2-1LT"/>
+                                    <constraint firstAttribute="trailing" secondItem="hHZ-95-WPk" secondAttribute="trailing" id="v13-8T-xke"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="q7r-Qf-3J5"/>
                         <color key="backgroundColor" name="BGColor"/>
@@ -477,11 +507,13 @@
                             <constraint firstItem="z6P-fP-WPp" firstAttribute="leading" secondItem="q7r-Qf-3J5" secondAttribute="leading" id="AHj-zv-812"/>
                             <constraint firstItem="0Eb-sD-eEc" firstAttribute="top" secondItem="q7r-Qf-3J5" secondAttribute="top" constant="20" id="BF4-Vl-ma3"/>
                             <constraint firstItem="q7r-Qf-3J5" firstAttribute="bottom" secondItem="f1C-vv-Et8" secondAttribute="bottom" id="Chv-yH-Nsv"/>
+                            <constraint firstItem="q7r-Qf-3J5" firstAttribute="trailing" secondItem="CiH-aF-LoQ" secondAttribute="trailing" constant="20" id="Cld-re-dId"/>
                             <constraint firstItem="f1C-vv-Et8" firstAttribute="trailing" secondItem="q7r-Qf-3J5" secondAttribute="trailing" id="Fsr-ua-nQm"/>
                             <constraint firstItem="q7r-Qf-3J5" firstAttribute="trailing" secondItem="z6P-fP-WPp" secondAttribute="trailing" id="I4s-Wo-47z"/>
                             <constraint firstAttribute="bottom" secondItem="nwD-Ez-jrh" secondAttribute="bottom" id="Iqn-M6-uP2"/>
                             <constraint firstItem="lq2-ii-hOg" firstAttribute="trailing" secondItem="q7r-Qf-3J5" secondAttribute="trailing" id="KJN-te-Ych"/>
                             <constraint firstAttribute="trailing" secondItem="nwD-Ez-jrh" secondAttribute="trailing" id="OT6-IU-Qt5"/>
+                            <constraint firstItem="f1C-vv-Et8" firstAttribute="top" secondItem="CiH-aF-LoQ" secondAttribute="bottom" constant="40" id="Qaw-Ls-rI3"/>
                             <constraint firstItem="lq2-ii-hOg" firstAttribute="top" secondItem="q7r-Qf-3J5" secondAttribute="top" id="UCq-bu-dDt"/>
                             <constraint firstItem="q7r-Qf-3J5" firstAttribute="trailing" secondItem="0Eb-sD-eEc" secondAttribute="trailing" constant="20" id="c84-kd-vSD"/>
                             <constraint firstItem="nwD-Ez-jrh" firstAttribute="leading" secondItem="mih-FI-FTI" secondAttribute="leading" id="d8m-99-fts"/>
@@ -498,6 +530,7 @@
                         <outlet property="cancelView" destination="NOV-tH-sUT" id="TEz-6G-zrD"/>
                         <outlet property="deleteLb" destination="wyo-tR-cik" id="lx3-Ad-zy0"/>
                         <outlet property="deleteView" destination="w0P-Hf-OEn" id="8Cf-pJ-JLf"/>
+                        <outlet property="exportView" destination="CiH-aF-LoQ" id="GKf-sB-D2w"/>
                         <outlet property="headerTableView" destination="lq2-ii-hOg" id="iU7-7l-zJy"/>
                         <outlet property="longPressLb" destination="imm-ee-Tsu" id="DEp-WT-Tdx"/>
                         <outlet property="noDivesLb" destination="0Eb-sD-eEc" id="I5N-M1-4vo"/>
@@ -2038,18 +2071,18 @@
                                                     <constraint firstItem="aV2-k0-YEI" firstAttribute="top" secondItem="ecX-Ug-dWy" secondAttribute="top" id="zPg-6e-PUF"/>
                                                 </constraints>
                                             </view>
-                                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YPi-Sa-YTP" userLabel="delete">
+                                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YPi-Sa-YTP" userLabel="export">
                                                 <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="fLV-CR-tpe">
                                                         <rect key="frame" x="0.0" y="8" width="0.0" height="42"/>
                                                         <subviews>
-                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="trash" translatesAutoresizingMaskIntoConstraints="NO" id="NU2-0D-FNc">
-                                                                <rect key="frame" x="0.0" y="0.0" width="0.0" height="25"/>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="doc.badge.arrow.up" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="NU2-0D-FNc">
+                                                                <rect key="frame" x="-2.6666666666666665" y="0.33333333333333215" width="2.6666666666666665" height="22.666666666666668"/>
                                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delete" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rXZ-Kg-sb7">
-                                                                <rect key="frame" x="0.0" y="29" width="0.0" height="13"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Export" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rXZ-Kg-sb7">
+                                                                <rect key="frame" x="0.0" y="24.333333333333258" width="0.0" height="17.666666666666671"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
@@ -2060,6 +2093,9 @@
                                                         <rect key="frame" x="0.0" y="0.0" width="0.0" height="50"/>
                                                         <state key="normal" title="Button"/>
                                                         <buttonConfiguration key="configuration" style="plain"/>
+                                                        <connections>
+                                                            <action selector="exportTapped:" destination="nqv-Hn-id8" eventType="touchUpInside" id="3QR-RN-aCG"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                                 <constraints>
@@ -2116,7 +2152,6 @@
                         <outlet property="conservatismLb" destination="lJe-CK-iTC" id="vxu-1R-H8x"/>
                         <outlet property="conservatismStackView" destination="LLP-uc-Ku5" id="64V-Nn-Bit"/>
                         <outlet property="dateLb" destination="T9Q-vd-moK" id="fgs-Q1-PLD"/>
-                        <outlet property="deleteLb" destination="rXZ-Kg-sb7" id="92E-Fq-siv"/>
                         <outlet property="diveDateLb" destination="6f3-6j-ctN" id="QoP-4l-w3d"/>
                         <outlet property="diveNameLb" destination="cnW-qJ-nFF" id="N7L-ru-8Qy"/>
                         <outlet property="diveOfTheDayLb" destination="RMe-j4-nxU" id="AGE-bj-qt0"/>
@@ -2127,6 +2162,7 @@
                         <outlet property="dtValueLb" destination="Uco-E2-bfh" id="KHL-rE-VOd"/>
                         <outlet property="endGasLb" destination="i5H-Nx-Lmw" id="wtY-eI-ho5"/>
                         <outlet property="endGasValueLb" destination="JgQ-Gz-2h4" id="KDs-01-2DO"/>
+                        <outlet property="exportLb" destination="rXZ-Kg-sb7" id="UoF-ih-VYt"/>
                         <outlet property="favoriteBtn" destination="Ekc-BI-tgt" id="ELR-UL-Xob"/>
                         <outlet property="gasDetailLb" destination="HLW-Mh-vyK" id="M6p-r3-mgH"/>
                         <outlet property="gasDetailsView" destination="7QM-Cw-Hbf" id="SXQ-JZ-2mb"/>
@@ -3824,6 +3860,8 @@
         <image name="date" width="30.333333969116211" height="32"/>
         <image name="dive_status" width="27" height="14.666666984558105"/>
         <image name="dive_time" width="32" height="32"/>
+        <image name="doc.badge.arrow.up" catalog="system" width="116" height="128"/>
+        <image name="doc.badge.arrow.up.fill" catalog="system" width="120" height="128"/>
         <image name="end_gas" width="24.666666030883789" height="32"/>
         <image name="gear" width="24.333333969116211" height="25"/>
         <image name="loc_icon" width="16.333333969116211" height="24.333333969116211"/>

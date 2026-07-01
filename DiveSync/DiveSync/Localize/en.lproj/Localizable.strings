@@ -446,8 +446,14 @@ our products.";
 "CF3: Aggressive" = "CF3: Aggressive";
 "Duration" = "Duration";
 "Scuba" = "Scuba";
-
-
-
-
-
+"Import Logs" = "Import Logs";
+"No new dives imported" = "No new dives imported";
+"YES" = "YES";
+"NO" = "NO";
+"Found %d new dive(s) to import. Do you want to proceed?" = "Found %d new dive(s) to import. Do you want to proceed?";
+"Exporting logs..." = "Exporting logs...";
+"Dive logs exported successfully" = "Dive logs exported successfully";
+"No valid files found" = "No valid files found";
+"Failed to export any dive logs." = "Failed to export any dive logs.";
+"Failed to export any dive logs." = "Failed to export any dive logs.";
+"Invalid DiveSync data file."="Invalid DiveSync data file.";

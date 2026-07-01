@@ -444,6 +444,13 @@ our products." = "Erlauben Sie DiveSync, Daten von Ihrem Tauchcomputer zu sammel
 "CF3: Aggressive" = "CF3: Aggressiv";
 "Duration" = "Dauer";
 "Scuba" = "Gerätetauchen";
-
-
-
+"Import Logs" = "Protokoll(e) importieren";
+"No new dives imported" = "Keine neuen Tauchgänge importiert";
+"YES" = "Ja";
+"NO" = "Nein";
+"Found %d new dive(s) to import. Do you want to proceed?" = "%d neue Tauchgänge zum Importieren gefunden. Fortfahren ?";
+"Exporting logs..." = "Protokolle werden exportiert...";
+"Dive logs exported successfully" = "Tauchprotokolle erfolgreich exportiert";
+"No valid files found" = "Keine gültigen Dateien gefunden";
+"Failed to export any dive logs." = "Tauchprotokolle konnten nicht exportiert werden.";
+"Invalid DiveSync data file." = "Ungültige DiveSync-Datendatei.";

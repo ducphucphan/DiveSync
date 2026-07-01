@@ -444,7 +444,13 @@ our products." = "Consenti a DiveSync di raccogliere dati dal tuo computer subac
 "CF3: Aggressive" = "CF3: Aggressivo";
 "Duration" = "Durata";
 "Scuba" = "Subacquea";
-
-
-
-
+"Import Logs" = "Importa registri";
+"No new dives imported" = "Nessuna nuova immersione importata";
+"YES" = "Sì";
+"NO" = "No";
+"Found %d new dive(s) to import. Do you want to proceed?" = "%d nuove immersioni trovate da importare. Vuoi procedere ?";
+"Exporting logs..." = "Esportazione dei registri...";
+"Dive logs exported successfully" = "Registri di immersione esportati con successo";
+"No valid files found" = "Nessun file valido trovato";
+"Failed to export any dive logs." = "Impossibile esportare i registri di immersione.";
+"Invalid DiveSync data file." = "File dati DiveSync non valido.";

@@ -444,4 +444,13 @@ our products." = "DiveSync'in ürünlerimizi iyileştirmemize yardımcı olması
 "CF3: Aggressive" = "CF3: Agresif";
 "Duration" = "Süre";
 "Scuba" = "Aletli Dalış";
-
+"Import Logs" = "Günlükleri içe aktar";
+"No new dives imported" = "Yeni dalış verisi içe aktarılmadı";
+"YES" = "Evet";
+"NO" = "Hayır";
+"Found %d new dive(s) to import. Do you want to proceed?" = "İçe aktarılacak %d yeni dalış bulundu. Devam etmek istiyor musunuz ?";
+"Exporting logs..." = "Günlükler dışa aktarılıyor...";
+"Dive logs exported successfully" = "Dalış günlükleri başarıyla dışa aktarıldı";
+"No valid files found" = "Geçerli dosya bulunamadı";
+"Failed to export any dive logs." = "Hiçbir dalış günlüğü dışa aktarılamadı.";
+"Invalid DiveSync data file." = "Geçersiz DiveSync veri dosyası.";

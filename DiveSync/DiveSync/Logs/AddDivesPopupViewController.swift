@@ -6,13 +6,14 @@
 //
 
 import Foundation
-
 import UIKit
+import ProgressHUD
 
 protocol AddLogsPopupDelegate: AnyObject {
     func popupDidTapAddManualLog(_ vc: AddDivesPopupViewController)
     func popup(_ vc: AddDivesPopupViewController, didSelect device: Devices)
     func popupDidTapAddNewDevice(_ vc: AddDivesPopupViewController)
+    func popupDidTapImportLogs(_ vc: AddDivesPopupViewController)
 }
 
 final class AddDivesPopupViewController: UIViewController {
@@ -28,6 +29,7 @@ final class AddDivesPopupViewController: UIViewController {
     @IBOutlet private weak var addNewDeviceButton: UIButton!
     
     @IBOutlet weak var addManualLb: UILabel!
+    @IBOutlet weak var importLogsLb: UILabel!
     
     
     weak var delegate: AddLogsPopupDelegate?
@@ -50,6 +52,7 @@ final class AddDivesPopupViewController: UIViewController {
         
         titleLabel.text = "Add Logs".localized
         addManualLb.text = "Add Manual Log".localized
+        importLogsLb.text = "Import Logs".localized
         downloadTitleLabel.text = "Download Logs".localized
         downloadSubtitleLabel.text = "Please select a device below".localized + ":"
         emptyStateLabel.text = "No device to list.".localized
@@ -126,6 +129,10 @@ final class AddDivesPopupViewController: UIViewController {
     
     @IBAction private func addNewDeviceTapped(_ sender: UIButton) {
         delegate?.popupDidTapAddNewDevice(self)
+    }
+    
+    @IBAction private func importLogsTapped(_ sender: UIButton) {
+        delegate?.popupDidTapImportLogs(self)
     }
 }
 

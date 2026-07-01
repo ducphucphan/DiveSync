@@ -448,6 +448,13 @@ our products." = "允许DiveSync从您的潜水电脑收集数据，以帮助我
 "CF3: Aggressive" = "CF3: 積極";
 "Duration" = "持續時間";
 "Scuba" = "水肺潛水";
-
-
-
+"Import Logs" = "導入日誌";
+"No new dives imported" = "没有导入新的潜水日志";
+"YES" = "是";
+"NO" = "否";
+"Found %d new dive(s) to import. Do you want to proceed?" = "检测到 %d 条新潜水日志，是否导入？";
+"Exporting logs..." = "正在导出日志...";
+"Dive logs exported successfully" = "潜水日志导出成功";
+"No valid files found" = "未找到有效文件";
+"Failed to export any dive logs." = "无法导出任何潜水日志。";
+"Invalid DiveSync data file." = "无效的 DiveSync 数据文件。";

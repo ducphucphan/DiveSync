@@ -10,6 +10,7 @@ import GRDB
 import RxSwift
 import ProgressHUD
 import RxBluetoothKit
+import UniformTypeIdentifiers
 
 struct GroupedDiveLogs {
     let monthYearString: String
@@ -19,6 +20,8 @@ struct GroupedDiveLogs {
 class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var headerTableView: UIView!
+    
+    @IBOutlet weak var exportView: UIView!
     
     @IBOutlet weak var addView: UIView!
     @IBOutlet weak var recycleView: UIView!
@@ -66,11 +69,22 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         NotificationCenter.default.removeObserver(self)
     }
     
+    enum DocumentPickerType {
+        case importFile
+        case exportFile
+    }
+
+    var currentPickerType: DocumentPickerType?
+    
+    private var tempExportFiles: [URL] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.navigationController?.setCustomTitle(for: self.navigationItem, title: self.title ?? "", pushBack: true)
         self.title = nil
+        
+        setupExportButton()
         
         noDivesLb.text = "No Logs".localized
         addLb.text = "Add".localized
@@ -143,6 +157,51 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
             tableView.addGestureRecognizer(longPressGesture)
         }
         
+    }
+    
+    private func setupExportButton() {
+        // 1. Bo tròn góc
+        exportView.layer.cornerRadius = exportView.bounds.width/2.0 // Độ bo góc tùy chọn
+        
+        // 2. Tạo bóng đổ nhẹ
+        exportView.layer.shadowColor = UIColor.black.cgColor // Màu của bóng
+        exportView.layer.shadowOpacity = 0.2 // Độ đậm của bóng (từ 0.0 đến 1.0)
+        exportView.layer.shadowOffset = CGSize(width: 0, height: 4) // Hướng đổ bóng (xuống dưới 4pt)
+        exportView.layer.shadowRadius = 6 // Độ mờ/nhòe của bóng
+        
+        // 3. Tăng hiệu năng (Quan trọng)
+        exportView.layer.shouldRasterize = true
+        exportView.layer.rasterizationScale = UIScreen.main.scale
+        
+        self.exportView.transform = CGAffineTransform(scaleX: 0, y: 0)
+        self.exportView.alpha = 0
+    }
+    
+    private func updateExportButtonVisibility(animated: Bool = true) {
+        // Kiểm tra xem có item nào đang được chọn hay không
+        let shouldShow = !selectedIndexes.isEmpty
+        
+        // Xác định trạng thái Scale (Hiển thị = kích thước gốc 1.0, Ẩn = thu nhỏ về 0.0)
+        let targetTransform = shouldShow ? CGAffineTransform.identity : CGAffineTransform(scaleX: 0.01, y: 0.01)
+        let targetAlpha: CGFloat = shouldShow ? 1.0 : 0.0
+        
+        // Nếu không muốn chạy hiệu ứng (chuyển trạng thái lập tức)
+        guard animated else {
+            self.exportView.transform = targetTransform
+            self.exportView.alpha = targetAlpha
+            return
+        }
+        
+        // Sử dụng Spring Animation tạo độ nảy đàn hồi giống bong bóng phập phồng
+        UIView.animate(withDuration: 0.5,
+                       delay: 0,
+                       usingSpringWithDamping: shouldShow ? 0.6 : 0.8, // Damping thấp khi hiện giúp tăng độ nảy bong bóng
+                       initialSpringVelocity: 0.5,
+                       options: [.beginFromCurrentState, .allowUserInteraction],
+                       animations: {
+            self.exportView.transform = targetTransform
+            self.exportView.alpha = targetAlpha
+        }, completion: nil)
     }
     
     private func updateSelectAllButton() {
@@ -238,6 +297,7 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         popup.delegate = self
         
         if let sheet = popup.sheetPresentationController {
+            /*
             if #available(iOS 16.0, *) {
                 // custom detent khoảng ~60% hoặc tối đa 520
                 let customDetent = UISheetPresentationController.Detent.custom(identifier: .init("half")) { context in
@@ -247,6 +307,10 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
             } else if #available(iOS 15.0, *) {
                 sheet.detents = [.medium(), .large()]
             }
+            */
+            
+            sheet.detents = [.large()]
+            
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 20
             sheet.prefersScrollingExpandsWhenScrolledToEdge = false
@@ -455,6 +519,8 @@ class LogsViewController: BaseViewController, BluetoothDeviceCoordinatorDelegate
         }
         
         updateSelectAllButton()
+        
+        updateExportButtonVisibility(animated: true)
     }
     
     func deleteSelectedItems() {
@@ -734,6 +800,278 @@ extension LogsViewController: AddLogsPopupDelegate {
             let storyboard = UIStoryboard(name: "Device", bundle: nil)
             let bluetoothScanVC = storyboard.instantiateViewController(withIdentifier: "BluetoothScanViewController") as! BluetoothScanViewController
             self.navigationController?.pushViewController(bluetoothScanVC, animated: true)
+        }
+    }
+    
+    func popupDidTapImportLogs(_ vc: AddDivesPopupViewController) {
+        vc.dismiss(animated: true) {
+            
+            //let xlsType = UTType(filenameExtension: "xls")
+            guard let xlsxType = UTType(filenameExtension: "xlsx")  else {
+                print("❌ Hệ thống không khởi tạo được các định dạng Excel cần thiết")
+                return
+            }
+            
+            self.currentPickerType = .importFile
+            
+            // Khởi tạo picker ở chế độ MỞ FILE (.import)
+            let picker = UIDocumentPickerViewController(forOpeningContentTypes: [xlsxType], asCopy: true)
+            picker.delegate = self
+            picker.allowsMultipleSelection = true
+            
+            self.present(picker, animated: true, completion: nil)
+            
+        }
+    }
+}
+
+extension LogsViewController: UIDocumentPickerDelegate {
+    @IBAction func exportAction(_ sender: Any) {
+        // 1. Kiểm tra xem có mục nào được chọn không
+        guard !selectedIndexes.isEmpty else { return }
+        
+        ProgressHUD.animate("Exporting logs...".localized)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Lấy ra danh sách các Dive được chọn dựa vào mảng index
+            let selectedDives: [Row] = self.selectedIndexes.map { self.diveList[$0] }
+            
+            // 2. Xử lý xuất file hàng loạt dưới Background Thread để tránh đơ ứng dụng
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self = self else { return }
+                
+                var exportedURLs: [URL] = []
+                
+                // Vòng lặp duyệt qua từng Dive để sinh ra file URL tương ứng
+                for dive in selectedDives {
+                    // Gọi hàm tạo file Excel/CSV từ Service của bạn (tương tự logic ở LogViewController cũ)
+                    // Ví dụ: if let url = ExcelExportService.makeExcel(dive: dive) { ... }
+                    if let fileURL = DatabaseManager.shared.exportToRealXlsxUsingLib(diveID: dive.intValue(key: "DiveID")) {
+                        exportedURLs.append(fileURL)
+                    }
+                }
+                
+                self.tempExportFiles = exportedURLs
+                
+                // 3. Quay trở lại Main Thread để hiển thị UI
+                DispatchQueue.main.async {
+                    ProgressHUD.dismiss()
+                    
+                    if !exportedURLs.isEmpty {
+                        self.currentPickerType = .exportFile
+                        
+                        // Sử dụng UIDocumentPickerViewController cấu hình cho việc Export hàng loạt file
+                        let picker = UIDocumentPickerViewController(forExporting: exportedURLs, asCopy: true)
+                        picker.delegate = self
+                        
+                        self.present(picker, animated: true) {
+                            // Sau khi mở picker thành công, reset trạng thái chọn
+                            self.isDeleteMode = false
+                            self.selectedIndexes.removeAll()
+                            self.updateUIForDeleteMode()
+                        }
+                    } else {
+                        showAlert(on: self, message: "Failed to export any dive logs.".localized)
+                    }
+                }
+            }
+        }
+    }
+    
+    func handleImport(_ urls: [URL]) {
+        // 1. Kiểm tra danh sách URL đầu vào
+        let totalFiles = urls.count
+        guard totalFiles > 0 else { return }
+        
+        ProgressHUD.animate()
+        
+        // 2. Chuyển sang Background Thread để xử lý toàn bộ các file, tránh đơ UI
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            // Cấu trúc tạm để lưu các bản ghi hợp lệ chờ được ghi vào DB một lượt
+            var validDivesToImport: [(diveLog: [String: Any], diveProfile: [[String: Any]], tankData: [[String: Any]])] = []
+            var skipCount = 0
+            var invalidMetadataCount = 0
+            var successCount = 0
+            
+            for selectedFileURL in urls {
+                
+                let isDiveSyncFile = ExcelImportService.validateDiveSyncFile(fileURL: selectedFileURL)
+                if !isDiveSyncFile {
+                    invalidMetadataCount += 1
+                    Utilities.deleteFile(at: selectedFileURL) // Xóa file tạm ngay lập tức
+                    continue // Bỏ qua file lỗi, chuyển qua file kế tiếp
+                }
+                
+                // Phân tích file Excel sang định dạng JSON
+                let parsedJson = ExcelImportService.parseDiveExcel(fileURL: selectedFileURL)
+                
+                // Dọn dẹp file tạm của hệ thống ngay lập tức
+                Utilities.deleteFile(at: selectedFileURL)
+                
+                // Kiểm tra cấu trúc JSON tổng thể
+                guard let json = parsedJson,
+                      let diveLog = json["DiveLog"] as? [String: Any],
+                      let diveProfile = json["DiveProfile"] as? [[String: Any]],
+                      let tankData = json["TankData"] as? [[String: Any]] else {
+                    continue // Bỏ qua file lỗi cấu trúc, tiếp tục file tiếp theo
+                }
+                
+                // Kiểm tra các trường bắt buộc
+                guard let modelId = diveLog["ModelID"] as? String,
+                      let serialNo = diveLog["SerialNo"] as? String,
+                      let diveNo = diveLog["DiveNoOfDay"] as? String,
+                      var diveStartLocalTime = diveLog["DiveStartLocalTime"] as? String else {
+                    continue // Thiếu trường bắt buộc, bỏ qua file này
+                }
+                
+                // Chuyển định dạng ngày giờ về dạng lưu DB (dd/MM/yyyy)
+                diveStartLocalTime = Utilities.convertDateFormat(from: diveStartLocalTime, fromFormat: "MM/dd/yyyy HH:mm:ss", toFormat: "dd/MM/yyyy HH:mm:ss")
+                
+                // Chuẩn hóa diveLog data với format date mới
+                var updatedDiveLog = diveLog
+                updatedDiveLog["DiveStartLocalTime"] = diveStartLocalTime
+                
+                // Thực hiện kiểm tra trùng lặp trên Database
+                let exists = DatabaseManager.shared.isDuplicateDive(
+                    modelId: String(format: "%d", modelIDImport(modelId: modelId.toInt())),
+                    serialNo: serialNo,
+                    diveNo: diveNo,
+                    diveStartLocalTime: diveStartLocalTime
+                )
+                
+                if exists {
+                    skipCount += 1
+                    continue // ĐÃ TỒN TẠI: Âm thầm bỏ qua và chuyển sang file kế tiếp
+                }
+                
+                // Nếu hợp lệ và chưa tồn tại, đưa vào danh sách chờ import
+                validDivesToImport.append((diveLog: updatedDiveLog, diveProfile: diveProfile, tankData: tankData))
+            }
+            
+            // Kịch bản 1 & 2: TẤT CẢ các file được chọn đều không hợp lệ/không phải do App tạo ra
+            if invalidMetadataCount == totalFiles {
+                DispatchQueue.main.async {
+                    ProgressHUD.dismiss()
+                    showAlert(on: self, message: "Invalid DiveSync data file.".localized)
+                }
+                return
+            }
+            
+            // Kịch bản khác: Không tìm thấy dive mới (có thể do trùng lặp hết)
+            if validDivesToImport.isEmpty {
+                DispatchQueue.main.async {
+                    ProgressHUD.dismiss()
+                    let msg = skipCount > 0 ? "No new dives imported".localized : "Invalid DiveSync data file.".localized
+                    showAlert(on: self, message: msg)
+                }
+                return
+            }
+            
+            // 4. Hỏi người dùng xác nhận Import danh sách các file mới tìm thấy
+            DispatchQueue.main.async {
+                ProgressHUD.dismiss()
+                
+                let message = String(format: "Found %d new dive(s) to import. Do you want to proceed?".localized, validDivesToImport.count, skipCount)
+                
+                showAlert(on: self,
+                          message: message,
+                          okTitle: "YES".localized,
+                          cancelTitle: "NO".localized,
+                          okHandler: {
+                    
+                    ProgressHUD.animate()
+                    
+                    // Đẩy việc ghi Database hàng loạt xuống luồng nền
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        do {
+                            let dbQueue = DatabaseManager.shared.getDatabaseQueue()
+                            
+                            // Thực thi MỘT Transaction duy nhất cho TẤT CẢ các file để tối ưu tốc độ ghi
+                            try dbQueue.write { db in
+                                for dive in validDivesToImport {
+                                    // 1. Insert bảng DiveLog chính lấy RowID
+                                    let newDiveID = try DiveLogMapper.insert(dive.diveLog, db: db)
+                                    
+                                    // 2. Insert Profile và Bình khí theo mã DiveID mới
+                                    try DiveProfileMapper.bulkInsert(forDiveID: Int(newDiveID), profiles: dive.diveProfile, db: db)
+                                    try TankDataMapper.bulkInsert(forDiveID: Int(newDiveID), tankDatas: dive.tankData, db: db)
+                                    
+                                    successCount += 1
+                                }
+                            }
+                            
+                            // Quay lại Main Thread hoàn tất UI
+                            DispatchQueue.main.async {
+                                ProgressHUD.dismiss()
+                                
+                                // Phát tín hiệu reload dữ liệu màn hình chính
+                                NotificationCenter.default.post(name: .didImportDiveLog, object: nil)
+                                
+                                // Đóng màn hình Add Logs hiện tại
+                                self.dismiss(animated: true, completion: nil)
+                            }
+                            
+                        } catch {
+                            DispatchQueue.main.async {
+                                ProgressHUD.dismiss()
+                                print("❌ Bulk Excel DB Write Transaction failed:", error)
+                                showAlert(on: self, message: "Failed to import dives: \(error.localizedDescription)")
+                            }
+                        }
+                    }
+                })
+            }
+        }
+    }
+    
+    func handleExport(_ urls: [URL]) {
+        // Hiển thị thông báo cho người dùng
+        let alert = UIAlertController(
+            title: "",
+            message: "Dive logs exported successfully".localized,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK".localized, style: .default, handler: { [weak self] _ in
+            guard let self = self else { return }
+            for url in tempExportFiles {
+                Utilities.deleteFile(at: url)
+            }
+            tempExportFiles.removeAll()
+        }))
+        
+        // Vì UIDocumentPicker vừa tắt xong, ta nên gọi present alert trên ViewController hiện tại
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        switch currentPickerType {
+        case .importFile:
+            handleImport(urls)
+            
+        case .exportFile:
+            handleExport(urls)
+            
+        case nil:
+            break
+        }
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        switch currentPickerType {
+        case .importFile:
+            break
+        case .exportFile: // Xoá file tạm
+            for url in tempExportFiles {
+                Utilities.deleteFile(at: url)
+            }
+            tempExportFiles.removeAll()
+            
+        case nil:
+            break
         }
     }
 }

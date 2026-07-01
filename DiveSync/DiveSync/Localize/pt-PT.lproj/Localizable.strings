@@ -442,5 +442,13 @@
 "CF3: Aggressive" = "CF3: Progressivo";
 "Duration" = "Duração";
 "Scuba" = "Autónomo";
-
-
+"Import Logs" = "Importar registro(s)";
+"No new dives imported" = "Nenhuma nova imersão importada";
+"YES" = "Sim";
+"NO" = "Não";
+"Found %d new dive(s) to import. Do you want to proceed?" = "Encontrado(s) %d novo(s) mergulho(s) para importar. Deseja continuar ?";
+"Exporting logs..." = "Exportando registros...";
+"Dive logs exported successfully" = "Registros de mergulho exportados com sucesso";
+"No valid files found" = "Nenhum arquivo válido encontrado";
+"Failed to export any dive logs." = "Falha ao exportar os registros de mergulho.";
+"Invalid DiveSync data file." = "Arquivo de dados DiveSync inválido.";
