@@ -25,12 +25,14 @@ final class ItemSelectionAlert: UIViewController {
     private var cancelTitle: String = "Cancel".localized.uppercased()
     
     private var notes: String? = "GF"
+    private var device: Devices? = nil
     
     // MARK: - Initializer
     static func showMessage(message: String,
                             options: [String],
                             selectedValue: String?,
                             notesValue: String? = nil,
+                            device: Devices? = nil,
                             setTitle: String = "Set".localized.uppercased(),
                             cancelTitle: String = "Cancel".localized.uppercased(),
                             completion: @escaping (_ action: PrivacyAlertAction, _ selectedValue: String?, _ selectedIndex: Int?) -> Void ) {
@@ -43,6 +45,7 @@ final class ItemSelectionAlert: UIViewController {
         alert.messageText = message
         alert.setTitle = setTitle
         alert.notes = notesValue
+        alert.device = device
         alert.cancelTitle = cancelTitle
         alert.options = options
         alert.selectedValue = selectedValue
@@ -150,7 +153,14 @@ extension ItemSelectionAlert: UIPickerViewDelegate, UIPickerViewDataSource {
         if let notes = notes, notes == "GF" {
             switch selectedIndex {
             case 0:
-                notesLabel.text = "GF Low".localized + ": 90, " + "GF High".localized + ": 90"
+                let modelID = Int(device?.modelId ?? 0)
+                let firmware = Utilities.formatWisdomFirmware(device?.Firmware ?? "")
+                
+                if modelID == C_WIS5 && Utilities.isFirmwareGreaterThan1A(firmware) {
+                    notesLabel.text = "GF Low".localized + ": 95, " + "GF High".localized + ": 95"
+                } else {
+                    notesLabel.text = "GF Low".localized + ": 90, " + "GF High".localized + ": 90"
+                }
             case 1:
                 notesLabel.text = "GF Low".localized + ": 35, " + "GF High".localized + ": 85"
             case 2:

@@ -1620,6 +1620,12 @@ class DeviceSettingViewController: BaseViewController {
                         dcSettings["DeepStopOn"] = index
                     case "conservatism":
                         var GFLow = 90, GFHigh = 90
+                        let firmware = Utilities.formatWisdomFirmware(device?.Firmware ?? "")
+                        if Int(device.modelId ?? 0) == C_WIS5 && Utilities.isFirmwareGreaterThan1A(firmware) {
+                            GFLow = 95
+                            GFHigh = 95
+                        }
+                        
                         switch index {
                         case 1:
                             GFHigh = 85
@@ -2354,8 +2360,16 @@ class DeviceSettingViewController: BaseViewController {
                         PrintLog("ℹ️ Peripheral disconnected (expected)")
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
-                        PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        var errorMsg = ""
+                        if let bleError = error as? BluetoothError {
+                            errorMsg = bleError.description
+                            PrintLog("❌ Connect error: \(bleError)")
+                        } else {
+                            errorMsg = error.localizedDescription
+                            PrintLog("❌ Error: \(error.localizedDescription)")
+                        }
+                        
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                     }
                     
                 }).disposed(by: dispose)
@@ -2467,7 +2481,7 @@ extension DeviceSettingViewController: UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = settings[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath) as! SettingCell
-        cell.bindRow(row: row, modelId: device.modelId ?? 0)
+        cell.bindRow(row: row, modelId: device.modelId ?? 0, firmwareRev: device?.Firmware ?? "")
         return cell
     }
     

@@ -75,6 +75,7 @@
 		48637DDE2CF885080046EFB5 /* DCDevice.xib in Resources */ = {isa = PBXBuildFile; fileRef = 48637DDD2CF885080046EFB5 /* DCDevice.xib */; };
 		48637DE02CF885740046EFB5 /* DCDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48637DDF2CF885740046EFB5 /* DCDeviceView.swift */; };
 		486427662DC905770001892E /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486427652DC905770001892E /* LogViewController.swift */; };
+		4865C872301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin in Resources */ = {isa = PBXBuildFile; fileRef = 4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */; };
 		486653712EB4AF2E00E25906 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 484C44DE2CE1B2F00082039E /* Assets.xcassets */; };
 		486882232E3098BA00C98C8E /* SortOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882222E3098BA00C98C8E /* SortOptions.swift */; };
 		486882252E3098DB00C98C8E /* SortPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882242E3098DB00C98C8E /* SortPreferences.swift */; };
@@ -350,6 +351,7 @@
 		48637DDD2CF885080046EFB5 /* DCDevice.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DCDevice.xib; sourceTree = "<group>"; };
 		48637DDF2CF885740046EFB5 /* DCDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DCDeviceView.swift; sourceTree = "<group>"; };
 		486427652DC905770001892E /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
+		4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Wisdom_Rev01B_1.0.2_Released.bin; sourceTree = "<group>"; };
 		486882222E3098BA00C98C8E /* SortOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortOptions.swift; sourceTree = "<group>"; };
 		486882242E3098DB00C98C8E /* SortPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortPreferences.swift; sourceTree = "<group>"; };
 		486BC7B42F0BAD1000406BC3 /* RecycleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecycleViewController.swift; sourceTree = "<group>"; };
@@ -728,6 +730,7 @@
 				48E499522F4DBF1B00331C89 /* Logic_device.json */,
 				4876E3FA2FAC94CE00A9AE48 /* CR4_device.json */,
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
+				4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */,
 				48CDF7B12FCD785B00ABDE9E /* 1.txt */,
 				48CDF7B22FCD785B00ABDE9E /* 2.txt */,
 				48CDF7B32FCD785B00ABDE9E /* 3.txt */,
@@ -1309,6 +1312,7 @@
 				48D21E222D0D3EBC004E8018 /* HelveticaNeueLTProBdOu.otf in Resources */,
 				48D21E2D2D0D3EBC004E8018 /* HelveticaNeueLTProCnO.otf in Resources */,
 				48FD10B92CEC3F2F00A1B01E /* CompartmentsView.xib in Resources */,
+				4865C872301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin in Resources */,
 				482CB9902D101C2000CA78F4 /* CustomCalloutView.xib in Resources */,
 				48CE8DC92DACFDB100A2DF33 /* DSNormalCell.xib in Resources */,
 				48DCE9EC2E38B76D00DB6B66 /* PhotoItemCell.xib in Resources */,
@@ -1728,7 +1732,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1772,7 +1776,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

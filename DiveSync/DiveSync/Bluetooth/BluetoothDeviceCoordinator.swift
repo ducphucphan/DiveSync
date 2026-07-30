@@ -540,7 +540,11 @@ final class BluetoothDeviceCoordinator {
         
         connectionDisposable = connectObs.subscribe(onNext: { _ in }, onError: { err in
             ProgressHUD.dismiss()
-            PrintLog("❌ Connect error: \(err.localizedDescription)")
+            if let bleError = err as? BluetoothError {
+                PrintLog("❌ Connect error: \(bleError)")
+            } else {
+                PrintLog("❌ Connect error: \(err.localizedDescription)")
+            }
         })
         
         return connectObs
@@ -585,7 +589,11 @@ final class BluetoothDeviceCoordinator {
         
         connectionDisposable = connectObs.subscribe(onNext: { _ in }, onError: { err in
             //ProgressHUD.dismiss()
-            PrintLog("❌ Connect error: \(err.localizedDescription)")
+            if let bleError = err as? BluetoothError {
+                PrintLog("❌ Connect error: \(bleError)")
+            } else {
+                PrintLog("❌ Connect error: \(err.localizedDescription)")
+            }
         })
         
         return connectObs

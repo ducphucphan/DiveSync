@@ -785,8 +785,17 @@ extension LogsViewController: AddLogsPopupDelegate {
                         PrintLog("ℹ️ Peripheral disconnected (expected)")
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
-                        PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        
+                        var errorMsg = ""
+                        if let bleError = error as? BluetoothError {
+                            errorMsg = bleError.description
+                            PrintLog("❌ Connect error: \(bleError)")
+                        } else {
+                            errorMsg = error.localizedDescription
+                            PrintLog("❌ Error: \(error.localizedDescription)")
+                        }
+                        
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                     }
                 }).disposed(by: self.disposeBag)
         }

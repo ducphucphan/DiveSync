@@ -473,7 +473,12 @@ class DeviceViewController: BaseViewController {
             serialNoLb.text = String(format: "Serial Number".localized + ": %05d", device.SerialNo?.toInt() ?? 0)
         }
         
-        var versionText = "Firmware Version".localized + ": \(device.Firmware ?? "")"
+        var displayFirmware = device.Firmware ?? ""
+        if modelid == C_WIS5 {
+            displayFirmware = Utilities.formatWisdomFirmware(device.Firmware)
+        }
+        
+        var versionText = "Firmware Version".localized + ": \(displayFirmware)"
         if let lcd = device.LCDFirmware, !lcd.isEmpty {
             versionText += ".\(lcd)"
         }
@@ -662,8 +667,16 @@ class DeviceViewController: BaseViewController {
                         PrintLog("ℹ️ Peripheral disconnected (expected)")
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
-                        PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        var errorMsg = ""
+                        if let bleError = error as? BluetoothError {
+                            errorMsg = bleError.description
+                            PrintLog("❌ Connect error: \(bleError)")
+                        } else {
+                            errorMsg = error.localizedDescription
+                            PrintLog("❌ Error: \(error.localizedDescription)")
+                        }
+                        
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                     }
                 }
                 
@@ -734,8 +747,16 @@ class DeviceViewController: BaseViewController {
                         PrintLog("ℹ️ Peripheral disconnected (expected)")
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
-                        PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        var errorMsg = ""
+                        if let bleError = error as? BluetoothError {
+                            errorMsg = bleError.description
+                            PrintLog("❌ Connect error: \(bleError)")
+                        } else {
+                            errorMsg = error.localizedDescription
+                            PrintLog("❌ Error: \(error.localizedDescription)")
+                        }
+                        
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                     }
                 })
                 .disposed(by: disposeBag)
@@ -797,7 +818,16 @@ class DeviceViewController: BaseViewController {
                         if let rxError = error as? RxError, case .timeout = rxError {
                             BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: "Time out".localized)
                         } else {
-                            BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                            var errorMsg = ""
+                            if let bleError = error as? BluetoothError {
+                                errorMsg = bleError.description
+                                PrintLog("❌ Connect error: \(bleError)")
+                            } else {
+                                errorMsg = error.localizedDescription
+                                PrintLog("❌ Error: \(error.localizedDescription)")
+                            }
+                            
+                            BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                         }
                     }
                 }).disposed(by: disposeBag)

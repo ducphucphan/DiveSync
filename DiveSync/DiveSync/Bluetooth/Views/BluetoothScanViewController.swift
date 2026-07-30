@@ -194,8 +194,17 @@ class BluetoothScanViewController: BaseViewController, BluetoothDeviceCoordinato
                 
             }, onError: { error in
                 ProgressHUD.dismiss()
-                PrintLog("❌ Error: \(error.localizedDescription)")
-                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                
+                var errorMsg = ""
+                if let bleError = error as? BluetoothError {
+                    errorMsg = bleError.description
+                    PrintLog("❌ Connect error: \(bleError)")
+                } else {
+                    errorMsg = error.localizedDescription
+                    PrintLog("❌ Error: \(error.localizedDescription)")
+                }
+                
+                BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
             })
             .disposed(by: disposeBag)
     }

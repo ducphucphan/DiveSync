@@ -404,7 +404,7 @@ class Utilities {
     static func firstBinFile() -> URL? {
         let isDebug = false
         if isDebug {
-            return Bundle.main.url(forResource: "Wisdom_20260422", withExtension: "bin")
+            return Bundle.main.url(forResource: "Wisdom_Rev01B_1.0.2_Released", withExtension: "bin")
         } else {
             let fileManager = FileManager.default
             let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -541,4 +541,44 @@ class Utilities {
             }
         }
     }
+    
+    static func isFirmwareGreaterThan1A(_ firmware: String) -> Bool {
+        // Nếu chỉ có 2 ký tự và ký tự đầu là số từ 1-9 (Ví dụ "1B", "2A")
+        // thì dùng hệ thống so sánh mặc định vẫn tạm ổn, nhưng nếu có "10A" sẽ lỗi.
+        
+        // Cách an toàn: Tách lấy phần số ở đầu
+        let numString = firmware.prefix(while: { $0.isNumber })
+        let letterString = firmware.drop(while: { $0.isNumber })
+        
+        if let num = Int(numString) {
+            if num > 1 { return true } // Ví dụ: "2A", "10A" -> Chắc chắn lớn hơn "1A"
+            if num == 1 {
+                return letterString > "A" // Ví dụ: "1B", "1C" -> Lớn hơn "1A"
+            }
+        }
+        return false
+    }
+    
+    // 1. Hàm helper để chuyển đổi firmware sang định dạng khách hàng yêu cầu
+    static func formatWisdomFirmware(_ firmware: String?) -> String {
+        guard let firmware = firmware, !firmware.isEmpty else { return "" }
+        
+        // Tách chuỗi theo dấu chấm (Ví dụ: "1.0.01" -> ["1", "0", "01"])
+        let components = firmware.components(separatedBy: ".")
+        
+        // Lấy phần tử cuối cùng và chuyển sang kiểu Int
+        if let lastComponent = components.last, let lastNumber = Int(lastComponent) {
+            // 'A' có giá trị Unicode là 65.
+            // Nếu lastNumber = 1 -> 65 + 1 - 1 = 65 ('A')
+            // Nếu lastNumber = 2 -> 65 + 2 - 1 = 66 ('B')
+            let asciiValue = 65 + (lastNumber - 1)
+            if let scalar = UnicodeScalar(asciiValue) {
+                return "1\(Character(scalar))"
+            }
+        }
+        
+        // Fallback nếu không parse được số (trả về firmware gốc)
+        return firmware
+    }
+    
 }

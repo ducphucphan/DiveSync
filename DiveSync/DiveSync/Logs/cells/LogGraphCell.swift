@@ -589,6 +589,10 @@ extension LogGraphCell {
     
     private func calculateXAxisLabelConfig() -> (labelCount: Int, distanceXInSeconds: Double) {
 
+        guard maxTime > 0 else {
+            return (labelCount: 1, distanceXInSeconds: 60.0)
+        }
+        
         let targetLabels = 6.0
 
         let niceSteps: [Double] = [

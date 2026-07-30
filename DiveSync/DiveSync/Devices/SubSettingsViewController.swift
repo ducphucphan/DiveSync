@@ -228,8 +228,16 @@ class SubSettingsViewController: BaseViewController {
                         PrintLog("ℹ️ Peripheral disconnected (expected)")
                         BluetoothDeviceCoordinator.shared.isExpectedDisconnect = false
                     } else {
-                        PrintLog("❌ Connect error: \(error.localizedDescription)")
-                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: error.localizedDescription)
+                        var errorMsg = ""
+                        if let bleError = error as? BluetoothError {
+                            errorMsg = bleError.description
+                            PrintLog("❌ Connect error: \(bleError)")
+                        } else {
+                            errorMsg = error.localizedDescription
+                            PrintLog("❌ Error: \(error.localizedDescription)")
+                        }
+                        
+                        BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: errorMsg)
                     }
                     
                 }).disposed(by: disposeBag)
@@ -333,7 +341,7 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SettingCell", for: indexPath) as! SettingCell
-            cell.bindRow(row: row, modelId: device.modelId ?? 0)
+            cell.bindRow(row: row, modelId: device.modelId ?? 0, firmwareRev: device?.Firmware ?? "")
             return cell
         }
     }
@@ -539,7 +547,8 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 message: row.title.localized,
                 options: optionsToUse,
                 selectedValue: currentValue,
-                notesValue: notes
+                notesValue: notes,
+                device: device
             ) { [weak self] action, value, index in
                 guard let self = self else { return }
                 

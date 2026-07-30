@@ -25,7 +25,7 @@ class SettingCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func bindRow(row: SettingsRow, modelId: Int64) {
+    func bindRow(row: SettingsRow, modelId: Int64, firmwareRev: String) {
         titleLb.text = row.title.localized
         
         if let rawValue = row.value as? String {
@@ -51,7 +51,14 @@ class SettingCell: UITableViewCell {
         
         if let value = row.value, row.id == "conservatism", modelId != C_LOG, modelId != C_LOGPLUS, modelId != C_GRA, modelId != C_CEN {
             if value.toInt() == 0 {
-                valueLb.text = value + " (GF: 90 - 90)"
+                var GFLow = 90, GFHigh = 90
+                let firmware = Utilities.formatWisdomFirmware(firmwareRev)
+                if modelId == C_WIS5 && Utilities.isFirmwareGreaterThan1A(firmware) {
+                    GFLow = 95
+                    GFHigh = 95
+                }
+                
+                valueLb.text = "\(value) (GF: \(GFLow) - \(GFHigh))"
             } else if value.toInt() == 1 {
                 valueLb.text = value + " (GF: 35 - 85)"
             } else {
