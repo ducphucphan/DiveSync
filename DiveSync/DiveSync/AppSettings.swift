@@ -48,6 +48,8 @@ extension AppSettings {
         static let timeFormatIdentify = "timeFormatIdentify"
         
         static let logsDisplayModeIdentify = "logsDisplayModeIdentify"
+        
+        static let currentFrwUpdateVersion = "currentFrwUpdateVersion"
     }
     
     var logsDisplayMode: ListDisplayMode {

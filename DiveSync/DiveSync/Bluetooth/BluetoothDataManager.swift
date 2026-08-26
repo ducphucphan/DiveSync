@@ -10,6 +10,7 @@ import RxBluetoothKit
 import RxSwift
 import CoreBluetooth
 import ProgressHUD
+import UIKit
 
 struct Constants {
     static let PKT_SIZE     = 135
@@ -502,128 +503,391 @@ class BluetoothDataManager {
             return Observable.error(NSError(domain: "Bluetooth", code: -1, userInfo: [NSLocalizedDescriptionKey: "Write OTA characteristic not found"]))
         }
         
-        print("\(Data(data).hexString) - \(characteristic.uuid)")
+        print("Reboot OTA Mode data: \(Data(data).hexString) - \(characteristic.uuid)")
         
         return scannedPeripheral.peripheral.writeValue(Data(data),
-                                     for: characteristic,
-                                     type: .withoutResponse)
+                                                       for: characteristic,
+                                                       type: .withoutResponse)
         .asObservable()
         .map { _ in true } // Chuyển đổi Observable<Characteristic> thành Observable<Void>
     }
     
-    func sendFirmware(fileURL: URL, progress: @escaping (Double) -> Void) -> Observable<Bool> {
-        // 0. Kiểm tra characteristic
+    func sendFirmware(
+        fileURL: URL,
+        progress: @escaping (Double) -> Void
+    ) -> Observable<Bool> {
+        
+        // MARK: - Configuration
+        
+        let writeTimeout: RxTimeInterval = .seconds(10)
+        let chunkDelay: RxTimeInterval = .milliseconds(20)
+        
+        // MARK: - 0. Check characteristics
+        
         guard let controlChar = otaControlCharacteristic,
               let dataChar = otaRawDataCharacteristic else {
+            
             return Observable.error(
-                NSError(domain: "Bluetooth",
-                        code: -1,
-                        userInfo: [NSLocalizedDescriptionKey: "OTA characteristic not found"])
+                NSError(
+                    domain: "Bluetooth",
+                    code: -1,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            "OTA characteristic not found"
+                    ]
+                )
             )
         }
         
-        // 1. Đọc file
+        // MARK: - 1. Read firmware
+        
         guard let fileData = try? Data(contentsOf: fileURL) else {
+            
             return Observable.error(
-                NSError(domain: "Bluetooth",
-                        code: -2,
-                        userInfo: [NSLocalizedDescriptionKey: "Cannot read firmware file"])
+                NSError(
+                    domain: "Bluetooth",
+                    code: -2,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            "Cannot read firmware file"
+                    ]
+                )
             )
         }
         
-        // bạn có thể set theo MTU: peripheral.maximumWriteValueLength(for: .withoutResponse)
-        let mtu = scannedPeripheral.peripheral.maximumWriteValueLength(for: .withoutResponse)
-        print("MTU Size: %i", mtu)
-        let fileSize = fileData.count
-        let chunkSize = mtu
-        let chunks: [Data] = stride(from: 0, to: fileSize, by: chunkSize).map {
-            fileData.subdata(in: $0 ..< min($0 + chunkSize, fileSize))
-        }
-        let totalChunks = chunks.count
+        let peripheral = scannedPeripheral.peripheral
         
-        // nếu không có chunk (file rỗng) -> trả true luôn
-        if totalChunks == 0 {
+        let rawMtu = peripheral.maximumWriteValueLength(
+            for: .withoutResponse
+        )
+        
+        PrintLog("MTU Size: \(rawMtu)")
+        
+        let maxPayload = min(rawMtu, 208)
+        let chunkSize = (maxPayload / 16) * 16
+        
+        guard chunkSize > 0 else {
+            
+            return Observable.error(
+                NSError(
+                    domain: "Bluetooth",
+                    code: -4,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            "Invalid chunk size calculated"
+                    ]
+                )
+            )
+        }
+        
+        PrintLog(
+            "MTU Size: \(rawMtu), Calculated Chunk Size: \(chunkSize)"
+        )
+        
+        let fileSize = fileData.count
+        
+        guard fileSize > 0 else {
             return Observable.just(false)
         }
         
-        // 2. Tạo startCommand (theo code bạn có)
-        guard let startCommand = Data.startUpload(type: .application(board: .wb55),
-                                                  fileLength: fileSize) else {
+        // MARK: - 2. Split firmware into chunks
+        
+        var chunks: [Data] = []
+        
+        for offset in stride(
+            from: 0,
+            to: fileSize,
+            by: chunkSize
+        ) {
+            
+            let endIndex = min(
+                offset + chunkSize,
+                fileSize
+            )
+            
+            var chunk = fileData.subdata(
+                in: offset..<endIndex
+            )
+            
+            // Padding cuối thành bội số của 16 bytes
+            let remainder = chunk.count % 16
+            
+            if remainder != 0 {
+                let paddingSize = 16 - remainder
+                
+                chunk.append(
+                    Data(repeating: 0xFF, count: paddingSize)
+                )
+            }
+            
+            chunks.append(chunk)
+        }
+        
+        let totalChunks = chunks.count
+        
+        // MARK: - 3. Create start command
+        
+        guard let startCommand = Data.startUpload(
+            type: .application(board: .wb55),
+            fileLength: fileSize
+        ) else {
+            
             return Observable.error(
-                NSError(domain: "Bluetooth",
-                        code: -3,
-                        userInfo: [NSLocalizedDescriptionKey: "Cannot create start command"])
+                NSError(
+                    domain: "Bluetooth",
+                    code: -3,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            "Cannot create start command"
+                    ]
+                )
             )
         }
         
-        // 3. Tạo Observable thủ công, thực hiện start rồi gửi chunk tuần tự
+        // MARK: - 4. OTA Observable
+        
         return Observable.create { [weak self] observer in
+            
             guard let self = self else {
-                observer.onError(NSError(domain: "Bluetooth", code: -999, userInfo: nil))
+                
+                observer.onError(
+                    NSError(
+                        domain: "Bluetooth",
+                        code: -999,
+                        userInfo: [
+                            NSLocalizedDescriptionKey:
+                                "Bluetooth manager deallocated"
+                        ]
+                    )
+                )
+                
                 return Disposables.create()
             }
             
             let composite = CompositeDisposable()
             
-            // 3.1 Gửi startCommand (Single)
-            let startDisp = self.scannedPeripheral.peripheral
-                .writeValue(startCommand, for: controlChar, type: .withoutResponse)
-                .subscribe(onSuccess: { _ in
-                    // khi start thành công -> bắt đầu gửi chunk tuần tự
-                    func sendChunk(at index: Int) {
-                        // nếu đã dispose thì dừng
-                        if composite.isDisposed { return }
-                        
-                        if index >= totalChunks {
-                            // 🔚 Hết chunks -> gửi finishCommand
-                            let finishCommand = Data.uploadFinished()
-                            let d = self.scannedPeripheral.peripheral
-                                .writeValue(finishCommand, for: controlChar, type: .withoutResponse)
-                                .subscribe(onSuccess: { _ in
-                                    observer.onNext(true)
-                                    observer.onCompleted()
-                                }, onFailure: { error in
-                                    observer.onError(error)
-                                    composite.dispose()
-                                })
-                            _ = composite.insert(d)
-                            return
-                        }
-                        
-                        // gửi chunk[index]
-                        let chunk = chunks[index]
-                        let d = self.scannedPeripheral.peripheral
-                            .writeValue(chunk, for: dataChar, type: .withoutResponse)
-                            .subscribe(onSuccess: { _ in
-                                // update progress trên main thread
-                                let p = Double(index + 1) / Double(totalChunks)
-                                DispatchQueue.main.async {
-                                    progress(p)
-                                }
-                                // gửi tiếp
-                                sendChunk(at: index + 1)
-                            }, onFailure: { error in
-                                // nếu lỗi khi gửi chunk -> gửi lỗi ra observer và huỷ luôn
+            // ============================================================
+            // Helper: write with timeout
+            // ============================================================
+            
+            func writeWithTimeout(
+                _ data: Data,
+                to characteristic: Characteristic
+            ) -> Single<Characteristic> {
+                
+                return self.scannedPeripheral.peripheral
+                    .writeValue(
+                        data,
+                        for: characteristic,
+                        type: .withoutResponse
+                    )
+                    .timeout(
+                        writeTimeout,
+                        scheduler: MainScheduler.instance
+                    )
+            }
+            
+            // ============================================================
+            // Send chunks sequentially
+            // ============================================================
+            
+            func sendChunk(at index: Int) {
+                
+                // Nếu subscription đã bị dispose
+                if composite.isDisposed {
+                    return
+                }
+                
+                // --------------------------------------------------------
+                // Finished all chunks
+                // --------------------------------------------------------
+                
+                if index >= totalChunks {
+                    
+                    PrintLog("All firmware chunks sent")
+                    
+                    let finishCommand = Data.uploadFinished()
+                    
+                    let finishDisposable = writeWithTimeout(
+                        finishCommand,
+                        to: controlChar
+                    )
+                        .subscribe(
+                            onSuccess: { _ in
+                                
+                                PrintLog("OTA finish command sent")
+                                
+                                observer.onNext(true)
+                                observer.onCompleted()
+                                
+                            },
+                            onFailure: { error in
+                                
+                                PrintLog(
+                                    "OTA finish command failed: \(error)"
+                                )
+                                
                                 observer.onError(error)
                                 composite.dispose()
-                            })
+                            }
+                        )
+                    
+                    _ = composite.insert(finishDisposable)
+                    
+                    return
+                }
+                
+                // --------------------------------------------------------
+                // Send current chunk
+                // --------------------------------------------------------
+                
+                let chunk = chunks[index]
+                
+                PrintLog(
+                    "Sending chunk \(index + 1)/\(totalChunks), size: \(chunk.count)"
+                )
+                
+                let chunkDisposable = writeWithTimeout(
+                    chunk,
+                    to: dataChar
+                )
+                    .subscribe(
+                        onSuccess: { _ in
+                            
+                            // -----------------------------
+                            // Progress
+                            // -----------------------------
+                            
+                            let p =
+                            Double(index + 1)
+                            / Double(totalChunks)
+                            
+                            DispatchQueue.main.async {
+                                progress(p)
+                            }
+                            
+                            // -----------------------------
+                            // Delay before next chunk
+                            // -----------------------------
+                            
+                            DispatchQueue.global().asyncAfter(
+                                deadline: .now() + chunkDelay
+                            ) {
+                                
+                                if composite.isDisposed {
+                                    return
+                                }
+                                
+                                sendChunk(at: index + 1)
+                            }
+                        },
                         
-                        // thêm disposable của writeValue vào composite để quản lý hủy
-                        _ = composite.insert(d)
+                        onFailure: { error in
+                            
+                            if let rxError = error as? RxError,
+                               case .timeout = rxError {
+                                
+                                PrintLog(
+                                    "OTA TIMEOUT at chunk \(index + 1)/\(totalChunks)"
+                                )
+                                
+                                // 1. Dừng OTA
+                                composite.dispose()
+                                
+                                // 2. Báo lỗi cho Observable
+                                observer.onError(
+                                    NSError(
+                                        domain: "Bluetooth",
+                                        code: -10,
+                                        userInfo: [
+                                            NSLocalizedDescriptionKey:
+                                                "Firmware upload timeout at chunk \(index + 1)/\(totalChunks)"
+                                        ]
+                                    )
+                                )
+                                
+                                let logURL = try? FileManager.default
+                                    .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                                    .appendingPathComponent("divesync.log")
+                                
+                                self.sendFirmwareStatus("ERROR", logPath: logURL?.path)
+                                
+                                // 3. UI chạy độc lập
+                                Task { @MainActor in
+                                    DialogViewController.showMessage(title: "Firmware Update".localized, message: "Firmware upload timeout.")
+                                }
+                                
+                                return
+                            }
+                            
+                            PrintLog(
+                                "OTA write failed at chunk \(index + 1): \(error)"
+                            )
+                            
+                            observer.onError(error)
+                            composite.dispose()
+                        }
+                    )
+                
+                _ = composite.insert(chunkDisposable)
+            }
+            
+            // ============================================================
+            // Start OTA
+            // ============================================================
+            
+            PrintLog("Sending OTA start command")
+            
+            let startDisposable = writeWithTimeout(
+                startCommand,
+                to: controlChar
+            )
+                .subscribe(
+                    onSuccess: { _ in
+                        
+                        PrintLog("OTA start command sent")
+                        
+                        // Bắt đầu gửi firmware
+                        sendChunk(at: 0)
+                    },
+                    
+                    onFailure: { error in
+                        
+                        if let rxError = error as? RxError,
+                           case .timeout = rxError {
+                            
+                            PrintLog("OTA start command TIMEOUT")
+                            
+                            observer.onError(
+                                NSError(
+                                    domain: "Bluetooth",
+                                    code: -11,
+                                    userInfo: [
+                                        NSLocalizedDescriptionKey:
+                                            "OTA start command timeout"
+                                    ]
+                                )
+                            )
+                            
+                        } else {
+                            
+                            PrintLog(
+                                "OTA start command failed: \(error)"
+                            )
+                            
+                            observer.onError(error)
+                        }
+                        
+                        composite.dispose()
                     }
-                    
-                    // start gửi chunk từ 0
-                    sendChunk(at: 0)
-                    
-                }, onFailure: { error in
-                    // lỗi khi gửi start command
-                    observer.onError(error)
-                })
+                )
             
-            // thêm start disposable vào composite
-            _ = composite.insert(startDisp)
+            _ = composite.insert(startDisposable)
             
-            // khi outer subscriber dispose -> dispose composite (hủy mọi write)
+            // ============================================================
+            // Dispose
+            // ============================================================
+            
             return Disposables.create {
                 composite.dispose()
             }
@@ -631,7 +895,9 @@ class BluetoothDataManager {
     }
     
     func updateFirmware() -> Observable<Bool> {
-        guard let fwrUrl = Utilities.firstBinFile() else {
+        let dcrid = Utilities.getConnectedDeviceDCRID(scannedPeripheral: self.scannedPeripheral)
+        
+        guard let fwrUrl = Utilities.firstBinFile(dcrid: dcrid) else {
             return Observable.just(false)
         }
         
@@ -671,6 +937,50 @@ class BluetoothDataManager {
         }
         
         return subject.asObservable()
+    }
+    
+    func sendFirmwareStatus(_ status: String, logPath: String? = nil) {
+        Task {
+            do {
+                var deviceName = ""
+                var company = ""
+                let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
+                let deviceAddress = self.scannedPeripheral.peripheral.identifier
+                
+                if let (bleName, _) = scannedPeripheral.splitDeviceName(),
+                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                    company = dcInfo[0]
+                    
+                    deviceName = dcInfo[1]
+                    
+                    self.ModelID = dcInfo[2].toInt()
+                }
+                
+                let dcrid = FirmwareURLBuilder.getDcrid(modelId: self.ModelID)
+                
+                let deviceInfo: [String: Any] = [
+                    "DcrID": dcrid,
+                    "Company": company.uppercased(),
+                    "AddressID": deviceAddress,
+                    "Firmware": frwVersion,
+                    "ModelName": deviceName,
+                    "ModelID": "\(self.ModelID)",
+                    "SerialNo": "\(self.SerialNo)",
+                    "DeviceName": deviceName,
+                    "Status": status
+                ]
+                
+                _ = try await APIManager.shared.updateFirmware(
+                    deviceInfo: deviceInfo,
+                    logFilePath: logPath, // Cho dù truyền logPath vào, nếu status != "ERROR" hàm vẫn bỏ qua không gửi file
+                    status: status
+                )
+                
+                PrintLog("✅ Post status [\(status)] thành công")
+            } catch {
+                PrintLog("❌ Lỗi post status [\(status)]:\(error.localizedDescription)")
+            }
+        }
     }
     
     // MARK: - GET COMMANDS
@@ -950,6 +1260,10 @@ class BluetoothDataManager {
                         msg = "You device’s Date/Time are updated"
                     } else if syncType == .kRedownloadSetting {
                         msg = "Firmware upgrade success"
+                        
+                        // CAP NHAT TRANG THAI LEN SERVER
+                        m.sendFirmwareStatus("COMPLETED")
+                        
                     } else if syncType == .kUploadOwnerInfo {
                         msg = "Your device's owner info are uploaded"
                     }
@@ -967,7 +1281,24 @@ class BluetoothDataManager {
                     completion?()
                 } else {
                     BluetoothDeviceCoordinator.shared.disconnect()
-                    BluetoothDeviceCoordinator.shared.delegate?.didConnectToDevice(message: msg.localized)
+                    if let delegate = BluetoothDeviceCoordinator.shared.delegate {
+                        delegate.didConnectToDevice(message: msg.localized)
+                    } else {
+                        Task { @MainActor in
+                            
+                            guard
+                                let rootVC = UIApplication.shared.connectedScenes
+                                    .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController })
+                                    .first
+                            else {
+                                return
+                            }
+                            
+                            showAlert(on: rootVC, message: msg.localized)
+                            
+                        }
+                    }
+                    
                 }
             }, onError: { error in
                 ProgressHUD.dismiss()
@@ -1487,7 +1818,7 @@ class BluetoothDataManager {
         
         switch self.ModelID {
         case C_DAV, C_WIS5:
-            break            
+            break
         default:
             let info = userInfo.components(separatedBy: "|").map { String($0) }
             if info.count == 8 {

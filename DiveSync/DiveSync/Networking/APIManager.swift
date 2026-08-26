@@ -110,3 +110,90 @@ extension APIManager {
         return data
     }
 }
+
+extension APIManager {
+    
+    /// 📤 Gửi request dạng Multipart Form Data (dành cho API update firmware kèm logFile)
+    func uploadMultipart(_ request: APIRequest) async throws -> Data {
+        guard let url = URL(string: baseURL + request.path) else {
+            throw APIError.invalidURL
+        }
+        
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var body = Data()
+        
+        // 1. Thêm các tham số chuỗi (deviceInfo)
+        if let params = request.parameters {
+            for (key, value) in params {
+                body.append("--\(boundary)\r\n".data(using: .utf8)!)
+                body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
+                body.append("\(value)\r\n".data(using: .utf8)!)
+            }
+        }
+        
+        // 2. Thêm file log (nếu có)
+        if let fileData = request.fileData,
+           let fileName = request.fileName,
+           let fileKey = request.fileKey {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(fileKey)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: \(request.mimeType)\r\n\r\n".data(using: .utf8)!)
+            body.append(fileData)
+            body.append("\r\n".data(using: .utf8)!)
+        }
+        
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        urlRequest.httpBody = body
+        
+        // 3. Thực hiện Request
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+        
+        return data
+    }
+}
+
+extension APIManager {
+    /// 🚀 API Cập nhật firmware thiết bị và gửi file log nếu có lỗi
+    func updateFirmware(
+        deviceInfo: [String: Any],
+        logFilePath: String?,
+        status: String
+    ) async throws -> Data {
+        
+        var logFileData: Data? = nil
+        var logFileName: String? = nil
+        
+        // 🛑 Chỉ đọc file log khi status là "ERROR"
+        if status == "ERROR", let logPath = logFilePath, !logPath.isEmpty {
+            let logURL = URL(fileURLWithPath: logPath)
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                logFileData = try? Data(contentsOf: logURL)
+                logFileName = logURL.lastPathComponent
+            }
+        }
+        
+        let request = APIRequest(
+            path: "/firmware_update_status.php", // Thay đúng endpoint API của bạn
+            method: .POST,
+            parameters: deviceInfo,
+            fileData: logFileData,
+            fileName: logFileName,
+            fileKey: "LogFile",
+            mimeType: "text/plain"
+        )
+        
+        return try await uploadMultipart(request)
+    }
+}

@@ -15,6 +15,8 @@ final class InputAlert: UIViewController, UITextFieldDelegate {
     private let cancelButton = UIButton(type: .system)
     private let saveButton = UIButton(type: .system)
     private let inputStack = UIStackView()
+    
+    private var containerCenterYConstraint: NSLayoutConstraint?
 
     private var maxLength: Int? // Thêm biến lưu giới hạn ký tự
     
@@ -25,6 +27,54 @@ final class InputAlert: UIViewController, UITextFieldDelegate {
         DispatchQueue.main.async {
             self.textField.becomeFirstResponder()
         }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.textField.autocorrectionType = .no
+        self.textField.spellCheckingType = .no
+        
+        setupKeyboardObservers()
+    }
+
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+
+    @objc private func handleKeyboardWillShow(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
+
+        // Tính toán khoảng cách cần đẩy containerView lên
+        let keyboardHeight = keyboardFrame.height
+        let containerBottom = containerView.frame.maxY
+        let screenHeight = view.bounds.height
+        let overlap = containerBottom - (screenHeight - keyboardHeight)
+
+        // Nếu bàn phím đè lên Alert, đẩy Alert lên trên đúng khoảng bị đè (cộng thêm 20pt đệm)
+        if overlap > 0 {
+            containerCenterYConstraint?.constant = -(overlap + 20)
+            UIView.animate(withDuration: duration) {
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+
+    @objc private func handleKeyboardWillHide(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
+
+        containerCenterYConstraint?.constant = 0
+        UIView.animate(withDuration: duration) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Init
@@ -138,9 +188,12 @@ final class InputAlert: UIViewController, UITextFieldDelegate {
     }
 
     private func setupConstraints() {
+        let centerYConstraint = containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        self.containerCenterYConstraint = centerYConstraint
+
         NSLayoutConstraint.activate([
             // Container
-            containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            centerYConstraint,
             containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             containerView.widthAnchor.constraint(equalToConstant: 300),
 

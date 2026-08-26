@@ -1045,6 +1045,8 @@ extension DeviceViewController {
             return
         }
         
+        AppSettings.shared.set(latestVersion, forKey: AppSettings.Keys.currentFrwUpdateVersion)
+        
         DialogViewController.showProcess(
             title: "Firmware Update".localized,
             message: "Downloading firmware v".localized + " \(latestVersion)",
@@ -1164,10 +1166,30 @@ extension DeviceViewController {
             
             deviceConnected.updateFirmware()
                 .subscribe(onNext: { success in
-                    print("✅ Reboot command sent: \(success)")
-                    
+                    PrintLog("✅ Reboot command sent: \(success)")
+                    deviceConnected.sendFirmwareStatus("REBOOT", logPath: nil)
                 }, onError: { error in
-                    print("❌ Failed: \(error)")
+                    PrintLog("❌ Failed: \(error)")
+                    
+                    guard let logURL = try? FileManager.default
+                        .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                        .appendingPathComponent("divesync.log") else {
+                        PrintLog("Không tìm thấy đường dẫn file log.")
+                        
+                        deviceConnected.sendFirmwareStatus("ERROR", logPath: nil)
+                        
+                        return
+                    }
+
+                    guard FileManager.default.fileExists(atPath: logURL.path) else {
+                        PrintLog("File log không tồn tại.")
+                        
+                        deviceConnected.sendFirmwareStatus("ERROR", logPath: nil)
+                        return
+                    }
+                    
+                    deviceConnected.sendFirmwareStatus("ERROR", logPath: logURL.path)
+                    
                 })
                 .disposed(by: disposeBag)
         }

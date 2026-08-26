@@ -46,16 +46,16 @@ extension LocalizationManager {
     // Định nghĩa danh sách cố định
     static let supportedLanguages: [(name: String, code: String)] = [
         ("🇺🇸 English", "en"),
-        ("🇫🇷 French", "fr"),
+        ("🇫🇷 Français", "fr"),
         ("🇨🇳 简体中文", "zh-Hans"),
-        ("🇩🇪 German", "de"),
-        ("🇹🇷 Turkish", "tr"),
-        ("🇮🇹 Italian", "it"),
-        ("🇰🇷 한국어", "ko"),
-        ("🇹🇼 繁體中文", "zh-Hant"),
+        ("🇩🇪 Deutsch", "de"),
+        ("🇹🇷 Türk", "tr"),
+        ("🇮🇹 Italiano", "it"),
+        ("🇰🇷 한국의", "ko"),
+        ("🇹🇼 正體中文", "zh-Hant"),
         ("🇯🇵 日本語", "ja"),
-        ("🇪🇸 Spanish", "es"),
-        ("🇵🇹 Portuguese", "pt-PT")
+        ("🇪🇸 Español", "es"),
+        ("🇵🇹 Português", "pt-PT")
     ]
     
     // Hàm bổ trợ để lấy tên hiển thị từ mã code (dùng cho Settings)

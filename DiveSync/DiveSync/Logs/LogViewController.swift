@@ -1187,10 +1187,11 @@ extension LogViewController {
                     
                 case .diveTime:
                     let dtValue = getDiveTime().components(separatedBy: ":")
-                    if dtValue.count == 2 {
+                    if dtValue.count == 3 {
                         let leftOpts = (0...999).map { String(format: "%02d", $0) }
                         let rightOpts = (0...59).map { String(format: "%02d", $0) }
                         Set2ValueSettingAlert.showMessage(
+                            message: "Dive Time".localized,
                             leftValue: dtValue[0],
                             rightValue: dtValue[1],
                             leftOptions: leftOpts,

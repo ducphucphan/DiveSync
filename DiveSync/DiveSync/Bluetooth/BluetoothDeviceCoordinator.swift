@@ -71,6 +71,8 @@ final class BluetoothDeviceCoordinator {
     let scannedDevices = BehaviorRelay<[ScannedPeripheral]>(value: [])
     
     var isExpectedDisconnect = false
+    
+    private var retryUpdateFrw = false
         
     private func detectDeviceType(scannedPeripheral: ScannedPeripheral) -> ConnectedDeviceType {
         
@@ -155,6 +157,34 @@ final class BluetoothDeviceCoordinator {
             .subscribe(onNext: { [weak self] devices in
                 guard let self = self else { return }
                 
+                switch syncType {
+                case .kUpdateFirmware:
+                    if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }) {
+                        otaDevice.peripheral.isOta = true
+                        self.connectToUpdateFirmware(from: otaDevice)
+                    }
+
+                case .kRedownloadSetting:
+                    self.tryReconnectAfterUpdatingDevice(from: devices)
+
+                default:
+                    // Trường hợp app restart trong khi đang OTA
+//                    if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }){
+//                        
+//                        let dcrid = Utilities.getConnectedDeviceDCRID(scannedPeripheral: otaDevice)
+//                        if Utilities.firstBinFile(dcrid: dcrid) != nil {
+//                            retryUpdateFrw = true
+//                            otaDevice.peripheral.isOta = true
+//                            self.connectToUpdateFirmware(from: otaDevice)
+//                            return
+//                        }
+//                    }
+                    
+                    // Nếu không phải OTA thì auto connect bình thường
+                    self.tryAutoConnectKnown(from: devices)
+                }
+                
+                /*
                 if syncType == .kUpdateFirmware {
                     let otaDevice = devices.first { $0.advertisementData.deviceType == .wbOtaBoard }
                     if let otaDevice = otaDevice {
@@ -169,6 +199,7 @@ final class BluetoothDeviceCoordinator {
                     // Trường hợp app restart trong khi đang OTA
                     if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }) {
                         if Utilities.firstBinFile() != nil {
+                            retryUpdateFrw = true
                             otaDevice.peripheral.isOta = true
                             self.connectToUpdateFirmware(from: otaDevice)
                             return
@@ -178,6 +209,7 @@ final class BluetoothDeviceCoordinator {
                     // Nếu không phải OTA thì auto connect bình thường
                     self.tryAutoConnectKnown(from: devices)
                 }
+                */
             })
     }
     
@@ -211,6 +243,12 @@ final class BluetoothDeviceCoordinator {
         .subscribe(onNext: { [weak self] manager in
             print("connectToUpdateFirmware DONE")
             
+            // TRY-AGAIN
+            if self?.retryUpdateFrw == true {
+                manager.sendFirmwareStatus("TRY_AGAIN")
+                self?.retryUpdateFrw = false
+            }
+            
             manager.updateFirmware()
                 .subscribe(onNext: { success in
                     print("updateFirmware DONE: \(success)")
@@ -224,7 +262,7 @@ final class BluetoothDeviceCoordinator {
                 })
                 .disposed(by: self?.disposeBag ?? DisposeBag()) // ✅ giữ subscription
         }, onError: { error in
-            print("connectToUpdateFirmware ERROR: \(error)")
+            PrintLog("connectToUpdateFirmware ERROR: \(error)")
         })
         .disposed(by: disposeBag) // ✅ giữ subscription bên ngoài
     }

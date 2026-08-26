@@ -135,6 +135,7 @@
 		489641B42EA636F200467157 /* TankDataMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489641B32EA636F200467157 /* TankDataMapper.swift */; };
 		489641B62EA636FF00467157 /* MapperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489641B52EA636FF00467157 /* MapperProtocol.swift */; };
 		48970C402E3776EC00BBAC9E /* DivePhotoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48970C3F2E3776EC00BBAC9E /* DivePhotoManager.swift */; };
+		4898682F3035BC5B00A488E0 /* CREDAV.1_2_2.bin in Resources */ = {isa = PBXBuildFile; fileRef = 4898682E3035BC5B00A488E0 /* CREDAV.1_2_2.bin */; };
 		489A9CE02CEDE26B00A75CC4 /* DateFormatterUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489A9CDF2CEDE26B00A75CC4 /* DateFormatterUtility.swift */; };
 		489DE34D2E49D7A5005CF407 /* MDepthInputAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489DE34C2E49D7A4005CF407 /* MDepthInputAlert.swift */; };
 		489DFFFD2DC75EB4005A1443 /* CertificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489DFFFC2DC75EB4005A1443 /* CertificationCell.swift */; };
@@ -404,6 +405,7 @@
 		489641B32EA636F200467157 /* TankDataMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TankDataMapper.swift; sourceTree = "<group>"; };
 		489641B52EA636FF00467157 /* MapperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapperProtocol.swift; sourceTree = "<group>"; };
 		48970C3F2E3776EC00BBAC9E /* DivePhotoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivePhotoManager.swift; sourceTree = "<group>"; };
+		4898682E3035BC5B00A488E0 /* CREDAV.1_2_2.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = CREDAV.1_2_2.bin; sourceTree = "<group>"; };
 		489A9CDF2CEDE26B00A75CC4 /* DateFormatterUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatterUtility.swift; sourceTree = "<group>"; };
 		489DE34C2E49D7A4005CF407 /* MDepthInputAlert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MDepthInputAlert.swift; sourceTree = "<group>"; };
 		489DFFFC2DC75EB4005A1443 /* CertificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificationCell.swift; sourceTree = "<group>"; };
@@ -731,6 +733,7 @@
 				4876E3FA2FAC94CE00A9AE48 /* CR4_device.json */,
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
 				4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */,
+				4898682E3035BC5B00A488E0 /* CREDAV.1_2_2.bin */,
 				48CDF7B12FCD785B00ABDE9E /* 1.txt */,
 				48CDF7B22FCD785B00ABDE9E /* 2.txt */,
 				48CDF7B32FCD785B00ABDE9E /* 3.txt */,
@@ -1333,6 +1336,7 @@
 				48528D992FB1B66E003586B2 /* MetricItemView.xib in Resources */,
 				48CE8DDA2DAD198000A2DF33 /* DSToggleCell.xib in Resources */,
 				48D21E202D0D3EBC004E8018 /* HelveticaNeueLTProMdEx.otf in Resources */,
+				4898682F3035BC5B00A488E0 /* CREDAV.1_2_2.bin in Resources */,
 				48D21E1B2D0D3EBC004E8018 /* HelveticaNeueLTProLtIt.otf in Resources */,
 				48EE981C2DA54EFD00B3CFFB /* PagingMenuCell.xib in Resources */,
 				48D21E182D0D3EBC004E8018 /* HelveticaNeueLTProMdIt.otf in Resources */,
@@ -1709,7 +1713,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1732,7 +1736,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1753,7 +1757,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1776,7 +1780,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

@@ -10,7 +10,7 @@ import Foundation
 struct FirmwareURLBuilder {
     static let base = "https://www.divesync.io"
     
-    static func iniFile(modelId: Int) -> String {
+    static func getDcrid(modelId: Int) -> String {
         var fileName = "CREDAV"
         switch modelId {
         case C_WIS5:
@@ -23,23 +23,15 @@ struct FirmwareURLBuilder {
             fileName = "CREDAV"
         }
         
-        return "\(base)/verifyfw.php?file=\(fileName)_EN_Released.ini"
+        return fileName
+    }
+    
+    static func iniFile(modelId: Int) -> String {
+        return "\(base)/verifyfw.php?file=\(getDcrid(modelId: modelId))_EN_Released.ini"
     }
     
     static func readmeFile(modelId: Int) -> String {
-        var fileName = "CREDAV"
-        switch modelId {
-        case C_WIS5:
-            fileName = "SHEWIS"
-        case C_SKI:
-            fileName = "XSCSKI"
-        case C_SPI:
-            fileName = "OCESPI"
-        default:
-            fileName = "CREDAV"
-        }
-        
-        return "\(base)/verifyfw.php?file=\(fileName)_EN_Released.Readme"
+        return "\(base)/verifyfw.php?file=\(getDcrid(modelId: modelId))_EN_Released.Readme"
     }
     
     static func binFile(modelId: Int, version: String) -> String {

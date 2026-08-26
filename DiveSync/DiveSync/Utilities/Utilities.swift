@@ -9,6 +9,7 @@ import Foundation
 import MapKit
 import GRDB
 import ProgressHUD
+import RxBluetoothKit
 
 func HomeDirectory() -> String {
     return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].path
@@ -401,23 +402,44 @@ class Utilities {
         }
     }
     
-    static func firstBinFile() -> URL? {
+    static func firstBinFile(dcrid: String? = nil) -> URL? {
         let isDebug = false
         if isDebug {
-            return Bundle.main.url(forResource: "Wisdom_Rev01B_1.0.2_Released", withExtension: "bin")
+            return Bundle.main.url(forResource: "CREDAV.1_2_2", withExtension: "bin")
         } else {
             let fileManager = FileManager.default
-            let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            guard let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                return nil
+            }
             
             if let files = try? fileManager.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) {
-                // Lọc file có đuôi .bin
-                let binFiles = files.filter { $0.pathExtension == "bin" }
-                // Lấy file đầu tiên nếu có
-                return binFiles.first
+                return files.first { url in
+                    // 1. Kiếm tra file đuôi .bin
+                    guard url.pathExtension.lowercased() == "bin" else { return false }
+                    
+                    // 2. Lấy tên file (không kèm đuôi .bin)
+                    let fileName = url.deletingPathExtension().lastPathComponent
+                    
+                    // 3. Tách theo dấu "." và lấy phần tử đầu tiên
+                    let firstPart = fileName.split(separator: ".").first
+                    
+                    // 4. So sánh với string được cung cấp
+                    return String(firstPart ?? "") == dcrid
+                }
             }
             
             return nil
         }
+    }
+    
+    static func getConnectedDeviceDCRID(scannedPeripheral: ScannedPeripheral) -> String? {
+        guard let (bleName, _) = scannedPeripheral.splitDeviceName(),
+              let dcInfo = DcInfo.shared.getValues(forKey: bleName) else {
+            return nil
+        }
+        
+        let ModelID = dcInfo[2].toInt()
+        return FirmwareURLBuilder.getDcrid(modelId: ModelID)
     }
     
     static func formatSecondsToHMS(_ seconds: Int) -> String {

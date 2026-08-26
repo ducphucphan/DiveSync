@@ -102,30 +102,54 @@ class DiveSpotViewController: BaseViewController, UISearchResultsUpdating, UISea
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search location".localized
         searchController.delegate = self
-        searchController.searchBar.tintColor = .white
         definesPresentationContext = true
         
         let searchBar = searchController.searchBar
-        searchBar.barStyle = .black // đảm bảo text white
-        
         let textField = searchBar.searchTextField
         
-        // Placeholder
-        textField.attributedPlaceholder = NSAttributedString(
-            string: "Search location".localized,
-            attributes: [.foregroundColor: UIColor.white]
-        )
+        textField.autocorrectionType = .no
+        textField.spellCheckingType = .no
         
-        // Text color
-        textField.textColor = .white
-        textField.tintColor = .white  // caret (con trỏ) màu trắng
-        
-        // Kính lúp
-        if let leftIconView = textField.leftView as? UIImageView {
-            leftIconView.tintColor = .white
-            leftIconView.image = leftIconView.image?.withRenderingMode(.alwaysTemplate)
+        if #available(iOS 26.0, *) {
+            // Cấu hình mới áp dụng cho iOS 26 trở lên (chữ đen, nền xám sáng)
+            searchBar.tintColor = .systemBlue
+            searchBar.overrideUserInterfaceStyle = .light
+            
+            textField.overrideUserInterfaceStyle = .light
+            textField.textColor = .black
+            textField.defaultTextAttributes[.foregroundColor] = UIColor.black
+            textField.tintColor = .systemBlue
+            
+            textField.attributedPlaceholder = NSAttributedString(
+                string: "Search location".localized,
+                attributes: [.foregroundColor: UIColor.secondaryLabel]
+            )
+            
+            if let leftIconView = textField.leftView as? UIImageView {
+                leftIconView.tintColor = .systemGray
+                leftIconView.image = leftIconView.image?.withRenderingMode(.alwaysTemplate)
+            }
+        } else {
+            // Giữ nguyên code cũ cho iOS < 26
+            searchBar.tintColor = .white
+            searchBar.barStyle = .black // đảm bảo text white
+            
+            // Placeholder
+            textField.attributedPlaceholder = NSAttributedString(
+                string: "Search location".localized,
+                attributes: [.foregroundColor: UIColor.white]
+            )
+            
+            // Text color
+            textField.textColor = .white
+            textField.tintColor = .white // caret (con trỏ) màu trắng
+            
+            // Kính lúp
+            if let leftIconView = textField.leftView as? UIImageView {
+                leftIconView.tintColor = .white
+                leftIconView.image = leftIconView.image?.withRenderingMode(.alwaysTemplate)
+            }
         }
-        
     }
     
     private func fillData(row: Row) {

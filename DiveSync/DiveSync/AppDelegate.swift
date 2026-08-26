@@ -24,6 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         Thread.sleep(forTimeInterval: 2.0)
         
+        UIApplication.shared.isIdleTimerDisabled = true
+        
         _ = DatabaseManager.shared
         
         // Khởi tạo coordinator → scan tự chạy
