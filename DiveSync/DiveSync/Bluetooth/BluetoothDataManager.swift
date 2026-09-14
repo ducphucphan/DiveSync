@@ -784,6 +784,8 @@ class BluetoothDataManager {
                         
                         onFailure: { error in
                             
+                            syncType = .kNone
+                            
                             if let rxError = error as? RxError,
                                case .timeout = rxError {
                                 
@@ -806,15 +808,39 @@ class BluetoothDataManager {
                                     )
                                 )
                                 
-                                let logURL = try? FileManager.default
-                                    .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                                    .appendingPathComponent("divesync.log")
-                                
-                                self.sendFirmwareStatus("ERROR", logPath: logURL?.path)
+                                Utilities.sendFirmwareStatus(device: self.scannedPeripheral, "ERROR", serialNo: self.SerialNo)
                                 
                                 // 3. UI chạy độc lập
                                 Task { @MainActor in
-                                    DialogViewController.showMessage(title: "Firmware Update".localized, message: "Firmware upload timeout.")
+                                    
+                                    BluetoothDeviceCoordinator.shared.disconnect()
+                                    
+                                    DialogViewController.showRetryMessage(
+                                        title: "FW Update Failed".localized,
+                                        message: "Do you want to retry?".localized,
+                                        cancelButtonTitle: "Close".localized.uppercased(),
+                                        okButtonTitle: "Retry".localized.uppercased(),
+                                        onCancel: {
+                                            // User chọn Cancel
+                                            BluetoothDeviceCoordinator.shared.resumeScanIfNeeded()
+                                        },
+                                        onOK: { [self] in
+                                            // User chọn Retry
+                                            if let retryDelegate = BluetoothDeviceCoordinator.shared.delegate
+                                                as? BluetoothDeviceCoordinatorRetryDelegate {
+                                                BluetoothDeviceCoordinator.shared.resumeScanIfNeeded()
+                                                
+                                                Task { @MainActor in
+                                                    //try? await Task.sleep(for: .seconds(3))
+                                                    
+                                                    retryDelegate.retryToUpdateFirmware()
+                                                }
+                                            } else {
+                                                FirmwareRecoveryManager.shared.startFirmwareRecovery(device: self.scannedPeripheral)
+                                            }
+                                        }
+                                    )
+                                    
                                 }
                                 
                                 return
@@ -939,49 +965,63 @@ class BluetoothDataManager {
         return subject.asObservable()
     }
     
-    func sendFirmwareStatus(_ status: String, logPath: String? = nil) {
-        Task {
-            do {
-                var deviceName = ""
-                var company = ""
-                let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
-                let deviceAddress = self.scannedPeripheral.peripheral.identifier
-                
-                if let (bleName, _) = scannedPeripheral.splitDeviceName(),
-                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
-                    company = dcInfo[0]
-                    
-                    deviceName = dcInfo[1]
-                    
-                    self.ModelID = dcInfo[2].toInt()
-                }
-                
-                let dcrid = FirmwareURLBuilder.getDcrid(modelId: self.ModelID)
-                
-                let deviceInfo: [String: Any] = [
-                    "DcrID": dcrid,
-                    "Company": company.uppercased(),
-                    "AddressID": deviceAddress,
-                    "Firmware": frwVersion,
-                    "ModelName": deviceName,
-                    "ModelID": "\(self.ModelID)",
-                    "SerialNo": "\(self.SerialNo)",
-                    "DeviceName": deviceName,
-                    "Status": status
-                ]
-                
-                _ = try await APIManager.shared.updateFirmware(
-                    deviceInfo: deviceInfo,
-                    logFilePath: logPath, // Cho dù truyền logPath vào, nếu status != "ERROR" hàm vẫn bỏ qua không gửi file
-                    status: status
-                )
-                
-                PrintLog("✅ Post status [\(status)] thành công")
-            } catch {
-                PrintLog("❌ Lỗi post status [\(status)]:\(error.localizedDescription)")
-            }
-        }
-    }
+//    func sendFirmwareStatus(_ status: String) {
+//        
+//        var logPath: String? = nil
+//        
+//        if status == "ERROR" {
+//            let logURL = FileManager.default
+//                .urls(for: .documentDirectory, in: .userDomainMask)
+//                .first?
+//                .appendingPathComponent("divesync.log")
+//            
+//            if let path = logURL?.path, FileManager.default.fileExists(atPath: path) {
+//                logPath = path
+//            }
+//        }
+//        
+//        Task {
+//            do {
+//                var deviceName = ""
+//                var company = ""
+//                let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
+//                let deviceAddress = self.scannedPeripheral.peripheral.identifier
+//                
+//                if let (bleName, _) = scannedPeripheral.splitDeviceName(),
+//                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+//                    company = dcInfo[0]
+//                    
+//                    deviceName = dcInfo[1]
+//                    
+//                    self.ModelID = dcInfo[2].toInt()
+//                }
+//                
+//                let dcrid = FirmwareURLBuilder.getDcrid(modelId: self.ModelID)
+//                
+//                let deviceInfo: [String: Any] = [
+//                    "DcrID": dcrid,
+//                    "Company": company.uppercased(),
+//                    "AddressID": deviceAddress,
+//                    "Firmware": frwVersion,
+//                    "ModelName": deviceName,
+//                    "ModelID": "\(self.ModelID)",
+//                    "SerialNo": "\(self.SerialNo)",
+//                    "DeviceName": deviceName,
+//                    "Status": status
+//                ]
+//                
+//                _ = try await APIManager.shared.updateFirmware(
+//                    deviceInfo: deviceInfo,
+//                    logFilePath: logPath, // Cho dù truyền logPath vào, nếu status != "ERROR" hàm vẫn bỏ qua không gửi file
+//                    status: status
+//                )
+//                
+//                PrintLog("✅ Post status [\(status)] thành công")
+//            } catch {
+//                PrintLog("❌ Lỗi post status [\(status)]:\(error.localizedDescription)")
+//            }
+//        }
+//    }
     
     // MARK: - GET COMMANDS
     
@@ -1262,8 +1302,7 @@ class BluetoothDataManager {
                         msg = "Firmware upgrade success"
                         
                         // CAP NHAT TRANG THAI LEN SERVER
-                        m.sendFirmwareStatus("COMPLETED")
-                        
+                        Utilities.sendFirmwareStatus(device: self.scannedPeripheral, "COMPLETED", serialNo: self.SerialNo)
                     } else if syncType == .kUploadOwnerInfo {
                         msg = "Your device's owner info are uploaded"
                     }

@@ -163,6 +163,8 @@
 		48AD3A5E2EFA4794005BDB6A /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48AD3A5D2EFA4794005BDB6A /* HelpViewController.swift */; };
 		48B7F04C2CF17AB000518172 /* ChartHighlightMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B7F04B2CF17AB000518172 /* ChartHighlightMarker.swift */; };
 		48BAED682FA8529F003EFAC7 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BAED672FA8529F003EFAC7 /* SettingsViewController.swift */; };
+		48BF1D003049218500DF7014 /* FirmwareUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1CFF3049218100DF7014 /* FirmwareUpdateManager.swift */; };
+		48BF1D023049782F00DF7014 /* FirmwareRecoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1D013049782E00DF7014 /* FirmwareRecoveryManager.swift */; };
 		48BF1EA22DF6C8C6005286A0 /* SetTimeAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */; };
 		48C2FEAD2E7C2AA2003BC694 /* FirmwareURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */; };
 		48C9653D2F10E462007A794D /* OwnerInfoCardViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */; };
@@ -443,6 +445,8 @@
 		48B6E3D02F39D6F800612B1A /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		48B7F04B2CF17AB000518172 /* ChartHighlightMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartHighlightMarker.swift; sourceTree = "<group>"; };
 		48BAED672FA8529F003EFAC7 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		48BF1CFF3049218100DF7014 /* FirmwareUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateManager.swift; sourceTree = "<group>"; };
+		48BF1D013049782E00DF7014 /* FirmwareRecoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareRecoveryManager.swift; sourceTree = "<group>"; };
 		48BF1EA12DF6C8C6005286A0 /* SetTimeAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetTimeAlert.swift; sourceTree = "<group>"; };
 		48C2FEAC2E7C2AA2003BC694 /* FirmwareURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareURLBuilder.swift; sourceTree = "<group>"; };
 		48C9653C2F10E462007A794D /* OwnerInfoCardViewBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OwnerInfoCardViewBuilder.swift; sourceTree = "<group>"; };
@@ -1052,6 +1056,8 @@
 				480402792F5AC42F00CAB8DC /* BluetoothManagerProtocol.swift */,
 				4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */,
 				48DD82332E618C5A00557367 /* BluetoothDeviceCoordinator.swift */,
+				48BF1CFF3049218100DF7014 /* FirmwareUpdateManager.swift */,
+				48BF1D013049782E00DF7014 /* FirmwareRecoveryManager.swift */,
 				48DAC06E2D6C825200308F39 /* dc_info.plist */,
 				48DAC0702D6C836900308F39 /* DcInfo.swift */,
 				48D2D54D2E0C021300A43E30 /* RomData.swift */,
@@ -1518,6 +1524,7 @@
 				484C44D82CE1B2EF0082039E /* SceneDelegate.swift in Sources */,
 				487DFC032DCE5AF600C53D18 /* InputStyle2Alert.swift in Sources */,
 				48EB9AF82CEC9FE600E4C81E /* IntValueFormatter.swift in Sources */,
+				48BF1D023049782F00DF7014 /* FirmwareRecoveryManager.swift in Sources */,
 				485CE16A2E7972C900F2D61E /* MemoryLayout.swift in Sources */,
 				48AD3A5C2EFA3EC7005BDB6A /* LanguageViewController.swift in Sources */,
 				482F666C2E729020002E72EA /* DialogViewController.swift in Sources */,
@@ -1530,6 +1537,7 @@
 				4828F4A32D102F3500039188 /* PlaceCell.swift in Sources */,
 				489459E52DBCA4CE00D1A03D /* LocationPermissionManager.swift in Sources */,
 				484C24632E1B78D0002258CB /* UInt8+Extension.swift in Sources */,
+				48BF1D003049218500DF7014 /* FirmwareUpdateManager.swift in Sources */,
 				4815F9BF2DD8E5FF00AF04B4 /* DeviceSettingViewController.swift in Sources */,
 				4835FFF52D707CA100DEB4C3 /* BluetoothDataManager.swift in Sources */,
 				48E36CED2DCF2E2800F77367 /* LogGasViewController.swift in Sources */,
@@ -1713,7 +1721,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1727,7 +1735,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location will help you to find nearby dive spots faster";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = FirmwareRecovery.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
@@ -1757,7 +1765,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1771,7 +1779,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location will help you to find nearby dive spots faster";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = FirmwareRecovery.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;

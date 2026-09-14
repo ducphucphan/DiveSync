@@ -163,11 +163,15 @@ class ContentViewController: UIViewController {
         textView.text = text
         textView.isEditable = false
         textView.font = UIFont.systemFont(ofSize: 16)
+        
+        // Thêm khoảng đệm cho text để không dính sát viền màn hình
+        textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        
         view.addSubview(textView)
         
         textView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.topAnchor),
+            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             textView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             textView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             textView.bottomAnchor.constraint(equalTo: view.bottomAnchor)

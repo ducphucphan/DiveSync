@@ -12,6 +12,7 @@ enum DialogAlertStyle {
     case loading
     case progress
     case message
+    case retry
 }
 
 class DialogViewController: UIViewController {
@@ -23,10 +24,12 @@ class DialogViewController: UIViewController {
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var cancelButton: UIButton!
+    @IBOutlet weak var okButton: UIButton!
     
     // MARK: - Callbacks
     private var onCompleted: ((Bool) -> Void)?
     private var onCancel: (() -> Void)?
+    private var onOKButton: (() -> Void)?
     var cancelTask: (() -> Void)?   // 👉 Hủy task thực tế sẽ gán vào đây
     
     // MARK: - Properties
@@ -34,6 +37,9 @@ class DialogViewController: UIViewController {
     var initialMessage: String?
     var style: DialogAlertStyle = .loading
     var hideCancelButton: Bool = false   // 👉 mới thêm
+    
+    var cancelButtonTitle: String?
+    var okButtonTitle: String?
     
     // MARK: - Static Instance
     private static var currentAlert: DialogViewController?
@@ -54,6 +60,11 @@ class DialogViewController: UIViewController {
     
     private func configureUI() {
         cancelButton.isHidden = hideCancelButton
+        okButton.isHidden = okButtonTitle == nil
+        
+        if let title = okButtonTitle {
+            okButton.setTitle(title, for: .normal)
+        }
         
         switch style {
         case .loading:
@@ -72,7 +83,15 @@ class DialogViewController: UIViewController {
             activityIndicator.isHidden = true
             progressView.isHidden = true
             cancelButton.setTitle("OK".localized, for: .normal)
+            
+        case .retry:
+            activityIndicator.isHidden = true
+            progressView.isHidden = true
+            if let cancelTitle = cancelButtonTitle {
+                cancelButton.setTitle(cancelTitle, for: .normal)
+            }
         }
+        
     }
     
     // MARK: - Public Show Methods
@@ -97,15 +116,34 @@ class DialogViewController: UIViewController {
     /// Hiển thị alert dạng message (OK button)
     static func showMessage(title: String,
                             message: String,
-                            onOK: (() -> Void)? = nil) {
+                            onCancel: (() -> Void)? = nil) {
         
         show(style: .message,
              title: title,
              message: message,
              hideCancel: false,
              task: nil,
-             onCancel: onOK,  // OK button reuse cancel callback
+             onCancel: onCancel,  // OK button reuse cancel callback
              onCompleted: nil)
+    }
+    
+    static func showRetryMessage(title: String,
+                                 message: String,
+                                 cancelButtonTitle: String? = nil,
+                                 okButtonTitle: String? = nil,
+                                 onCancel: (() -> Void)? = nil,
+                                 onOK: (() -> Void)? = nil) {
+        show(style: .retry,
+             title: title,
+             message: message,
+             hideCancel: false,
+             cancelButtonTitle: cancelButtonTitle,
+             okButtonTitle: okButtonTitle,
+             onOKButton: onOK,
+             task: nil,
+             onCancel: onCancel,
+             onCompleted: nil)
+        
     }
     
     /// Hiển thị alert dạng process (progress bar)
@@ -130,6 +168,9 @@ class DialogViewController: UIViewController {
                              title: String,
                              message: String,
                              hideCancel: Bool? = false,
+                             cancelButtonTitle: String? = nil,
+                             okButtonTitle: String? = nil,
+                             onOKButton: (() -> Void)? = nil,
                              task: ((DialogViewController) -> Void)?,
                              onCancel: (() -> Void)?,
                              onCompleted: ((Bool) -> Void)?) {
@@ -141,6 +182,9 @@ class DialogViewController: UIViewController {
                           title: title,
                           message: message,
                           hideCancel: hideCancel,
+                          cancelButtonTitle: cancelButtonTitle,
+                          okButtonTitle: okButtonTitle,
+                          onOKButton: onOKButton,
                           task: task,
                           onCancel: onCancel,
                           onCompleted: onCompleted)
@@ -157,18 +201,23 @@ class DialogViewController: UIViewController {
         
         alertVC.onCompleted = onCompleted
         alertVC.onCancel = onCancel
+        alertVC.onOKButton = onOKButton
+        
         alertVC.initialTitle = title
         alertVC.initialMessage = message
         alertVC.style = style
+        
         alertVC.hideCancelButton = hideCancel ?? false   // 👉 gán ở đây
+        alertVC.cancelButtonTitle = cancelButtonTitle
+        alertVC.okButtonTitle = okButtonTitle
+        
+        currentAlert = alertVC
         
         presenter.present(alertVC, animated: true) {
             if style == .loading || style == .progress {
                 task?(alertVC)
             }
         }
-        
-        currentAlert = alertVC
     }
     
     // MARK: - Update / Finish
@@ -195,19 +244,34 @@ class DialogViewController: UIViewController {
     }
     
     static func dismissAlert(completion: (() -> Void)? = nil) {
-        guard let alertVC = currentAlert else { return }
+        guard let alertVC = currentAlert else {
+            completion?()
+            return
+        }
+        
+        currentAlert = nil
+        
         alertVC.dismiss(animated: true) {
-            currentAlert = nil
             completion?()
         }
     }
     
     // MARK: - Actions
     @IBAction func cancelTapped(_ sender: Any) {
+        DialogViewController.currentAlert = nil
+        
         dismiss(animated: true) {
             self.cancelTask?()   // 👉 Hủy task thực sự
             self.onCancel?()
-            DialogViewController.currentAlert = nil
+        }
+    }
+    
+    @IBAction func okTapped(_ sender: Any) {
+        DialogViewController.currentAlert = nil
+        
+        dismiss(animated: true) {
+            self.cancelTask?()
+            self.onOKButton?()
         }
     }
 }

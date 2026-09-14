@@ -24,6 +24,9 @@ class MenuViewController: BaseViewController {
         // Configure navigation bar for large titles
         //title = "More"
         self.navigationController?.setCustomTitle(for: self.navigationItem, title: "DIVESYNC")
+        
+        FirmwareRecoveryManager.shared.checkAndHandleRecovery()
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {

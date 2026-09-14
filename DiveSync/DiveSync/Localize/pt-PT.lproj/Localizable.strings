@@ -179,7 +179,6 @@
 "Share" = "Compartilhar";
 "No Photos Added" = "Nenhuma Foto Adicionada";
 "Start Gas" = "Gás Inicial";
-"Start Dive<" = "Início do Mergulho<";
 "Start Pressure" = "Pressão Inicial";
 "Max Ascent Rate" = "Taxa Máxima de Subida";
 "Max Ascent Bar" = "Barra subida máx";
@@ -187,7 +186,6 @@
 "Settings Used" = "Configurações Usadas";
 "Max PPO2" = "PPO2 MÁX";
 "Start Dive" = "Iniciar Mergulho";
-"Dive Time<" = "Tempo de Mergulho<";
 "Tank Capacity" = "Capacidade do Cilindro";
 "Dive Spot" = "Ponto de Mergulho";
 "Min Depth" = "Profundidade Mínima";
@@ -422,7 +420,7 @@
 "Set 2 (Alarms)" = "Configurar 2 (Alarmes)";
 "Set 3 (Utilities)" = "Configurar 3 (Utilitários)";
 "Set 4 (Date/Time)" = "Configurar 4 (Data/Hora)";
-"All Alarm" = "Todos os alarmes";
+"All Alarms" = "Todos os alarmes";
 "ASNT" = "ASNT";
 "Turn Pressure" = "Pressão de retorno";
 "Reserve Time" = "Tempo de reserva";
@@ -452,3 +450,9 @@
 "No valid files found" = "Nenhum arquivo válido encontrado";
 "Failed to export any dive logs." = "Falha ao exportar os registros de mergulho.";
 "Invalid DiveSync data file." = "Arquivo de dados DiveSync inválido.";
+"Select the device to restore firmware."="Selecione o dispositivo para restaurar o firmware.";
+"Looking new firmware" = "Procurando novo firmware";
+"Retry"="Tentar novamente";
+"Firmware update was previously failed. Do you want to recover it?"="A atualização do firmware falhou anteriormente. Deseja recuperá-la?";
+"Do you want to retry?"="Deseja tentar novamente?";
+"FW Update Failed"="Falha na atualização do FW";

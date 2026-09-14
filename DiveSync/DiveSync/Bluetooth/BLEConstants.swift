@@ -89,6 +89,7 @@ enum SearchAction {
 var searchType: SearchAction = .kAddDevice
 
 enum SyncAction {
+    case kNone
     case kDownloadDiveData
     case kDownloadSetting
     case kUploadSetting

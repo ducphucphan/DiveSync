@@ -7,112 +7,48 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "6DF600D2-A794-4AED-8326-763B10AF6C4D"
-            shouldBeEnabled = "Yes"
+            uuid = "287E7F3E-295A-417A-95BB-74EFD8BBE9F7"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
+            filePath = "DiveSync/Utilities/Alerts/DialogViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "673"
-            endingLineNumber = "673"
-            landmarkName = "connectToDevice(completion:)"
+            startingLineNumber = "178"
+            endingLineNumber = "178"
+            landmarkName = "show(style:title:message:hideCancel:cancelButtonTitle:okButtonTitle:onOKButton:task:onCancel:onCompleted:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "8F2FCC3C-E6BB-449B-9C9F-6C3F89C2DBAF"
-            shouldBeEnabled = "Yes"
+            uuid = "A6F1C4A9-4BC2-4413-BB90-7E0505CFF14D"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
+            filePath = "DiveSync/Utilities/Alerts/DialogViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "676"
-            endingLineNumber = "676"
-            landmarkName = "connectToDevice(completion:)"
+            startingLineNumber = "180"
+            endingLineNumber = "180"
+            landmarkName = "show(style:title:message:hideCancel:cancelButtonTitle:okButtonTitle:onOKButton:task:onCancel:onCompleted:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "DE00C96D-9342-4D1C-88B4-4831FA91404A"
-            shouldBeEnabled = "Yes"
+            uuid = "B7F6A488-BE99-4B50-90CE-259DA9A83110"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
+            filePath = "DiveSync/Utilities/Alerts/DialogViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "753"
-            endingLineNumber = "753"
-            landmarkName = "connectTapped(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "02B404E6-911D-41C1-827A-7B9AFED02FD8"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "756"
-            endingLineNumber = "756"
-            landmarkName = "connectTapped(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "C46B1DBC-EB01-4E1B-9949-A2EECB86B438"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "817"
-            endingLineNumber = "817"
-            landmarkName = "downloadTapped(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "C17EACB2-EEFF-4D43-B84A-BB63C47AA57A"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "824"
-            endingLineNumber = "824"
-            landmarkName = "downloadTapped(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "9A6B0AD9-D90D-463C-8FF8-1270BC3ADDCC"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DiveSync/Devices/DeviceViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "827"
-            endingLineNumber = "827"
-            landmarkName = "downloadTapped(_:)"
+            startingLineNumber = "195"
+            endingLineNumber = "195"
+            landmarkName = "show(style:title:message:hideCancel:cancelButtonTitle:okButtonTitle:onOKButton:task:onCancel:onCompleted:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

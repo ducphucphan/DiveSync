@@ -26,6 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         UIApplication.shared.isIdleTimerDisabled = true
         
+        setupProgressHUDAppearance()
+        
         _ = DatabaseManager.shared
         
         // Khởi tạo coordinator → scan tự chạy
@@ -59,6 +61,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+    }
+    
+    private func setupProgressHUDAppearance() {
+        // 1. Màu nền của khung HUD
+        ProgressHUD.colorHUD = UIColor.B_3
+        
+        // 2. Màu chữ (Status message)
+        ProgressHUD.colorStatus = .white
+        
+        // 3. Màu hiệu ứng spinner / indicator
+        ProgressHUD.colorAnimation = .white
+        
+        // 4. Màu lớp phủ nền toàn màn hình
+        ProgressHUD.colorBackground = UIColor.black.withAlphaComponent(0.3)
+        
+        // 5. Màu thanh tiến trình (nếu có dùng dạng progress)
+        ProgressHUD.colorProgress = .white
     }
 }
 

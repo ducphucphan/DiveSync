@@ -16,7 +16,7 @@ import ProgressHUD
 import RxBluetoothKit
 
 // ===== DownloadDelegate (file-scope) =====
-private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
+class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
     var onProgress: ((Float) -> Void)?
     var onFinish: ((Bool, URL?) -> Void)?
     
@@ -982,6 +982,8 @@ class DeviceViewController: BaseViewController {
     }
 }
 
+// MARK: - BluetoothDeviceCoordinatorDelegate
+
 extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
     func didConnectToDevice(message: String?) {
         guard currentDevice != nil else {
@@ -1035,6 +1037,28 @@ extension DeviceViewController: BluetoothDeviceCoordinatorDelegate {
         }
         
         //updateDeviceStateUI()
+    }
+}
+
+extension DeviceViewController: BluetoothDeviceCoordinatorRetryDelegate {
+    func retryToUpdateFirmware() {
+        guard currentDevice != nil else {
+            PrintLog("⚠️ No current device to connectToDevice.")
+            return
+        }
+        
+        // Tìm thiết bị trong relay
+        let peripherals = BluetoothDeviceCoordinator.shared.scannedDevices.value
+        guard let matchedDevice = peripherals.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }) else {
+            PrintLog("Device not found in scannedDevices yet")
+            showAlert(on: self, title: "Device not found!".localized, message: "Ensure that your Device is ON and Bluetooth is opened.".localized)
+            return
+        }
+        
+        syncType = .kUpdateFirmware
+        
+        BluetoothDeviceCoordinator.shared.delegate = self
+        FirmwareRecoveryManager.shared.startFirmwareRecovery(device: matchedDevice)
     }
 }
 
@@ -1167,28 +1191,11 @@ extension DeviceViewController {
             deviceConnected.updateFirmware()
                 .subscribe(onNext: { success in
                     PrintLog("✅ Reboot command sent: \(success)")
-                    deviceConnected.sendFirmwareStatus("REBOOT", logPath: nil)
+                    Utilities.sendFirmwareStatus(device: deviceConnected.scannedPeripheral, "REBOOT", serialNo: deviceConnected.SerialNo)
+                    
                 }, onError: { error in
                     PrintLog("❌ Failed: \(error)")
-                    
-                    guard let logURL = try? FileManager.default
-                        .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                        .appendingPathComponent("divesync.log") else {
-                        PrintLog("Không tìm thấy đường dẫn file log.")
-                        
-                        deviceConnected.sendFirmwareStatus("ERROR", logPath: nil)
-                        
-                        return
-                    }
-
-                    guard FileManager.default.fileExists(atPath: logURL.path) else {
-                        PrintLog("File log không tồn tại.")
-                        
-                        deviceConnected.sendFirmwareStatus("ERROR", logPath: nil)
-                        return
-                    }
-                    
-                    deviceConnected.sendFirmwareStatus("ERROR", logPath: logURL.path)
+                    Utilities.sendFirmwareStatus(device: deviceConnected.scannedPeripheral, "ERROR", serialNo: deviceConnected.SerialNo)
                     
                 })
                 .disposed(by: disposeBag)

@@ -37,6 +37,12 @@ protocol BluetoothDeviceCoordinatorDelegate: AnyObject {
     func didConnectToDevice(message: String?)
 }
 
+protocol BluetoothDeviceCoordinatorRetryDelegate:
+    BluetoothDeviceCoordinatorDelegate {
+
+    func retryToUpdateFirmware()
+}
+
 final class BluetoothDeviceCoordinator {
     static let shared = BluetoothDeviceCoordinator()
     private init() {
@@ -71,9 +77,7 @@ final class BluetoothDeviceCoordinator {
     let scannedDevices = BehaviorRelay<[ScannedPeripheral]>(value: [])
     
     var isExpectedDisconnect = false
-    
-    private var retryUpdateFrw = false
-        
+            
     private func detectDeviceType(scannedPeripheral: ScannedPeripheral) -> ConnectedDeviceType {
         
         if let (bleName, _) = scannedPeripheral.splitDeviceName(),
@@ -169,7 +173,7 @@ final class BluetoothDeviceCoordinator {
 
                 default:
                     // Trường hợp app restart trong khi đang OTA
-//                    if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }){
+                    if let otaDevice = devices.first(where: { $0.advertisementData.deviceType == .wbOtaBoard }){
 //                        
 //                        let dcrid = Utilities.getConnectedDeviceDCRID(scannedPeripheral: otaDevice)
 //                        if Utilities.firstBinFile(dcrid: dcrid) != nil {
@@ -178,7 +182,9 @@ final class BluetoothDeviceCoordinator {
 //                            self.connectToUpdateFirmware(from: otaDevice)
 //                            return
 //                        }
-//                    }
+                        
+                        return
+                    }
                     
                     // Nếu không phải OTA thì auto connect bình thường
                     self.tryAutoConnectKnown(from: devices)
@@ -227,13 +233,13 @@ final class BluetoothDeviceCoordinator {
         PrintLog("🔄 Reset scan loop")
     }
     
-    private func resumeScanIfNeeded() {
+    func resumeScanIfNeeded() {
         guard scanningDisposable == nil else { return }
         scanLoop()   // 🔄 tiếp tục scan mà không reset danh sách cũ
         PrintLog("▶️ Resume scan")
     }
     
-    private func connectToUpdateFirmware(from device: ScannedPeripheral) {
+    func connectToUpdateFirmware(from device: ScannedPeripheral) {
         connect2OtaDevice(
             to: device,
             discover: true,
@@ -242,12 +248,6 @@ final class BluetoothDeviceCoordinator {
         .observe(on: MainScheduler.instance)
         .subscribe(onNext: { [weak self] manager in
             print("connectToUpdateFirmware DONE")
-            
-            // TRY-AGAIN
-            if self?.retryUpdateFrw == true {
-                manager.sendFirmwareStatus("TRY_AGAIN")
-                self?.retryUpdateFrw = false
-            }
             
             manager.updateFirmware()
                 .subscribe(onNext: { success in
@@ -353,120 +353,6 @@ final class BluetoothDeviceCoordinator {
                 self?.deviceOtaAddress = nil
             })
     }
-    
-    // MARK: - Connect/Disconnect
-    /*
-    func connect(to scannedPeripheral: ScannedPeripheral,
-                 discover: Bool = true,
-                 services: [CBUUID] = BLEConstants.SERVICES.list,
-                 writeChar: CBUUID = BLEConstants.RWChar.write,
-                 readChar: CBUUID = BLEConstants.RWChar.read) -> Observable<ConnectedSession> {
-        
-        stopScan()   // ⛔ stop scan ngay khi bắt đầu connect
-        
-        ProgressHUD.animate("Connecting to".localized + " \(scannedPeripheral.advertisementData.localName?.formattedDeviceName() ?? "")...")
-        
-        connectionDisposable?.dispose()
-        connectionDisposable = nil
-        
-        let connectObs = central.establishConnection(scannedPeripheral.peripheral)
-            .timeout(.seconds(1), scheduler: MainScheduler.instance)
-            .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
-                onDispose: {
-                PrintLog("🔌 Disconnected")
-                self.resumeScanIfNeeded()   // 👈 resume scan ngay khi disconnect
-            })
-            .flatMap { [weak self] connected -> Observable<ConnectedSession> in
-                guard let self = self else { return .error(NSError(domain: "BLE", code: -99)) }
-                
-                self.connectedPeripheral = connected
-                
-                let deviceType = self.detectDeviceType(scannedPeripheral: scannedPeripheral)
-                switch deviceType {
-                case .normal:
-                    let manager = BluetoothDataManager(scannedPeripheral: scannedPeripheral)
-                    self.activeDataManager = manager
-                    
-                    guard discover else {
-                        ProgressHUD.dismiss()
-                        return .just(.normalSession(manager))
-                    }
-                    
-                    return manager
-                        .discoverServicesAndCharacteristics(
-                            servicesUUID: services,
-                            writeCharUUID: writeChar,
-                            readCharUUID: readChar
-                        )
-                        .map {
-                            return .normalSession(manager)
-                        }
-                case .cr:
-                    let crManager = BluetoothDeviceCRManager(scannedPeripheral: scannedPeripheral)
-                    self.crDeviceManager = crManager
-                    
-                    guard discover else {
-                        ProgressHUD.dismiss()
-                        return .just(.crSession(crManager))
-                    }
-                    
-                    return crManager
-                        .discoverServicesAndCharacteristics(
-                            servicesUUID: BLEConstants.SERVICES.logic,
-                            writeCharUUID: BLEConstants.RWCharLogic.write,
-                            readCharUUID: BLEConstants.RWCharLogic.read
-                        )
-                        .map {
-                            return .crSession(crManager)
-                        }
-                case .cr4:
-                    let cr4Manager = BluetoothDeviceCR4Manager(scannedPeripheral: scannedPeripheral)
-                    self.cr4DeviceManager = cr4Manager
-                    
-                    guard discover else {
-                        ProgressHUD.dismiss()
-                        return .just(.cr4Session(cr4Manager))
-                    }
-                    
-                    return cr4Manager
-                        .discoverServicesAndCharacteristics(
-                            servicesUUID: BLEConstants.SERVICES.cr4,
-                            indicateCharUUID: BLEConstants.RWCharCR4.write,
-                            notifyCharUUIDs: [BLEConstants.RWCharCR4.read]
-                        )
-                        .map {
-                            return .cr4Session(cr4Manager)
-                        }
-                case .cr5:
-                    let cr5Manager = BluetoothDeviceCR5Manager(scannedPeripheral: scannedPeripheral)
-                    self.cr5DeviceManager = cr5Manager
-                    
-                    guard discover else {
-                        ProgressHUD.dismiss()
-                        return .just(.cr5Session(cr5Manager))
-                    }
-                    
-                    return cr5Manager
-                        .discoverServicesAndCharacteristics(
-                            servicesUUID: BLEConstants.SERVICES.cr5,
-                            indicateCharUUID: BLEConstants.RWCharCR5.indicate,
-                            notifyCharUUIDs: [BLEConstants.RWCharCR5.notify1, BLEConstants.RWCharCR5.notify2]
-                        )
-                        .map {
-                            return .cr5Session(cr5Manager)
-                        }
-                }
-            }
-            .share(replay: 1, scope: .forever)
-        
-        connectionDisposable = connectObs.subscribe(onNext: { _ in }, onError: { err in
-            ProgressHUD.dismiss()
-            PrintLog("❌ Connect error: \(err.localizedDescription)")
-        })
-        
-        return connectObs
-    }
-    */
     
     func connect(to scannedPeripheral: ScannedPeripheral,
                  discover: Bool = true,
@@ -604,7 +490,7 @@ final class BluetoothDeviceCoordinator {
             .do(onNext: { p in PrintLog("✅ Connected: \(p)") },
                 onDispose: {
                 PrintLog("🔌 Disconnected")
-                self.resumeScanIfNeeded()   // 👈 resume scan ngay khi disconnect
+//                self.resumeScanIfNeeded()   // 👈 resume scan ngay khi disconnect
             })
             .flatMap { [weak self] connected -> Observable<BluetoothDataManager> in
                 guard let self = self else { return .error(NSError(domain: "BLE", code: -99)) }

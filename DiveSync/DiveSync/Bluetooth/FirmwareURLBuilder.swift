@@ -19,8 +19,10 @@ struct FirmwareURLBuilder {
             fileName = "XSCSKI"
         case C_SPI:
             fileName = "OCESPI"
-        default:
+        case C_DAV:
             fileName = "CREDAV"
+        default:
+            fileName = ""
         }
         
         return fileName

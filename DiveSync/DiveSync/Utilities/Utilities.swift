@@ -603,4 +603,63 @@ class Utilities {
         return firmware
     }
     
+    static func sendFirmwareStatus(device: ScannedPeripheral, _ status: String, serialNo:Int = 0) {
+        
+        var logPath: String? = nil
+        
+        if status == "ERROR" {
+            let logURL = FileManager.default
+                .urls(for: .documentDirectory, in: .userDomainMask)
+                .first?
+                .appendingPathComponent("divesync.log")
+            
+            if let path = logURL?.path, FileManager.default.fileExists(atPath: path) {
+                logPath = path
+            }
+        }
+        
+        Task {
+            do {
+                var deviceName = ""
+                var company = ""
+                var modelid: Int = 0
+                let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
+                let deviceAddress = device.peripheral.identifier
+                
+                if let (bleName, _) = device.splitDeviceName(),
+                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
+                    company = dcInfo[0]
+                    
+                    deviceName = dcInfo[1]
+                    
+                    modelid = dcInfo[2].toInt()
+                }
+                
+                let dcrid = FirmwareURLBuilder.getDcrid(modelId: modelid)
+                
+                let deviceInfo: [String: Any] = [
+                    "DcrID": dcrid,
+                    "Company": company.uppercased(),
+                    "AddressID": deviceAddress,
+                    "Firmware": frwVersion,
+                    "ModelName": deviceName,
+                    "ModelID": "\(modelid)",
+                    "SerialNo": "\(serialNo)",
+                    "DeviceName": deviceName,
+                    "Status": status
+                ]
+                
+                _ = try await APIManager.shared.updateFirmware(
+                    deviceInfo: deviceInfo,
+                    logFilePath: logPath, // Cho dù truyền logPath vào, nếu status != "ERROR" hàm vẫn bỏ qua không gửi file
+                    status: status
+                )
+                
+                PrintLog("✅ Post status [\(status)] thành công")
+            } catch {
+                PrintLog("❌ Lỗi post status [\(status)]:\(error.localizedDescription)")
+            }
+        }
+    }
+    
 }
