@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -1110,7 +1109,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="shg-eU-9Tv">
-                                <rect key="frame" x="20" y="350.66666666666669" width="353" height="150.66666666666669"/>
+                                <rect key="frame" x="20" y="315.66666666666669" width="353" height="221.00000000000006"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Update Firmware" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7AM-YB-U8m">
                                         <rect key="frame" x="16" y="15.999999999999998" width="321" height="20.333333333333329"/>
@@ -1124,21 +1123,27 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="6Ag-xJ-ru4">
-                                        <rect key="frame" x="16" y="80.666666666666629" width="321" height="24"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="6Ag-xJ-ru4">
+                                        <rect key="frame" x="16" y="80.666666666666629" width="321" height="94.333333333333314"/>
                                         <subviews>
                                             <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="K1c-9b-B0d">
                                                 <rect key="frame" x="0.0" y="0.0" width="321" height="4"/>
                                                 <color key="tintColor" name="B2"/>
                                             </progressView>
                                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="Gp6-3d-3rf">
-                                                <rect key="frame" x="0.0" y="4" width="321" height="20"/>
+                                                <rect key="frame" x="0.0" y="20" width="321" height="20"/>
                                                 <color key="color" name="B2"/>
                                             </activityIndicatorView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please keep your device near by during the firmware update" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yWg-9j-d8I">
+                                                <rect key="frame" x="0.0" y="56" width="321" height="38.333333333333343"/>
+                                                <fontDescription key="fontDescription" type="italicSystem" pointSize="16"/>
+                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="E4z-B4-pbn">
-                                        <rect key="frame" x="230" y="104.66666666666663" width="107" height="30"/>
+                                        <rect key="frame" x="230" y="175" width="107" height="30"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J9O-gv-p0G">
                                                 <rect key="frame" x="0.0" y="0.0" width="61" height="30"/>
@@ -1203,6 +1208,7 @@
                         <outlet property="cancelButton" destination="J9O-gv-p0G" id="XMY-mg-ukN"/>
                         <outlet property="containerView" destination="shg-eU-9Tv" id="dIO-ZT-T38"/>
                         <outlet property="messageLabel" destination="9Kl-nE-f32" id="GGt-fe-MwR"/>
+                        <outlet property="notesLabel" destination="yWg-9j-d8I" id="Unb-XB-xhY"/>
                         <outlet property="okButton" destination="0EB-Kn-wUM" id="u1U-Wd-Xfm"/>
                         <outlet property="progressView" destination="K1c-9b-B0d" id="4X5-t5-7u9"/>
                         <outlet property="titleLabel" destination="7AM-YB-U8m" id="nGT-dP-QuK"/>

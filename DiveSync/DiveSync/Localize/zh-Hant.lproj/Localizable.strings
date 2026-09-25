@@ -457,4 +457,4 @@ our products." = "允許DiveSync從您的潜水電腦收集數據，以幫助我
 "Retry"="重試";
 "Firmware update was previously failed. Do you want to recover it?"="韌體更新先前失敗。您要進行修復嗎？";
 "Do you want to retry?"="您想要重試嗎？";
-"FW Update Failed"="韌體更新失敗";
+"Firmware Update Failed"="韌體更新失敗";

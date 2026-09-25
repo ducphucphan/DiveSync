@@ -743,9 +743,11 @@ class BluetoothDataManager {
                 
                 let chunk = chunks[index]
                 
+                /*
                 PrintLog(
                     "Sending chunk \(index + 1)/\(totalChunks), size: \(chunk.count)"
                 )
+                */
                 
                 let chunkDisposable = writeWithTimeout(
                     chunk,
@@ -808,7 +810,24 @@ class BluetoothDataManager {
                                     )
                                 )
                                 
-                                Utilities.sendFirmwareStatus(device: self.scannedPeripheral, "ERROR", serialNo: self.SerialNo)
+                                let mac = Utilities.getNormalMacAddress(from: self.scannedPeripheral)
+
+                                // Xác định Serial Number cần lưu
+                                var finalSerialNo = "\(self.SerialNo)"
+
+                                // Kiểm tra nếu SerialNo hiện tại bằng 0 (hoặc "0")
+                                if self.SerialNo == 0 || finalSerialNo == "0" {
+                                    // Tìm trong Manager xem MAC này đã từng được lưu SerialNo nào chưa
+                                    if let savedDevice = DFUPersistenceManager.shared.getPendingDevice(forMAC: mac) {
+                                        finalSerialNo = savedDevice.serialNumber
+                                        print("🔄 SerialNo bằng 0, đã khôi phục lại SerialNo cũ từ Storage: \(finalSerialNo)")
+                                    } else {
+                                        print("⚠️ SerialNo bằng 0 và chưa có dữ liệu lưu trữ trước đó cho MAC: \(mac)")
+                                    }
+                                }
+                                
+                                
+                                Utilities.sendFirmwareStatus(device: self.scannedPeripheral, "ERROR", serialNo: Int(finalSerialNo) ?? 0)
                                 
                                 // 3. UI chạy độc lập
                                 Task { @MainActor in
@@ -816,7 +835,7 @@ class BluetoothDataManager {
                                     BluetoothDeviceCoordinator.shared.disconnect()
                                     
                                     DialogViewController.showRetryMessage(
-                                        title: "FW Update Failed".localized,
+                                        title: "Firmware Update Failed".localized,
                                         message: "Do you want to retry?".localized,
                                         cancelButtonTitle: "Close".localized.uppercased(),
                                         okButtonTitle: "Retry".localized.uppercased(),
@@ -921,6 +940,31 @@ class BluetoothDataManager {
     }
     
     func updateFirmware() -> Observable<Bool> {
+        
+        // 1. Lấy Normal MAC Address của thiết bị (Đã chuẩn hóa dù là Normal hay OTA Mode)
+        let mac = Utilities.getNormalMacAddress(from: self.scannedPeripheral)
+
+        // 2. Xác định Serial Number cần lưu
+        var finalSerialNo = "\(self.SerialNo)"
+
+        // Kiểm tra nếu SerialNo hiện tại bằng 0 (hoặc "0")
+        if self.SerialNo == 0 || finalSerialNo == "0" {
+            // Tìm trong Manager xem MAC này đã từng được lưu SerialNo nào chưa
+            if let savedDevice = DFUPersistenceManager.shared.getPendingDevice(forMAC: mac) {
+                finalSerialNo = savedDevice.serialNumber
+                print("🔄 SerialNo bằng 0, đã khôi phục lại SerialNo cũ từ Storage: \(finalSerialNo)")
+            } else {
+                print("⚠️ SerialNo bằng 0 và chưa có dữ liệu lưu trữ trước đó cho MAC: \(mac)")
+            }
+        }
+
+        // 3. Tiến hành lưu lại thông tin pending DFU
+        DFUPersistenceManager.shared.savePendingUpdate(
+            mac: mac,
+            serialNo: finalSerialNo,
+            targetVersion: ""
+        )
+        
         let dcrid = Utilities.getConnectedDeviceDCRID(scannedPeripheral: self.scannedPeripheral)
         
         guard let fwrUrl = Utilities.firstBinFile(dcrid: dcrid) else {
@@ -930,7 +974,7 @@ class BluetoothDataManager {
         let subject = PublishSubject<Bool>()
         
         if self.scannedPeripheral.peripheral.isOta {
-            DialogViewController.showProcess(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task: {_ in
+            DialogViewController.showProcess(title: "Firmware Update".localized, message: "Uploading firmware".localized, notes: "Please keep your device near by during the firmware update".localized, hideCancel: true, task: {_ in
                 self.sendFirmware(fileURL: fwrUrl) { progress in
                     DialogViewController.updateProgress(Float(progress))
                 }
@@ -947,7 +991,7 @@ class BluetoothDataManager {
             }
             );
         } else {
-            DialogViewController.showLoading(title: "Firmware Update".localized, message: "Uploading firmware".localized, hideCancel: true, task:  {_ in
+            DialogViewController.showLoading(title: "Firmware Update".localized, message: "Uploading firmware".localized, notes: "Please keep your device near by during the firmware update".localized, hideCancel: true, task:  {_ in
                 self.sendRebootOta(fileURL: fwrUrl)
                     .subscribe(onNext: { success in
                         subject.onNext(success)
@@ -964,64 +1008,6 @@ class BluetoothDataManager {
         
         return subject.asObservable()
     }
-    
-//    func sendFirmwareStatus(_ status: String) {
-//        
-//        var logPath: String? = nil
-//        
-//        if status == "ERROR" {
-//            let logURL = FileManager.default
-//                .urls(for: .documentDirectory, in: .userDomainMask)
-//                .first?
-//                .appendingPathComponent("divesync.log")
-//            
-//            if let path = logURL?.path, FileManager.default.fileExists(atPath: path) {
-//                logPath = path
-//            }
-//        }
-//        
-//        Task {
-//            do {
-//                var deviceName = ""
-//                var company = ""
-//                let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
-//                let deviceAddress = self.scannedPeripheral.peripheral.identifier
-//                
-//                if let (bleName, _) = scannedPeripheral.splitDeviceName(),
-//                   let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
-//                    company = dcInfo[0]
-//                    
-//                    deviceName = dcInfo[1]
-//                    
-//                    self.ModelID = dcInfo[2].toInt()
-//                }
-//                
-//                let dcrid = FirmwareURLBuilder.getDcrid(modelId: self.ModelID)
-//                
-//                let deviceInfo: [String: Any] = [
-//                    "DcrID": dcrid,
-//                    "Company": company.uppercased(),
-//                    "AddressID": deviceAddress,
-//                    "Firmware": frwVersion,
-//                    "ModelName": deviceName,
-//                    "ModelID": "\(self.ModelID)",
-//                    "SerialNo": "\(self.SerialNo)",
-//                    "DeviceName": deviceName,
-//                    "Status": status
-//                ]
-//                
-//                _ = try await APIManager.shared.updateFirmware(
-//                    deviceInfo: deviceInfo,
-//                    logFilePath: logPath, // Cho dù truyền logPath vào, nếu status != "ERROR" hàm vẫn bỏ qua không gửi file
-//                    status: status
-//                )
-//                
-//                PrintLog("✅ Post status [\(status)] thành công")
-//            } catch {
-//                PrintLog("❌ Lỗi post status [\(status)]:\(error.localizedDescription)")
-//            }
-//        }
-//    }
     
     // MARK: - GET COMMANDS
     
@@ -1242,6 +1228,7 @@ class BluetoothDataManager {
                 props["Identity"]  = m.scannedPeripheral.advertisementData.localName ?? ""
                 props["LastSync"]  = Utilities.getLastSyncText(date: Date())
                 props["Firmware"]  = m.firmwareRev
+                props["AddressID"] = m.scannedPeripheral.macAddress()
                 
                 if let lcdFirmwareRev = settingsResult.firmwareRevLCD {
                     props["LCDFirmware"]  = lcdFirmwareRev
@@ -1303,6 +1290,9 @@ class BluetoothDataManager {
                         
                         // CAP NHAT TRANG THAI LEN SERVER
                         Utilities.sendFirmwareStatus(device: self.scannedPeripheral, "COMPLETED", serialNo: self.SerialNo)
+                        
+                        // Clear thiết bị đã lưu trong DFUPersistenceManager
+                        DFUPersistenceManager.shared.clearPendingUpdate(forMAC: Utilities.getNormalMacAddress(from: self.scannedPeripheral))
                     } else if syncType == .kUploadOwnerInfo {
                         msg = "Your device's owner info are uploaded"
                     }
@@ -1968,6 +1958,7 @@ class BluetoothDataManager {
             systemSettings.backlightDimLevel = row.uint8Value(key: "BacklightDimLevel")
             systemSettings.buzzerMode = row.uint8Value(key: "BuzzerMode")
             systemSettings.diveLogSamplingTime_s = row.uint8Value(key: "DiveLogSamplingTime")
+            systemSettings.language = row.uint8Value(key: "Language")
             
             // Scuba Settings
             scubaSettings.deepStopOn = row.uint8Value(key: "DeepStopOn")

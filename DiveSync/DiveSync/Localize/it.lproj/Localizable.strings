@@ -457,4 +457,4 @@ our products." = "Consenti a DiveSync di raccogliere dati dal tuo computer subac
 "Retry"="Riprova";
 "Firmware update was previously failed. Do you want to recover it?"="L'aggiornamento del firmware non è riuscito in precedenza. Vuoi ripristinarlo?";
 "Do you want to retry?"="Vuoi riprovare?";
-"FW Update Failed"="Aggiornamento FW non riuscito";
+"Firmware Update Failed"="Aggiornamento FW non riuscito";

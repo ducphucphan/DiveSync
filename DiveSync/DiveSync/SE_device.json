@@ -82,6 +82,14 @@
         "options": ["OFF", "ON"]
       },
       {
+          "id": "set_lang",
+          "type": "modeSelector",
+          "title": "Set Language",
+          "icon": "lang",
+          "value": "English",
+          "options": ["ENGLISH", "DEUTSCH", "ESPAÑOL", "FRANÇAIS", "PORTUGUÊS", "ITALIANO", "简体中文"],
+      },
+      {
         "type": "subSection",
         "title": "Set Alarms",
         "icon": "set_alarms",

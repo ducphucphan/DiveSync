@@ -457,4 +457,4 @@ our products." = "Permitir que DiveSync recopile datos de su ordenador de buceo 
 "Retry"="Reintentar";
 "Firmware update was previously failed. Do you want to recover it?"="La actualización del firmware falló anteriormente. ¿Desea recuperarla?";
 "Do you want to retry?"="¿Desea reintentar?";
-"FW Update Failed"="Error en la actualización de FW";
+"Firmware Update Failed"="Error en la actualización de FW";

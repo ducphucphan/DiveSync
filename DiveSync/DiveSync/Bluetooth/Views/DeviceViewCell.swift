@@ -31,7 +31,7 @@ class DeviceViewCell: UITableViewCell {
         let serialNumber = serialNo.toInt()
         if serialNumber == 0 {
             modelSerialLb.isHidden = true
-            uuidLb.text = String(format: "UUID".localized + ": %@", mDevice.peripheral.identifier.uuidString)
+            uuidLb.text = String(format: "UUID".localized + ": %@", mDevice.macAddress())
         } else {
             uuidLb.isHidden = true
             modelSerialLb.text = String(format: "Serial Number".localized + ": %05d", serialNumber)

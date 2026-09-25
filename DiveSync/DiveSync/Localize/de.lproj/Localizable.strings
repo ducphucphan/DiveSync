@@ -457,4 +457,4 @@ our products." = "Erlauben Sie DiveSync, Daten von Ihrem Tauchcomputer zu sammel
 "Retry"="Wiederholen";
 "Firmware update was previously failed. Do you want to recover it?"="Firmware-Update ist zuvor fehlgeschlagen. Möchten Sie es wiederherstellen?";
 "Do you want to retry?"="Möchten Sie es erneut versuchen?";
-"FW Update Failed"="FW-Update fehlgeschlagen";
+"Firmware Update Failed"="Firmware-Update fehlgeschlagen";

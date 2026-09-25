@@ -34,55 +34,100 @@ final class FirmwareRecoveryManager {
         
         hasCheckedRecovery = true
         
+        // 1. Kiểm tra nếu có bất kỳ thiết bị nào đang pending trong DFUPersistenceManager
+        let pendingDevices = DFUPersistenceManager.shared.getAllPendingUpdates()
+        if !pendingDevices.isEmpty {
+            PrintLog("🚨 Found pending DFU devices in local storage. Showing recovery dialog.")
+            showRecoveryDialog()
+            return
+        }
+        
+        // 2. Nếu pending trống, tiếp tục kiểm tra xem có thiết bị nào thuộc type .wbOtaBoard xung quanh không
         BluetoothDeviceCoordinator.shared.scannedDevices
             .map { scannedList in
-                scannedList.filter {
-                    $0.advertisementData.deviceType == .wbOtaBoard
-                }
+                scannedList.contains { $0.advertisementData.deviceType == .wbOtaBoard }
             }
-            .filter { !$0.isEmpty }
+            .filter { $0 == true }
             .take(1)
             .timeout(.seconds(3), scheduler: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .subscribe(
-                onNext: { [weak self] otaDevices in
-                    
-                    guard let self = self,
-                          let otaDevice = otaDevices.first
-                    else {
-                        return
-                    }
-                    
-                    self.handleFirmwareRecovery(
-                        otaDevice: otaDevice
-                    )
+                onNext: { [weak self] _ in
+                    PrintLog("🚨 Found .wbOtaBoard device nearby. Showing recovery dialog.")
+                    self?.showRecoveryDialog()
+                },
+                onError: { _ in
+                    PrintLog("ℹ️ Recovery check completed: No pending devices and no .wbOtaBoard found.")
                 }
             )
             .disposed(by: disposeBag)
     }
     
+    // MARK: - Dialog UI
+    
+    private func showRecoveryDialog() {
+        DispatchQueue.main.async {
+            DialogViewController.showRetryMessage(
+                title: "Firmware Update".localized,
+                message: "Firmware update was previously failed. Do you want to recover it?".localized,
+                cancelButtonTitle: "NO".localized,
+                okButtonTitle: "YES".localized,
+                onCancel: {
+                    PrintLog("User selected NO for recovery.")
+                },
+                onOK: { [weak self] in
+                    self?.scanAndRecoverOtaDevice()
+                }
+            )
+        }
+    }
+    
     // MARK: - Recovery
     
-    private func handleFirmwareRecovery(
-        otaDevice: ScannedPeripheral
-    ) {
-        
-        DialogViewController.showRetryMessage(
-            title: firmwareUpdateManager.getDeviceName(from: otaDevice) ?? "",
-            message: "Firmware update was previously failed. Do you want to recover it?".localized,
-            cancelButtonTitle: "NO".localized,
-            okButtonTitle: "YES".localized,
-            onCancel: {
-                // User chọn No
-            },
-            onOK: { [weak self] in
-                
-                self?.startFirmwareRecovery(
-                    device: otaDevice
-                )
+    // MARK: - Scan & Recover
+    
+    private func scanAndRecoverOtaDevice() {
+        BluetoothDeviceCoordinator.shared.scannedDevices
+            .map { scannedList in
+                scannedList.filter { $0.advertisementData.deviceType == .wbOtaBoard }
             }
-        )
+            .filter { !$0.isEmpty }
+            .take(1)
+            .timeout(.seconds(5), scheduler: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .subscribe(
+                onNext: { [weak self] otaDevices in
+                    guard let self = self, let otaDevice = otaDevices.first else { return }
+                    PrintLog("✅ Found target OTA device: \(otaDevice.macAddress())")
+                    self.startFirmwareRecovery(device: otaDevice)
+                },
+                onError: { _ in
+                    PrintLog("❌ Timeout searching for OTA device.")
+                }
+            )
+            .disposed(by: disposeBag)
     }
+    
+//    private func handleFirmwareRecovery(
+//        otaDevice: ScannedPeripheral
+//    ) {
+//        
+//        DialogViewController.showRetryMessage(
+//            title: firmwareUpdateManager.getDeviceName(from: otaDevice) ?? "",
+//            message: "Firmware update was previously failed. Do you want to recover it?".localized,
+//            cancelButtonTitle: "NO".localized,
+//            okButtonTitle: "YES".localized,
+//            onCancel: {
+//                // User chọn No
+//            },
+//            onOK: { [weak self] in
+//                
+//                self?.startFirmwareRecovery(
+//                    device: otaDevice
+//                )
+//            }
+//        )
+//    }
     
     // MARK: - Start Recovery
     
@@ -96,8 +141,20 @@ final class FirmwareRecoveryManager {
         
         device.peripheral.isOta = true
         
+        let mac = Utilities.getNormalMacAddress(from: device)
+
+        // 2. Xác định Serial Number cần lưu
+        var finalSerialNo = "0"
+
+        if let savedDevice = DFUPersistenceManager.shared.getPendingDevice(forMAC: mac) {
+            finalSerialNo = savedDevice.serialNumber
+            print("🔄 SerialNo bằng 0, đã khôi phục lại SerialNo cũ từ Storage: \(finalSerialNo)")
+        } else {
+            print("⚠️ SerialNo bằng 0 và chưa có dữ liệu lưu trữ trước đó cho MAC: \(mac)")
+        }
+        
         // Không thể xác định được device có serial number nào đang TRY_AGAIN ở OTA mode.
-        Utilities.sendFirmwareStatus(device: device, "TRY_AGAIN", serialNo: 0)
+        Utilities.sendFirmwareStatus(device: device, "TRY_AGAIN", serialNo: Int(finalSerialNo) ?? 0)
         
         if let _ = Utilities.firstBinFile(dcrid: dcrid) {
             
@@ -108,7 +165,6 @@ final class FirmwareRecoveryManager {
             
             return
         }
-        
         
         PrintLog(
             "⚠️ No local firmware. Download firmware from server."

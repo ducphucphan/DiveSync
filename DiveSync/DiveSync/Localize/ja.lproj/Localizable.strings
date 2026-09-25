@@ -457,4 +457,4 @@ our products." = "「DiveSyncがダイブコンピュータからデータを収
 "Retry"="再試行";
 "Firmware update was previously failed. Do you want to recover it?"="ファームウェアの更新に失敗しました。復元しますか？";
 "Do you want to retry?"="再試行しますか？";
-"FW Update Failed"="ファームウェア更新失敗";
+"Firmware Update Failed"="ファームウェア更新失敗";

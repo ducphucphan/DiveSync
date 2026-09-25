@@ -116,7 +116,17 @@ class DeviceSettingViewController: BaseViewController {
             case C_SKI, C_SPI:
                 excludedIDsForModel = ["set_brightness", "set_autoDim"]
             default: // DAV
+                // Set Language to Device settings and only make it visible for Davinci FW version > 1.2.2
+                
+                let currentVersion = device?.Firmware ?? ""
+                let targetVersion = "1.2.2"
+                let isVisible = currentVersion.compare(targetVersion, options: .numeric) == .orderedDescending
+
                 excludedIDsForModel = ["set_backlight_duration"]
+                if !isVisible {
+                    excludedIDsForModel.append("set_lang")
+                }
+                
                 break
             }
             
@@ -386,6 +396,10 @@ class DeviceSettingViewController: BaseViewController {
                     case "sound":
                         if let sound = dbSettings["BuzzerMode"]?.toInt() {
                             row.value = options?[sound]
+                        }
+                    case "set_lang":
+                        if let langIdx = dbSettings["Language"]?.toInt() {
+                            row.value = options?[langIdx]
                         }
                     default:
                         break
@@ -1524,6 +1538,8 @@ class DeviceSettingViewController: BaseViewController {
                     dcSettings["BacklightDimTime"] = value.toInt()
                 case "sound":
                     dcSettings["BuzzerMode"] = index
+                case "set_lang":
+                    dcSettings["Language"] = index
                 default:
                     break
                 }

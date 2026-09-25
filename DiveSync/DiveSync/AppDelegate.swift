@@ -9,12 +9,35 @@ import UIKit
 import RxSwift
 import RxBluetoothKit
 import ProgressHUD
+import Siren
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
         
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let siren = Siren.shared
+        
+        // Cấu hình loại thông báo (Bắt buộc cập nhật hoặc Cho phép bỏ qua)
+        siren.rulesManager = RulesManager(
+            globalRules: .annoying, // Hiển thị alert mỗi khi mở app nếu chưa update
+            showAlertAfterCurrentVersionHasBeenReleasedForDays: 0
+        )
+        
+        // 2. Tùy chỉnh Nội dung Alert (Title, Message, Buttons) theo đúng yêu cầu khách hàng
+        let alertTitle = "New version available".localized
+        let alertMessage = "A newer version of the app is available. Update now to get the latest features and improvements.".localized
+        let updateButtonTitle = "Update now".localized
+        let nextTimeButtonTitle = "Later".localized
+        
+        siren.presentationManager = PresentationManager(
+            alertTitle: alertTitle,
+            alertMessage: alertMessage,
+            updateButtonTitle: updateButtonTitle,
+            nextTimeButtonTitle: nextTimeButtonTitle
+        )
+        
         
         // Initial theme update
         ThemeManager.shared.updateCurrentTheme()
@@ -28,12 +51,58 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         setupProgressHUDAppearance()
         
+        siren.wail { [weak self] results in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                switch results {
+                case .success(let updateResults):
+                    print("Siren update result: \(updateResults)")
+                    
+                    switch updateResults.updateType {
+                    case .major, .minor, .patch, .revision:
+                        // CÓ PHIÊN BẢN MỚI
+                        // Kiểm tra xem người dùng đã tương tác với Alert thế nào:
+                        switch updateResults.alertAction {
+                        case .nextTime, .skip:
+                            // NGƯỜI DÙNG BẤM [Later]
+                            print("Người dùng chọn Later -> Tiến hành khởi tạo dịch vụ.")
+                            self.initializeCoreServices()
+                            
+                        case .appStore:
+                            // NGƯỜI DÙNG BẤM [Update now]
+                            // App sẽ tự động mở App Store. KHÔNG gọi initializeCoreServices()
+                            print("Người dùng chọn Update now -> Đã chuyển sang App Store.")
+                            return
+                            
+                        case .unknown:
+                            // Alert vừa hiển thị, chờ người dùng bấm nút
+                            print("Alert đang hiển thị, chờ người dùng chọn...")
+                            return
+                        }
+                        
+                    case .unknown:
+                        // KHÔNG CÓ BẢN MỚI (Đã ở bản mới nhất)
+                        print("Ứng dụng đang ở phiên bản mới nhất.")
+                        self.initializeCoreServices()
+                    }
+                    
+                case .failure(let error):
+                    print("Siren error: \(error.localizedDescription)")
+                    // Khi lỗi mạng hoặc lỗi API -> Cho phép khởi chạy dịch vụ
+                    self.initializeCoreServices()
+                }
+            }
+        }
+        
+        return true
+    }
+    
+    private func initializeCoreServices() {
         _ = DatabaseManager.shared
         
         // Khởi tạo coordinator → scan tự chạy
         _ = BluetoothDeviceCoordinator.shared
-        
-        return true
     }
     
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {

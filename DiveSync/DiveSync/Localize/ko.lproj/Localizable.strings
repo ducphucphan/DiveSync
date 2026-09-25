@@ -457,4 +457,4 @@ our products." = "DiveSync가 제품 개선을 위해 다이브 컴퓨터에서�
 "Retry"="다시 시도";
 "Firmware update was previously failed. Do you want to recover it?"="이전에 펌웨어 업데이트에 실패했습니다. 복구하시겠습니까?";
 "Do you want to retry?"="다시 시도하시겠습니까?";
-"FW Update Failed"="펌웨어 업데이트 실패";
+"Firmware Update Failed"="펌웨어 업데이트 실패";

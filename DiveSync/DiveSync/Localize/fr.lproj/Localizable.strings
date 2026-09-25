@@ -459,4 +459,4 @@ our products.";
 "Retry" = "Réessayer";
 "Firmware update was previously failed. Do you want to recover it?"="La mise à jour du firmware a échoué précédemment. Voulez-vous la restaurer ?";
 "Do you want to retry?"="Voulez-vous réessayer ?";
-"FW Update Failed"="Échec de la mise à jour du FW";
+"Firmware Update Failed"="Échec de la mise à jour du FW";

@@ -460,4 +460,4 @@ our products.";
 "Retry"="Retry";
 "Firmware update was previously failed. Do you want to recover it?"="Firmware update was previously failed. Do you want to recover it?";
 "Do you want to retry?"="Do you want to retry?";
-"FW Update Failed"="FW Update Failed";
+"Firmware Update Failed"="Firmware Update Failed";

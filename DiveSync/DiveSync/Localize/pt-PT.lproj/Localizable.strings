@@ -455,4 +455,4 @@
 "Retry"="Tentar novamente";
 "Firmware update was previously failed. Do you want to recover it?"="A atualização do firmware falhou anteriormente. Deseja recuperá-la?";
 "Do you want to retry?"="Deseja tentar novamente?";
-"FW Update Failed"="Falha na atualização do FW";
+"Firmware Update Failed"="Falha na atualização do FW";

@@ -457,4 +457,4 @@ our products." = "DiveSync'in ürünlerimizi iyileştirmemize yardımcı olması
 "Retry"="Yeniden Dene";
 "Firmware update was previously failed. Do you want to recover it?"="Yazılım güncellemesi daha önce başarısız oldu. Kurtarmak istiyor musunuz?";
 "Do you want to retry?"="Yeniden denemek istiyor musunuz?";
-"FW Update Failed"="Yazılım Güncellemesi Başarısız";
+"Firmware Update Failed"="Yazılım Güncellemesi Başarısız";

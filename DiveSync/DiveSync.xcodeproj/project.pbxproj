@@ -44,6 +44,7 @@
 		482CB9922D1020D400CA78F4 /* CustomCalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482CB9912D1020D400CA78F4 /* CustomCalloutView.swift */; };
 		482DE4F32DC60F0700F9FE54 /* DiveSpotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482DE4F22DC60F0700F9FE54 /* DiveSpotViewController.swift */; };
 		482F666C2E729020002E72EA /* DialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482F666B2E729020002E72EA /* DialogViewController.swift */; };
+		48340AD53064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin in Resources */ = {isa = PBXBuildFile; fileRef = 48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */; };
 		4835FFF22D707A0000DEB4C3 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = 4835FFF12D707A0000DEB4C3 /* ProgressHUD */; };
 		4835FFF52D707CA100DEB4C3 /* BluetoothDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */; };
 		483CCA772DBE4E7200E8138A /* TermsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CCA762DBE4E7200E8138A /* TermsViewController.swift */; };
@@ -54,6 +55,7 @@
 		483CE0232FA9C71D00D9F38E /* GasDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CE0222FA9C71D00D9F38E /* GasDetailsViewController.swift */; };
 		483D80F32D191ABB009041E2 /* CustomHighLightRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483D80F22D191ABB009041E2 /* CustomHighLightRenderer.swift */; };
 		483F0C052F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */; };
+		484634D63057EECD0025E195 /* DFUPersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484634D53057EECB0025E195 /* DFUPersistenceManager.swift */; };
 		484C24632E1B78D0002258CB /* UInt8+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C24622E1B78D0002258CB /* UInt8+Extension.swift */; };
 		484C44D62CE1B2EF0082039E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D52CE1B2EF0082039E /* AppDelegate.swift */; };
 		484C44D82CE1B2EF0082039E /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484C44D72CE1B2EF0082039E /* SceneDelegate.swift */; };
@@ -77,6 +79,7 @@
 		486427662DC905770001892E /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486427652DC905770001892E /* LogViewController.swift */; };
 		4865C872301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin in Resources */ = {isa = PBXBuildFile; fileRef = 4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */; };
 		486653712EB4AF2E00E25906 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 484C44DE2CE1B2F00082039E /* Assets.xcassets */; };
+		48668B7E3060EE06002F30FC /* Siren in Frameworks */ = {isa = PBXBuildFile; productRef = 48668B7D3060EE06002F30FC /* Siren */; };
 		486882232E3098BA00C98C8E /* SortOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882222E3098BA00C98C8E /* SortOptions.swift */; };
 		486882252E3098DB00C98C8E /* SortPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486882242E3098DB00C98C8E /* SortPreferences.swift */; };
 		486BC7B52F0BAD1000406BC3 /* RecycleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486BC7B42F0BAD1000406BC3 /* RecycleViewController.swift */; };
@@ -321,6 +324,7 @@
 		482CB9912D1020D400CA78F4 /* CustomCalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCalloutView.swift; sourceTree = "<group>"; };
 		482DE4F22DC60F0700F9FE54 /* DiveSpotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiveSpotViewController.swift; sourceTree = "<group>"; };
 		482F666B2E729020002E72EA /* DialogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogViewController.swift; sourceTree = "<group>"; };
+		48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = DaVinci_MultiL_1.3.6.bin; sourceTree = "<group>"; };
 		4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDataManager.swift; sourceTree = "<group>"; };
 		483CCA762DBE4E7200E8138A /* TermsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsViewController.swift; sourceTree = "<group>"; };
 		483CCA782DBE523A00E8138A /* StatisticsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsViewController.swift; sourceTree = "<group>"; };
@@ -330,6 +334,7 @@
 		483CE0222FA9C71D00D9F38E /* GasDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GasDetailsViewController.swift; sourceTree = "<group>"; };
 		483D80F22D191ABB009041E2 /* CustomHighLightRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHighLightRenderer.swift; sourceTree = "<group>"; };
 		483F0C042F62A45700EE9764 /* BluetoothDeviceCR5Manager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothDeviceCR5Manager.swift; sourceTree = "<group>"; };
+		484634D53057EECB0025E195 /* DFUPersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DFUPersistenceManager.swift; sourceTree = "<group>"; };
 		484C24622E1B78D0002258CB /* UInt8+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UInt8+Extension.swift"; sourceTree = "<group>"; };
 		484C44D22CE1B2EF0082039E /* DiveSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiveSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		484C44D52CE1B2EF0082039E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -573,6 +578,7 @@
 				4835FFF22D707A0000DEB4C3 /* ProgressHUD in Frameworks */,
 				48EE981A2DA5236300B3CFFB /* PagingKit in Frameworks */,
 				48D1955C2D64465300B21E25 /* RxCocoa in Frameworks */,
+				48668B7E3060EE06002F30FC /* Siren in Frameworks */,
 				20FAEC502CEF1E9E009B577F /* Cosmos in Frameworks */,
 				48D1955A2D64463A00B21E25 /* RxBluetoothKit2 in Frameworks */,
 				4874FD202CE1B4780027C5F3 /* DGCharts in Frameworks */,
@@ -738,6 +744,7 @@
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
 				4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */,
 				4898682E3035BC5B00A488E0 /* CREDAV.1_2_2.bin */,
+				48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */,
 				48CDF7B12FCD785B00ABDE9E /* 1.txt */,
 				48CDF7B22FCD785B00ABDE9E /* 2.txt */,
 				48CDF7B32FCD785B00ABDE9E /* 3.txt */,
@@ -1058,6 +1065,7 @@
 				48DD82332E618C5A00557367 /* BluetoothDeviceCoordinator.swift */,
 				48BF1CFF3049218100DF7014 /* FirmwareUpdateManager.swift */,
 				48BF1D013049782E00DF7014 /* FirmwareRecoveryManager.swift */,
+				484634D53057EECB0025E195 /* DFUPersistenceManager.swift */,
 				48DAC06E2D6C825200308F39 /* dc_info.plist */,
 				48DAC0702D6C836900308F39 /* DcInfo.swift */,
 				48D2D54D2E0C021300A43E30 /* RomData.swift */,
@@ -1224,6 +1232,7 @@
 				48F4D2742E829A240003073D /* Lightbox */,
 				48CA33552FDFEBF8007C3985 /* CoreXLSX */,
 				48EC661B2FE009F600345005 /* libxlsxwriter */,
+				48668B7D3060EE06002F30FC /* Siren */,
 			);
 			productName = Aqualung;
 			productReference = 484C44D22CE1B2EF0082039E /* DiveSync.app */;
@@ -1280,6 +1289,7 @@
 				48AD0F902E828E580046EDF9 /* XCRemoteSwiftPackageReference "Lightbox" */,
 				48F110542FDBC288000802EC /* XCRemoteSwiftPackageReference "CoreXLSX" */,
 				485D40A92FDFF6F200D0E914 /* XCRemoteSwiftPackageReference "libxlsxwriter" */,
+				4803ACDE3060E30A0036851F /* XCRemoteSwiftPackageReference "siren" */,
 			);
 			productRefGroup = 484C44D32CE1B2EF0082039E /* Products */;
 			projectDirPath = "";
@@ -1301,6 +1311,7 @@
 				487599E02F6C17AB00BE0F47 /* CR5_device.json in Resources */,
 				4879A4592CF42D71007EBE64 /* Device.storyboard in Resources */,
 				48AD3A4B2EF92FF0005BDB6A /* Localizable.strings in Resources */,
+				48340AD53064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin in Resources */,
 				48AAC52A2F874E8900100535 /* wisdom5_device.json in Resources */,
 				48D21E132D0D3EBC004E8018 /* HelveticaNeueLTProUltLtCnO.otf in Resources */,
 				48CDF7B62FCD785B00ABDE9E /* 2.txt in Resources */,
@@ -1401,6 +1412,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				48DD82342E618C5A00557367 /* BluetoothDeviceCoordinator.swift in Sources */,
+				484634D63057EECD0025E195 /* DFUPersistenceManager.swift in Sources */,
 				4874FD422CE1B8C60027C5F3 /* UIView+Extend.swift in Sources */,
 				48DAA6D92CFD952000FADC10 /* Custom3DMarkerView.swift in Sources */,
 				48ACD0BC2E72C73600752535 /* FirmwareAPI.swift in Sources */,
@@ -1735,11 +1747,11 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location will help you to find nearby dive spots faster";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = FirmwareRecovery.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1779,11 +1791,11 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location will help you to find nearby dive spots faster";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to your photo gallery so you can import photos to your dive log.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = FirmwareRecovery.storyboard;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen.storyboard;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1831,6 +1843,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 25.0.1;
+			};
+		};
+		4803ACDE3060E30A0036851F /* XCRemoteSwiftPackageReference "siren" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/artsabintsev/siren";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.3;
 			};
 		};
 		4827B2D72CE39F2300ACF363 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
@@ -1970,6 +1990,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 485A45D12D7058020010E2F9 /* XCRemoteSwiftPackageReference "ProgressHUD" */;
 			productName = ProgressHUD;
+		};
+		48668B7D3060EE06002F30FC /* Siren */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4803ACDE3060E30A0036851F /* XCRemoteSwiftPackageReference "siren" */;
+			productName = Siren;
 		};
 		4874FD1F2CE1B4780027C5F3 /* DGCharts */ = {
 			isa = XCSwiftPackageProductDependency;

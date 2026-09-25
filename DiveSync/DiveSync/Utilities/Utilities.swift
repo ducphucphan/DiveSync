@@ -405,7 +405,7 @@ class Utilities {
     static func firstBinFile(dcrid: String? = nil) -> URL? {
         let isDebug = false
         if isDebug {
-            return Bundle.main.url(forResource: "CREDAV.1_2_2", withExtension: "bin")
+            return Bundle.main.url(forResource: "DaVinci_MultiL_1.3.6", withExtension: "bin")
         } else {
             let fileManager = FileManager.default
             guard let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -624,7 +624,17 @@ class Utilities {
                 var company = ""
                 var modelid: Int = 0
                 let frwVersion = AppSettings.shared.get(forKey: AppSettings.Keys.currentFrwUpdateVersion) ?? ""
-                let deviceAddress = device.peripheral.identifier
+                let deviceAddress = device.macAddress()
+                
+                // 🔹 XỬ LÝ SERIAL NUMBER:
+                // Nếu serialNo truyền vào là 0, thử lấy lại từ DFUPersistenceManager theo MAC Address
+                var finalSerialNo = "\(serialNo)"
+                if serialNo == 0 {
+                    if let pendingDevice = DFUPersistenceManager.shared.getPendingDevice(forMAC: deviceAddress) {
+                        finalSerialNo = pendingDevice.serialNumber
+                        PrintLog("🔄 SerialNo bằng 0, khôi phục từ DFUPersistenceManager: \(finalSerialNo)")
+                    }
+                }
                 
                 if let (bleName, _) = device.splitDeviceName(),
                    let dcInfo = DcInfo.shared.getValues(forKey: bleName) {
@@ -644,7 +654,7 @@ class Utilities {
                     "Firmware": frwVersion,
                     "ModelName": deviceName,
                     "ModelID": "\(modelid)",
-                    "SerialNo": "\(serialNo)",
+                    "SerialNo": finalSerialNo,
                     "DeviceName": deviceName,
                     "Status": status
                 ]
@@ -662,4 +672,25 @@ class Utilities {
         }
     }
     
+    /// Chuyển đổi MAC Address (nếu là OTA MAC) về Normal MAC chuẩn
+    static func getNormalMacAddress(from peripheral: ScannedPeripheral) -> String {
+        let rawMac = peripheral.macAddress()
+        
+        // Nếu không phải là wbOtaBoard, đây đã là Normal MAC
+        guard peripheral.advertisementData.deviceType == .wbOtaBoard else {
+            return rawMac
+        }
+        
+        // Nếu là wbOtaBoard, thực hiện trừ 1 ở byte cuối để đưa về Normal MAC
+        var parts = rawMac.split(separator: ":").map { String($0) }
+        guard parts.count == 6, let lastByte = UInt8(parts[5], radix: 16) else {
+            return rawMac
+        }
+        
+        // Trừ 1 byte cuối (xử lý tràn số nếu là 0x00 -> 0xFF)
+        let normalLastByte = lastByte &- 1
+        parts[5] = String(format: "%02X", normalLastByte)
+        
+        return parts.joined(separator: ":")
+    }
 }

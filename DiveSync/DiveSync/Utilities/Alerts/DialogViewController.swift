@@ -26,6 +26,8 @@ class DialogViewController: UIViewController {
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var okButton: UIButton!
     
+    @IBOutlet weak var notesLabel: UILabel!
+    
     // MARK: - Callbacks
     private var onCompleted: ((Bool) -> Void)?
     private var onCancel: (() -> Void)?
@@ -40,6 +42,7 @@ class DialogViewController: UIViewController {
     
     var cancelButtonTitle: String?
     var okButtonTitle: String?
+    var notes: String?
     
     // MARK: - Static Instance
     private static var currentAlert: DialogViewController?
@@ -61,6 +64,11 @@ class DialogViewController: UIViewController {
     private func configureUI() {
         cancelButton.isHidden = hideCancelButton
         okButton.isHidden = okButtonTitle == nil
+        notesLabel.isHidden = notes == nil
+        
+        if let notes = notes {
+            notesLabel.text = notes
+        }
         
         if let title = okButtonTitle {
             okButton.setTitle(title, for: .normal)
@@ -99,6 +107,7 @@ class DialogViewController: UIViewController {
     /// Hiển thị alert dạng loading
     static func showLoading(title: String,
                             message: String,
+                            notes: String? = nil,
                             hideCancel: Bool? = false,   // 👉 thêm
                             task: ((DialogViewController) -> Void)? = nil,
                             onCancel: (() -> Void)? = nil,
@@ -107,6 +116,7 @@ class DialogViewController: UIViewController {
         show(style: .loading,
              title: title,
              message: message,
+             notes: notes,
              hideCancel: hideCancel,
              task: task,
              onCancel: onCancel,
@@ -149,6 +159,7 @@ class DialogViewController: UIViewController {
     /// Hiển thị alert dạng process (progress bar)
     static func showProcess(title: String,
                             message: String,
+                            notes: String? = nil,
                             hideCancel: Bool? = false,   // 👉 thêm
                             task: ((DialogViewController) -> Void)? = nil,
                             onCancel: (() -> Void)? = nil,
@@ -157,6 +168,7 @@ class DialogViewController: UIViewController {
         show(style: .progress,
              title: title,
              message: message,
+             notes: notes,
              hideCancel: hideCancel,
              task: task,
              onCancel: onCancel,
@@ -167,6 +179,7 @@ class DialogViewController: UIViewController {
     private static func show(style: DialogAlertStyle,
                              title: String,
                              message: String,
+                             notes: String? = nil,
                              hideCancel: Bool? = false,
                              cancelButtonTitle: String? = nil,
                              okButtonTitle: String? = nil,
@@ -181,6 +194,7 @@ class DialogViewController: UIViewController {
                 self.show(style: style,
                           title: title,
                           message: message,
+                          notes: notes,
                           hideCancel: hideCancel,
                           cancelButtonTitle: cancelButtonTitle,
                           okButtonTitle: okButtonTitle,
@@ -205,6 +219,7 @@ class DialogViewController: UIViewController {
         
         alertVC.initialTitle = title
         alertVC.initialMessage = message
+        alertVC.notes = notes
         alertVC.style = style
         
         alertVC.hideCancelButton = hideCancel ?? false   // 👉 gán ở đây

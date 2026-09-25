@@ -1,5 +1,5 @@
 {
-  "originHash" : "1d892a566084949c0af7ecccb951b4c4cc6cebd402217f938dd1e00160d1b54e",
+  "originHash" : "b92e5abfdc8a8691f6017ac261da734b607e6123ba2dbd8e7f6aaf436ff59894",
   "pins" : [
     {
       "identity" : "charts",
@@ -107,6 +107,15 @@
       "state" : {
         "revision" : "5dd1907d64f0d36f158f61a466bab75067224893",
         "version" : "6.9.0"
+      }
+    },
+    {
+      "identity" : "siren",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/artsabintsev/siren",
+      "state" : {
+        "revision" : "d43c63eff4114f9de0bdaa1f4e786029b0513362",
+        "version" : "7.0.3"
       }
     },
     {

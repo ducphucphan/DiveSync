@@ -363,10 +363,26 @@ final class FirmwareUpdateManager {
 
             return
         }
+        
+        let mac = Utilities.getNormalMacAddress(from: device.scannedPeripheral)
 
+        // 2. Xác định Serial Number cần lưu
+        var finalSerialNo = "\(device.SerialNo)"
+
+        // Kiểm tra nếu SerialNo hiện tại bằng 0 (hoặc "0")
+        if device.SerialNo == 0 || finalSerialNo == "0" {
+            // Tìm trong Manager xem MAC này đã từng được lưu SerialNo nào chưa
+            if let savedDevice = DFUPersistenceManager.shared.getPendingDevice(forMAC: mac) {
+                finalSerialNo = savedDevice.serialNumber
+                print("🔄 SerialNo bằng 0, đã khôi phục lại SerialNo cũ từ Storage: \(finalSerialNo)")
+            } else {
+                print("⚠️ SerialNo bằng 0 và chưa có dữ liệu lưu trữ trước đó cho MAC: \(mac)")
+            }
+        }
+        
         syncType = .kUpdateFirmware
 
-        Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "TRY_AGAIN", serialNo: device.SerialNo)
+        Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "TRY_AGAIN", serialNo: Int(finalSerialNo) ?? 0)
         
         device.updateFirmware()
             .observe(on: MainScheduler.instance)
@@ -377,7 +393,10 @@ final class FirmwareUpdateManager {
                         "✅ Reboot command sent: \(success)"
                     )
 
-                    Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "COMPLETED", serialNo: device.SerialNo)
+                    Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "COMPLETED", serialNo: Int(finalSerialNo) ?? 0)
+                    
+                    // Clear thiết bị đã lưu trong DFUPersistenceManager
+                    DFUPersistenceManager.shared.clearPendingUpdate(forMAC: Utilities.getNormalMacAddress(from: device.scannedPeripheral))
 
                     BluetoothDeviceCoordinator.shared
                         .isExpectedDisconnect = true
@@ -392,7 +411,7 @@ final class FirmwareUpdateManager {
                         "❌ Firmware update failed: \(error)"
                     )
                     
-                    Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "ERROR", serialNo: device.SerialNo)
+                    Utilities.sendFirmwareStatus(device: device.scannedPeripheral, "ERROR", serialNo: Int(finalSerialNo) ?? 0)
 
                     completion(
                         .failure(error)

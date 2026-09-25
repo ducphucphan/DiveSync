@@ -63,7 +63,7 @@ extension ScannedPeripheral {
             return nil
         }
         
-        let bleName = String(name[bleNameRange])
+        var bleName = String(name[bleNameRange])
         let serialNumber: String
         if match.range(at: 2).location != NSNotFound,
            let serialRange = Range(match.range(at: 2), in: name),
@@ -73,7 +73,17 @@ extension ScannedPeripheral {
             serialNumber = "0"
         }
         
+        // Trường hợp cập nhật firmware đang ở trạng thái OTA thì device wisdom 5 nó không trả về name là WISxxxxxx
+        // mà nó trả về WISDOM, vì vậy phải gán để có thể lấy đúng thông tin từ dc_info ra.
+        if (bleName == "WISDOM") {
+            bleName = "WIS"
+        }
+        
         return (bleName, serialNumber)
+    }
+    
+    func macAddress() -> String {
+        return self.advertisementData.deviceAddress ?? self.peripheral.identifier.uuidString
     }
 }
 
