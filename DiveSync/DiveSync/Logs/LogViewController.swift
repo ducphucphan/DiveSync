@@ -647,6 +647,17 @@ class LogViewController: BaseViewController {
         return "Gas".localized + " \(startingMixIdx) - " + Utilities.fo2GasValue(gasNo: startingMixIdx, fo2: startingFo2Percent)
     }
     
+    private func getStartGasSettings() -> (startingIdx: Int, currentFO2: Int) {
+        var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
+        if startingMixIdx < 1 || startingMixIdx > 4 { startingMixIdx = 1 }
+        
+        let mixFO2Key = "Mix\(startingMixIdx)Fo2Percent"
+        var currentFo2 = diveLog.stringValue(key: mixFO2Key).toInt()
+        if currentFo2 == 0 { currentFo2 = 21 }
+        
+        return (startingMixIdx, currentFo2)
+    }
+    
     private func getEndGas() -> String {
         var startingMixIdx = diveLog.stringValue(key: "StartingMixIdx").toInt()
         if startingMixIdx == 0 { startingMixIdx = 1 }
@@ -676,6 +687,17 @@ class LogViewController: BaseViewController {
         }
         
         return "Gas".localized + " \(endingMixIdx) - " + Utilities.fo2GasValue(gasNo: endingMixIdx, fo2: endingFo2Percent)
+    }
+    
+    private func getEndGasSettings() -> (endingIdx: Int, currentFO2: Int) {
+        var endingMixIdx = diveLog.stringValue(key: "EndingMixIdx").toInt()
+        if endingMixIdx < 1 || endingMixIdx > 4 { endingMixIdx = 1 }
+        
+        let mixFO2Key = "Mix\(endingMixIdx)Fo2Percent"
+        var currentFo2 = diveLog.stringValue(key: mixFO2Key).toInt()
+        if currentFo2 == 0 { currentFo2 = 21 }
+        
+        return (endingMixIdx, currentFo2)
     }
     
     private func setupFlexibleMetrics() {
@@ -1288,7 +1310,82 @@ extension LogViewController {
                             self?.saveDiveData(key: "MaxPpo2", value: value ?? "0.21")
                         }
                     }
+                /*
+                case .startGas:
+                    // 1. Lấy trạng thái hiện tại
+                    let (gasIdx, currentFO2) = getStartGasSettings()
                     
+                    let gasOptions = ["1"]
+                    let fo2Options = GasHelper.fo2Options
+                    
+                    let initialLeftValue = "\(gasIdx)"
+                    let initialRightValue = GasHelper.formatFO2(currentFO2)
+                    
+                    Set2ValueSettingAlert2.showMessage(message: "Start Gas",
+                                                       leftTitle: "GAS",
+                                                       rightTitle: "FO2",
+                                                       leftValue: initialLeftValue,
+                                                       rightValue: initialRightValue,
+                                                       leftOptions: gasOptions,
+                                                       rightOptions: fo2Options) { [weak self] action, selectedValue in
+                        guard let self = self, action == .allow, let selectedValue = selectedValue else { return }
+                        
+                        // 3. Tách chuỗi dạng "1 - AIR" hoặc "2 - EAN22"
+                        // Lấy phần tử đầu tiên nếu selectedValue là mảng [String] hoặc chính nó nếu là String
+                        
+                        let components = selectedValue.components(separatedBy: " - ")
+                        
+                        if components.count >= 2 {
+                            let selectedGasIdxStr = components[0].trimmingCharacters(in: .whitespaces) // "1", "2"...
+                            let selectedFO2Str = components[1].trimmingCharacters(in: .whitespaces)    // "AIR", "EAN22"...
+                            
+                            // Convert FO2 string -> Int (AIR -> 21, EAN22 -> 22)
+                            let newFO2Value = GasHelper.parseFO2(selectedFO2Str)
+                            
+                            // 4. Lưu lại vào diveLog
+                            self.saveDiveData(key: "StartingMixIdx", value: selectedGasIdxStr)
+                            self.saveDiveData(key: "Mix\(selectedGasIdxStr)Fo2Percent", value: newFO2Value)
+                        }
+                    }
+                    break
+                case .endGas:
+                    // 1. Lấy trạng thái hiện tại
+                    let (gasIdx, currentFO2) = getEndGasSettings()
+                    
+                    let gasOptions = ["1", "2", "3"]
+                    let fo2Options = GasHelper.fo2Options
+                    
+                    let initialLeftValue = "\(gasIdx)"
+                    let initialRightValue = GasHelper.formatFO2(currentFO2)
+                    
+                    Set2ValueSettingAlert2.showMessage(message: "End Gas",
+                                                       leftTitle: "GAS",
+                                                       rightTitle: "FO2",
+                                                       leftValue: initialLeftValue,
+                                                       rightValue: initialRightValue,
+                                                       leftOptions: gasOptions,
+                                                       rightOptions: fo2Options) { [weak self] action, selectedValue in
+                        guard let self = self, action == .allow, let selectedValue = selectedValue else { return }
+                        
+                        // 3. Tách chuỗi dạng "1 - AIR" hoặc "2 - EAN22"
+                        // Lấy phần tử đầu tiên nếu selectedValue là mảng [String] hoặc chính nó nếu là String
+                        
+                        let components = selectedValue.components(separatedBy: " - ")
+                        
+                        if components.count >= 2 {
+                            let selectedGasIdxStr = components[0].trimmingCharacters(in: .whitespaces) // "1", "2"...
+                            let selectedFO2Str = components[1].trimmingCharacters(in: .whitespaces)    // "AIR", "EAN22"...
+                            
+                            // Convert FO2 string -> Int (AIR -> 21, EAN22 -> 22)
+                            let newFO2Value = GasHelper.parseFO2(selectedFO2Str)
+                            
+                            // 4. Lưu lại vào diveLog
+                            self.saveDiveData(key: "EndingMixIdx", value: selectedGasIdxStr)
+                            self.saveDiveData(key: "Mix\(selectedGasIdxStr)Fo2Percent", value: newFO2Value)
+                        }
+                    }
+                    break
+                */
                 default:
                     break
                 }

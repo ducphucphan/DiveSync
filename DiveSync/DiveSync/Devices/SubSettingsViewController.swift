@@ -424,11 +424,37 @@ extension SubSettingsViewController: UITableViewDataSource, UITableViewDelegate 
                 saveTitle: "Set".localized.uppercased(),
                 currentValue: row.value ?? "",
                 keyboardType: keyType,
-                maxLength: 20) { action in
+                maxLength: 20) { [self] action in
                     switch action {
                     case .save(let value):
-                        self.visibleRows[indexPath.row].value = value?.uppercased()
+                        
+                        let _value = value?.uppercased()
+                        
+                        self.visibleRows[indexPath.row].value = _value
                         self.tableview.reloadRows(at: [indexPath], with: .automatic)
+                        
+                        let settingKeys: [String: String] = [
+                            "owner_name": "Name",
+                            "owner_phone": "Phone",
+                            "owner_mail": "Email",
+                            "owner_blood_type": "Blood",
+                            "owner_emname": "EmName",
+                            "owner_emergency_contact_phone": "EmPhone"
+                        ]
+
+                        if let rowId = row.id, let apiKey = settingKeys[rowId] {
+                            var ownerSettings: [String: Any] = [
+                                "DeviceID": Int(device.deviceId ?? 0)
+                            ]
+                            ownerSettings[apiKey] = _value
+                            
+                            DatabaseManager.shared.saveDeviceSettings(
+                                modelId: Int(device.modelId ?? 0),
+                                serialNo: String(device.SerialNo ?? ""),
+                                dcSettings: ownerSettings
+                            )
+                        }
+                        
                     default:
                         break
                     }

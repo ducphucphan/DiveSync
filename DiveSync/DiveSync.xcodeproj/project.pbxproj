@@ -39,12 +39,13 @@
 		482675AF2DCA49A30037E40C /* LogGalleryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 482675AD2DCA49A30037E40C /* LogGalleryCell.xib */; };
 		4827B2D92CE39F2300ACF363 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 4827B2D82CE39F2300ACF363 /* GRDB */; };
 		48283E4C2F3B1EA70014BDD7 /* BluetoothDeviceCRManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48283E4B2F3B1EA70014BDD7 /* BluetoothDeviceCRManager.swift */; };
+		4828930F306A10BA0075B39B /* Davinci_Rev1.3.7_20260925.bin in Resources */ = {isa = PBXBuildFile; fileRef = 4828930E306A10BA0075B39B /* Davinci_Rev1.3.7_20260925.bin */; };
 		4828F4A32D102F3500039188 /* PlaceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4828F4A22D102F3500039188 /* PlaceCell.swift */; };
 		482CB9902D101C2000CA78F4 /* CustomCalloutView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 482CB98F2D101C2000CA78F4 /* CustomCalloutView.xib */; };
 		482CB9922D1020D400CA78F4 /* CustomCalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482CB9912D1020D400CA78F4 /* CustomCalloutView.swift */; };
 		482DE4F32DC60F0700F9FE54 /* DiveSpotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482DE4F22DC60F0700F9FE54 /* DiveSpotViewController.swift */; };
 		482F666C2E729020002E72EA /* DialogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482F666B2E729020002E72EA /* DialogViewController.swift */; };
-		48340AD53064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin in Resources */ = {isa = PBXBuildFile; fileRef = 48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */; };
+		4831B8F23078DD59008BC0A8 /* GasHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4831B8F13078DD59008BC0A8 /* GasHelper.swift */; };
 		4835FFF22D707A0000DEB4C3 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = 4835FFF12D707A0000DEB4C3 /* ProgressHUD */; };
 		4835FFF52D707CA100DEB4C3 /* BluetoothDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */; };
 		483CCA772DBE4E7200E8138A /* TermsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483CCA762DBE4E7200E8138A /* TermsViewController.swift */; };
@@ -319,12 +320,13 @@
 		482675AC2DCA49A30037E40C /* LogGalleryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogGalleryCell.swift; sourceTree = "<group>"; };
 		482675AD2DCA49A30037E40C /* LogGalleryCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LogGalleryCell.xib; sourceTree = "<group>"; };
 		48283E4B2F3B1EA70014BDD7 /* BluetoothDeviceCRManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothDeviceCRManager.swift; sourceTree = "<group>"; };
+		4828930E306A10BA0075B39B /* Davinci_Rev1.3.7_20260925.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Davinci_Rev1.3.7_20260925.bin; sourceTree = "<group>"; };
 		4828F4A22D102F3500039188 /* PlaceCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceCell.swift; sourceTree = "<group>"; };
 		482CB98F2D101C2000CA78F4 /* CustomCalloutView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomCalloutView.xib; sourceTree = "<group>"; };
 		482CB9912D1020D400CA78F4 /* CustomCalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCalloutView.swift; sourceTree = "<group>"; };
 		482DE4F22DC60F0700F9FE54 /* DiveSpotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiveSpotViewController.swift; sourceTree = "<group>"; };
 		482F666B2E729020002E72EA /* DialogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DialogViewController.swift; sourceTree = "<group>"; };
-		48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = DaVinci_MultiL_1.3.6.bin; sourceTree = "<group>"; };
+		4831B8F13078DD59008BC0A8 /* GasHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GasHelper.swift; sourceTree = "<group>"; };
 		4835FFF42D707CA100DEB4C3 /* BluetoothDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDataManager.swift; sourceTree = "<group>"; };
 		483CCA762DBE4E7200E8138A /* TermsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsViewController.swift; sourceTree = "<group>"; };
 		483CCA782DBE523A00E8138A /* StatisticsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsViewController.swift; sourceTree = "<group>"; };
@@ -744,7 +746,7 @@
 				487599DF2F6C17AB00BE0F47 /* CR5_device.json */,
 				4865C871301893D300D78A29 /* Wisdom_Rev01B_1.0.2_Released.bin */,
 				4898682E3035BC5B00A488E0 /* CREDAV.1_2_2.bin */,
-				48340AD43064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin */,
+				4828930E306A10BA0075B39B /* Davinci_Rev1.3.7_20260925.bin */,
 				48CDF7B12FCD785B00ABDE9E /* 1.txt */,
 				48CDF7B22FCD785B00ABDE9E /* 2.txt */,
 				48CDF7B32FCD785B00ABDE9E /* 3.txt */,
@@ -902,6 +904,7 @@
 				4808428B2E68F63B007F5A11 /* BottomPopupViewController.swift */,
 				4803EF9C2F023D5300AA6C01 /* MKMapView+ZoomLevel.swift */,
 				485B0B332F221B1D00B41BAC /* AlarmDecoder.swift */,
+				4831B8F13078DD59008BC0A8 /* GasHelper.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -1311,7 +1314,6 @@
 				487599E02F6C17AB00BE0F47 /* CR5_device.json in Resources */,
 				4879A4592CF42D71007EBE64 /* Device.storyboard in Resources */,
 				48AD3A4B2EF92FF0005BDB6A /* Localizable.strings in Resources */,
-				48340AD53064CCFE00EA8001 /* DaVinci_MultiL_1.3.6.bin in Resources */,
 				48AAC52A2F874E8900100535 /* wisdom5_device.json in Resources */,
 				48D21E132D0D3EBC004E8018 /* HelveticaNeueLTProUltLtCnO.otf in Resources */,
 				48CDF7B62FCD785B00ABDE9E /* 2.txt in Resources */,
@@ -1399,6 +1401,7 @@
 				48D21E102D0D3EBC004E8018 /* HelveticaNeueLTProBdEx.otf in Resources */,
 				48D21E372D0D3EBC004E8018 /* HelveticaNeueLTProThEx.otf in Resources */,
 				48D21E122D0D3EBC004E8018 /* HelveticaNeueLTProBlkEx.otf in Resources */,
+				4828930F306A10BA0075B39B /* Davinci_Rev1.3.7_20260925.bin in Resources */,
 				48AD3A402EF92C54005BDB6A /* LaunchScreen.storyboard in Resources */,
 				48D21E0A2D0D3EBC004E8018 /* HelveticaNeueLTProThIt.otf in Resources */,
 			);
@@ -1459,6 +1462,7 @@
 				48537A842CFFF66500AB116F /* CustomLineChartRenderer.swift in Sources */,
 				485EE45A2E794DB300EF25AC /* NodeType.swift in Sources */,
 				480F744F2DD7315C002A0824 /* DeviceViewController.swift in Sources */,
+				4831B8F23078DD59008BC0A8 /* GasHelper.swift in Sources */,
 				48637DE02CF885740046EFB5 /* DCDeviceView.swift in Sources */,
 				486BC7B52F0BAD1000406BC3 /* RecycleViewController.swift in Sources */,
 				489641B42EA636F200467157 /* TankDataMapper.swift in Sources */,
@@ -1733,7 +1737,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1756,7 +1760,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1777,7 +1781,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = DiveSync/DiveSync.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = L335NH44M2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DiveSync/Info.plist;
@@ -1800,7 +1804,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.3;
+				MARKETING_VERSION = 1.1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.proasiadesign.divesync;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

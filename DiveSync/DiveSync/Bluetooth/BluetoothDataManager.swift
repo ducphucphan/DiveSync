@@ -2036,7 +2036,7 @@ class BluetoothDataManager {
                 break
             }
             
-            PrintLog("Write Scuba Settings: \(scubaSettings)")
+            PrintLog("Write System Settings: \(systemSettings)")
             
             return sendSetSystemSettings(systemSettings: systemSettings)
                 .flatMap { _ in

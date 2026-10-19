@@ -405,7 +405,7 @@ class Utilities {
     static func firstBinFile(dcrid: String? = nil) -> URL? {
         let isDebug = false
         if isDebug {
-            return Bundle.main.url(forResource: "DaVinci_MultiL_1.3.6", withExtension: "bin")
+            return Bundle.main.url(forResource: "Davinci_Rev1.3.7_20260925", withExtension: "bin")
         } else {
             let fileManager = FileManager.default
             guard let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
